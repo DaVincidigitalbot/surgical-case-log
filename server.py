@@ -15,7 +15,7 @@ from datetime import datetime
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'caselog.db')
+DB_PATH = os.environ.get('DB_PATH', os.path.join(os.path.dirname(__file__), 'caselog.db'))
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)

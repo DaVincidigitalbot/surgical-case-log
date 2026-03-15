@@ -1,0 +1,15 @@
+app = "surgical-case-log"
+primary_region = "atl"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+
+[mounts]
+  source = "caselog_data"
+  destination = "/app/data"
