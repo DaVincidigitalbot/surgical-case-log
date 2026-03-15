@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Surgical Case Log Pro</title>
+    <title>Clinical Case Log Pro — For Medical, PA & NP Students</title>
     
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
@@ -278,11 +278,11 @@
 <div id="landingPage" style="display:none; min-height:100vh; background:linear-gradient(135deg, #0f1729, #1B2A4A);">
     <div style="max-width:600px; margin:0 auto; padding:40px 20px; text-align:center;">
         <div style="margin-bottom:30px;">
-            <h1 style="color:#FFFFFF; font-size:28px; margin-bottom:8px;">Surgical Case Log</h1>
+            <h1 style="color:#FFFFFF; font-size:28px; margin-bottom:8px;">Clinical Case Log</h1>
             <p style="color:#D4A853; font-size:18px; font-weight:600;">PRO SYSTEM</p>
         </div>
         
-        <p style="color:#AAAAAA; font-size:16px; margin-bottom:30px;">Log surgical cases from your phone in 30 seconds.<br>Built by a practicing surgeon.</p>
+        <p style="color:#AAAAAA; font-size:16px; margin-bottom:30px;">Log clinical cases from your phone in 30 seconds.<br>Built for medical, PA & NP students. Every rotation covered.</p>
         
         <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
             <h2 style="color:#2E8B8B; font-size:18px; margin-bottom:20px;">Sign In</h2>
@@ -333,7 +333,7 @@
 
 <div id="appContainer" style="display:none;">
 <div class="header">
-    <h1>⚕️ Surgical <span>Case Log</span></h1>
+    <h1>⚕️ Clinical <span>Case Log</span></h1>
     <div class="header-actions">
         <button onclick="exportExcel()">📥 Excel</button>
         <button onclick="exportPDF()">📄 PDF</button>
@@ -426,29 +426,30 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Rotation</label>
-                        <select id="rotation" required>
-                            <option value="">Select...</option>
-                            <option>General</option>
-                            <option>Trauma</option>
-                            <option>Vascular</option>
-                            <option>Thoracic</option>
-                            <option>Colorectal</option>
-                            <option>Surgical Oncology</option>
-                            <option>Endocrine</option>
-                            <option>Pediatric</option>
-                            <option>Plastics</option>
-                            <option>Transplant</option>
-                            <option>Critical Care</option>
-                            <option>Bariatric</option>
-                            <option>MIS</option>
-                            <option>Breast</option>
-                            <option>Cardiac</option>
+                        <label>Specialty / Rotation</label>
+                        <select id="rotation" required onchange="updateDiagnosesAndProcedures()">
+                            <option value="">Select specialty...</option>
+                            <option>General Surgery</option>
+                            <option>Internal Medicine</option>
+                            <option>Family Medicine</option>
+                            <option>Pediatrics</option>
+                            <option>OB/GYN</option>
+                            <option>Emergency Medicine</option>
+                            <option>Psychiatry</option>
+                            <option>Neurology</option>
+                            <option>Nephrology</option>
+                            <option>Cardiology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Diagnosis</label>
+                        <select id="diagnosis">
+                            <option value="">Select specialty first...</option>
                         </select>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
-                        <label>Procedure</label>
-                        <select id="procedure" required>
+                        <label>Procedure / Encounter</label>
+                        <select id="procedure">
                             <option value="">Select procedure...</option>
                             <optgroup label="General Surgery">
                                 <option>Laparoscopic Cholecystectomy</option>
@@ -620,7 +621,43 @@
     </div>
 </div>
 
+<script src="/specialties.js"></script>
 <script>
+// Dynamic specialty dropdowns
+function updateDiagnosesAndProcedures() {
+    const specialty = document.getElementById('rotation').value;
+    const diagSelect = document.getElementById('diagnosis');
+    const procSelect = document.getElementById('procedure');
+    
+    // Clear existing options
+    diagSelect.innerHTML = '<option value="">Select diagnosis...</option>';
+    procSelect.innerHTML = '<option value="">Select procedure...</option>';
+    
+    if (specialty && SPECIALTIES[specialty]) {
+        const data = SPECIALTIES[specialty];
+        
+        // Populate diagnoses
+        if (data.diagnoses) {
+            data.diagnoses.forEach(dx => {
+                const opt = document.createElement('option');
+                opt.value = dx;
+                opt.textContent = dx;
+                diagSelect.appendChild(opt);
+            });
+        }
+        
+        // Populate procedures
+        if (data.procedures) {
+            data.procedures.forEach(proc => {
+                const opt = document.createElement('option');
+                opt.value = proc;
+                opt.textContent = proc;
+                procSelect.appendChild(opt);
+            });
+        }
+    }
+}
+
 // CPT Code Database
 const CPT_CODES = [
     {code:"47562", procedure:"Lap Cholecystectomy", category:"General"},
@@ -720,6 +757,7 @@ function addCase(e) {
         age: document.getElementById('patientAge').value,
         sex: document.getElementById('patientSex').value,
         rotation: document.getElementById('rotation').value,
+        diagnosis: document.getElementById('diagnosis').value,
         procedure: document.getElementById('procedure').value,
         cpt: document.getElementById('cptCode').value,
         role: document.getElementById('role').value,
