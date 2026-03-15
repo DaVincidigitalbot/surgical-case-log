@@ -253,6 +253,23 @@
             font-size: 14px;
         }
 
+        /* Search Dropdowns */
+        .search-dropdown .dropdown-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #e0e0e0;
+            border-bottom: 1px solid #1a2744;
+        }
+        .search-dropdown .dropdown-item:hover {
+            background: #243656;
+            color: #2E8B8B;
+        }
+        .search-dropdown .dropdown-item.highlighted {
+            background: #243656;
+            color: #2E8B8B;
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             .header h1 { font-size: 14px; }
@@ -443,13 +460,20 @@
                     </div>
                     <div class="form-group">
                         <label>Diagnosis</label>
-                        <select id="diagnosis">
-                            <option value="">Select specialty first...</option>
-                        </select>
+                        <div style="position:relative;">
+                            <input type="text" id="diagnosisInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="hidden" id="diagnosis">
+                            <div id="diagnosisDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
+                        </div>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
                         <label>Procedure / Encounter</label>
-                        <select id="procedure">
+                        <div style="position:relative;">
+                            <input type="text" id="procedureInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('procedure')" onfocus="showDropdown('procedure')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="hidden" id="procedure">
+                            <div id="procedureDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
+                        </div>
+                        <select id="procedureOld" style="display:none;">
                             <option value="">Select procedure...</option>
                             <optgroup label="General Surgery">
                                 <option>Laparoscopic Cholecystectomy</option>
@@ -623,40 +647,71 @@
 
 <script src="/specialties.js"></script>
 <script>
-// Dynamic specialty dropdowns
+// Dynamic specialty dropdowns with search
+let currentDiagnoses = [];
+let currentProcedures = [];
+
 function updateDiagnosesAndProcedures() {
     const specialty = document.getElementById('rotation').value;
-    const diagSelect = document.getElementById('diagnosis');
-    const procSelect = document.getElementById('procedure');
     
-    // Clear existing options
-    diagSelect.innerHTML = '<option value="">Select diagnosis...</option>';
-    procSelect.innerHTML = '<option value="">Select procedure...</option>';
+    // Clear inputs
+    document.getElementById('diagnosisInput').value = '';
+    document.getElementById('diagnosis').value = '';
+    document.getElementById('procedureInput').value = '';
+    document.getElementById('procedure').value = '';
+    
+    currentDiagnoses = [];
+    currentProcedures = [];
     
     if (specialty && SPECIALTIES[specialty]) {
         const data = SPECIALTIES[specialty];
-        
-        // Populate diagnoses
-        if (data.diagnoses) {
-            data.diagnoses.forEach(dx => {
-                const opt = document.createElement('option');
-                opt.value = dx;
-                opt.textContent = dx;
-                diagSelect.appendChild(opt);
-            });
-        }
-        
-        // Populate procedures
-        if (data.procedures) {
-            data.procedures.forEach(proc => {
-                const opt = document.createElement('option');
-                opt.value = proc;
-                opt.textContent = proc;
-                procSelect.appendChild(opt);
-            });
-        }
+        currentDiagnoses = data.diagnoses || [];
+        currentProcedures = data.procedures || [];
     }
+    
+    document.getElementById('diagnosisInput').placeholder = currentDiagnoses.length > 0 ? 'Type to search or tap to browse...' : 'Select specialty first...';
+    document.getElementById('procedureInput').placeholder = currentProcedures.length > 0 ? 'Type to search or tap to browse...' : 'Select specialty first...';
 }
+
+function showDropdown(type) {
+    const items = type === 'diagnosis' ? currentDiagnoses : currentProcedures;
+    const dropdown = document.getElementById(type + 'Dropdown');
+    const input = document.getElementById(type + 'Input');
+    const filter = input.value.toLowerCase();
+    
+    const filtered = items.filter(item => item.toLowerCase().includes(filter));
+    
+    if (filtered.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    
+    dropdown.innerHTML = filtered.map(item => 
+        `<div class="dropdown-item" onclick="selectDropdownItem('${type}', '${item.replace(/'/g, "\\'")}')">${item}</div>`
+    ).join('');
+    
+    dropdown.style.display = 'block';
+}
+
+function filterDropdown(type) {
+    showDropdown(type);
+}
+
+function selectDropdownItem(type, value) {
+    document.getElementById(type + 'Input').value = value;
+    document.getElementById(type).value = value;
+    document.getElementById(type + 'Dropdown').style.display = 'none';
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#diagnosisInput') && !e.target.closest('#diagnosisDropdown')) {
+        document.getElementById('diagnosisDropdown').style.display = 'none';
+    }
+    if (!e.target.closest('#procedureInput') && !e.target.closest('#procedureDropdown')) {
+        document.getElementById('procedureDropdown').style.display = 'none';
+    }
+});
 
 // CPT Code Database
 const CPT_CODES = [
@@ -757,8 +812,8 @@ function addCase(e) {
         age: document.getElementById('patientAge').value,
         sex: document.getElementById('patientSex').value,
         rotation: document.getElementById('rotation').value,
-        diagnosis: document.getElementById('diagnosis').value,
-        procedure: document.getElementById('procedure').value,
+        diagnosis: document.getElementById('diagnosis').value || document.getElementById('diagnosisInput').value,
+        procedure: document.getElementById('procedure').value || document.getElementById('procedureInput').value,
         cpt: document.getElementById('cptCode').value,
         role: document.getElementById('role').value,
         approach: document.getElementById('approach').value,
