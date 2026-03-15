@@ -425,3 +425,27 @@ if __name__ == '__main__':
     print(f"✅ Database initialized at {DB_PATH}")
     print(f"🚀 Server starting on port 8080...")
     app.run(host='0.0.0.0', port=8080, debug=False)
+
+@app.route('/preview')
+def preview():
+    """Temporary admin preview - bypasses login"""
+    return send_from_directory('.', 'index.html')
+
+@app.route('/api/preview-login', methods=['POST'])
+def preview_login():
+    """Auto-create and login a preview account"""
+    conn = get_db()
+    email = 'admin@surgicalcaselog.com'
+    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    
+    if not user:
+        token = secrets.token_urlsafe(32)
+        pw_hash = hash_password('preview123')
+        conn.execute('INSERT INTO users (email, password_hash, name, token, plan) VALUES (?, ?, ?, ?, ?)',
+                     (email, pw_hash, 'Admin Preview', token, 'subscription'))
+        conn.commit()
+    else:
+        token = user['token']
+    
+    conn.close()
+    return jsonify({'token': token, 'name': 'Admin Preview', 'email': email, 'plan': 'subscription'})
