@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surgical Case Log System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1729;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1B2A4A, #2E8B8B);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .header h1 { font-size: 18px; color: #fff; }
+        .header h1 span { color: #D4A853; }
+        .header-actions { display: flex; gap: 10px; }
+        .header-actions button {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .header-actions button:hover { background: rgba(255,255,255,0.25); }
+        .header-actions button.primary { background: #D4A853; color: #1B2A4A; border: none; font-weight: 600; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #1a2744;
+            overflow-x: auto;
+            border-bottom: 2px solid #2E8B8B;
+        }
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: #ccc; }
+        .tab.active { color: #2E8B8B; border-bottom-color: #2E8B8B; }
+
+        /* Content */
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #1a2744;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #2a3a5c;
+        }
+        .stat-card .number { font-size: 32px; font-weight: 700; color: #2E8B8B; }
+        .stat-card .label { font-size: 12px; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Add Case Form */
+        .form-card {
+            background: #1a2744;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2a3a5c;
+            margin-bottom: 20px;
+        }
+        .form-card h2 { color: #2E8B8B; margin-bottom: 20px; font-size: 18px; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            background: #0f1729;
+            border: 1px solid #2a3a5c;
+            color: #e0e0e0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #2E8B8B;
+            box-shadow: 0 0 0 2px rgba(46,139,139,0.2);
+        }
+        .form-group select { appearance: auto; }
+        .form-full { grid-column: 1 / -1; }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #2E8B8B; color: #fff; }
+        .btn-primary:hover { background: #3aa5a5; }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:hover { background: #e74c3c; }
+        .btn-gold { background: #D4A853; color: #1B2A4A; }
+
+        /* Case List Table */
+        .case-list { overflow-x: auto; }
+        .case-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .case-table th {
+            background: #1B2A4A;
+            color: #2E8B8B;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        .case-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1a2744;
+        }
+        .case-table tr:nth-child(even) { background: #141e33; }
+        .case-table tr:hover { background: #1a2744; }
+        .case-table .delete-btn {
+            background: none;
+            border: none;
+            color: #c0392b;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-primary { background: rgba(46,139,139,0.2); color: #2E8B8B; }
+        .badge-assist { background: rgba(212,168,83,0.2); color: #D4A853; }
+        .badge-comp { background: rgba(192,57,43,0.2); color: #e74c3c; }
+
+        /* CPT Reference */
+        .cpt-search {
+            width: 100%;
+            background: #0f1729;
+            border: 1px solid #2a3a5c;
+            color: #e0e0e0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+        .cpt-search:focus { border-color: #2E8B8B; outline: none; }
+
+        /* ACGME Progress */
+        .milestone-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #1a2744;
+            gap: 15px;
+        }
+        .milestone-name { flex: 1; font-size: 14px; }
+        .milestone-bar-bg {
+            flex: 2;
+            background: #0f1729;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+        .milestone-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .milestone-bar.green { background: #27ae60; }
+        .milestone-bar.yellow { background: #D4A853; }
+        .milestone-bar.red { background: #c0392b; }
+        .milestone-count { width: 80px; text-align: right; font-size: 13px; color: #888; }
+        .milestone-input {
+            width: 60px;
+            background: #0f1729;
+            border: 1px solid #2a3a5c;
+            color: #e0e0e0;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 14px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .content { padding: 12px; }
+            .tab { padding: 10px 14px; font-size: 13px; }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #555;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 15px; }
+        .empty-state p { font-size: 16px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>⚕️ Surgical <span>Case Log</span></h1>
+    <div class="header-actions">
+        <button onclick="exportCSV()">📥 Export CSV</button>
+        <button class="primary" onclick="showSection('add')">+ Log Case</button>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="showSection('dashboard')">📊 Dashboard</div>
+    <div class="tab" onclick="showSection('cases')">📋 Cases</div>
+    <div class="tab" onclick="showSection('add')">➕ Add Case</div>
+    <div class="tab" onclick="showSection('cpt')">📖 CPT Codes</div>
+    <div class="tab" onclick="showSection('acgme')">🎯 ACGME</div>
+</div>
+
+<div class="content">
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="section active">
+        <div class="dashboard-grid">
+            <div class="stat-card"><div class="number" id="totalCases">0</div><div class="label">Total Cases</div></div>
+            <div class="stat-card"><div class="number" id="primaryCount">0</div><div class="label">Primary Surgeon</div></div>
+            <div class="stat-card"><div class="number" id="assistCount">0</div><div class="label">First Assist</div></div>
+            <div class="stat-card"><div class="number" id="compRate">0%</div><div class="label">Complication Rate</div></div>
+            <div class="stat-card"><div class="number" id="avgOR">0</div><div class="label">Avg OR Time (min)</div></div>
+            <div class="stat-card"><div class="number" id="lapCount">0</div><div class="label">Laparoscopic</div></div>
+            <div class="stat-card"><div class="number" id="robotCount">0</div><div class="label">Robotic</div></div>
+            <div class="stat-card"><div class="number" id="openCount">0</div><div class="label">Open</div></div>
+        </div>
+
+        <div class="form-card">
+            <h2>Cases by Rotation</h2>
+            <div id="rotationBreakdown"></div>
+        </div>
+
+        <div class="form-card">
+            <h2>Recent Cases</h2>
+            <div id="recentCases"></div>
+        </div>
+    </div>
+
+    <!-- CASES LIST -->
+    <div id="cases" class="section">
+        <div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">
+            <input type="text" id="searchCases" class="cpt-search" placeholder="🔍 Search cases..." style="flex:1; min-width:200px;" oninput="renderCases()">
+            <select id="filterRotation" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px;border-radius:8px;" onchange="renderCases()">
+                <option value="">All Rotations</option>
+            </select>
+        </div>
+        <div class="case-list" id="caseList"></div>
+    </div>
+
+    <!-- ADD CASE -->
+    <div id="add" class="section">
+        <div class="form-card">
+            <h2>➕ Log New Case</h2>
+            <form id="caseForm" onsubmit="addCase(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="caseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Patient Age</label>
+                        <input type="number" id="patientAge" placeholder="45" min="0" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label>Sex</label>
+                        <select id="patientSex">
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Rotation</label>
+                        <select id="rotation" required>
+                            <option value="">Select...</option>
+                            <option>General</option>
+                            <option>Trauma</option>
+                            <option>Vascular</option>
+                            <option>Thoracic</option>
+                            <option>Colorectal</option>
+                            <option>Surgical Oncology</option>
+                            <option>Endocrine</option>
+                            <option>Pediatric</option>
+                            <option>Plastics</option>
+                            <option>Transplant</option>
+                            <option>Critical Care</option>
+                            <option>Bariatric</option>
+                            <option>MIS</option>
+                            <option>Breast</option>
+                            <option>Cardiac</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Procedure</label>
+                        <input type="text" id="procedure" placeholder="Laparoscopic Cholecystectomy" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CPT Code</label>
+                        <input type="text" id="cptCode" placeholder="47562">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="role" required>
+                            <option value="">Select...</option>
+                            <option>Primary Surgeon</option>
+                            <option>First Assist</option>
+                            <option>Second Assist</option>
+                            <option>Teaching Assist</option>
+                            <option>Observer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Approach</label>
+                        <select id="approach">
+                            <option value="">Select...</option>
+                            <option>Open</option>
+                            <option>Laparoscopic</option>
+                            <option>Robotic</option>
+                            <option>Endoscopic</option>
+                            <option>Hybrid</option>
+                            <option>Percutaneous</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Attending</label>
+                        <input type="text" id="attending" placeholder="Dr. Smith">
+                    </div>
+                    <div class="form-group">
+                        <label>Complications</label>
+                        <select id="complications">
+                            <option>None</option>
+                            <option>SSI</option>
+                            <option>Bleeding</option>
+                            <option>DVT/PE</option>
+                            <option>Pneumonia</option>
+                            <option>Anastomotic Leak</option>
+                            <option>Return to OR</option>
+                            <option>Wound Dehiscence</option>
+                            <option>Ileus</option>
+                            <option>UTI</option>
+                            <option>MI</option>
+                            <option>Stroke</option>
+                            <option>Death</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>EBL (mL)</label>
+                        <input type="number" id="ebl" placeholder="50" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>OR Time (min)</label>
+                        <input type="number" id="orTime" placeholder="60" min="0">
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Notes</label>
+                        <textarea id="notes" rows="2" placeholder="Additional case details..."></textarea>
+                    </div>
+                </div>
+                <div style="margin-top:20px; display:flex; gap:10px;">
+                    <button type="submit" class="btn btn-primary">✅ Save Case</button>
+                    <button type="reset" class="btn" style="background:#2a3a5c; color:#888;">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CPT REFERENCE -->
+    <div id="cpt" class="section">
+        <input type="text" class="cpt-search" id="cptSearch" placeholder="🔍 Search CPT codes or procedures..." oninput="filterCPT()">
+        <div class="case-list" id="cptList"></div>
+    </div>
+
+    <!-- ACGME MILESTONES -->
+    <div id="acgme" class="section">
+        <div class="form-card">
+            <h2>🎯 ACGME Case Requirements — General Surgery</h2>
+            <p style="color:#888; margin-bottom:20px; font-size:14px;">Track your progress toward minimum case requirements. Update counts manually or they auto-count from your logged cases.</p>
+            <div id="milestoneList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// CPT Code Database
+const CPT_CODES = [
+    {code:"47562", procedure:"Lap Cholecystectomy", category:"General"},
+    {code:"47563", procedure:"Lap Cholecystectomy w/ Cholangiogram", category:"General"},
+    {code:"44970", procedure:"Lap Appendectomy", category:"General"},
+    {code:"44960", procedure:"Open Appendectomy", category:"General"},
+    {code:"49505", procedure:"Inguinal Hernia Repair", category:"General"},
+    {code:"49507", procedure:"Inguinal Hernia Repair, Incarcerated", category:"General"},
+    {code:"49560", procedure:"Ventral Hernia Repair, Incarcerated", category:"General"},
+    {code:"49652", procedure:"Lap Ventral Hernia Repair", category:"General"},
+    {code:"44140", procedure:"Partial Colectomy", category:"Colorectal"},
+    {code:"44160", procedure:"Right Hemicolectomy", category:"Colorectal"},
+    {code:"44204", procedure:"Lap Partial Colectomy w/ Anastomosis", category:"Colorectal"},
+    {code:"43239", procedure:"EGD w/ Biopsy", category:"General"},
+    {code:"43644", procedure:"Lap Gastric Bypass (RYGB)", category:"Bariatric"},
+    {code:"43775", procedure:"Lap Sleeve Gastrectomy", category:"Bariatric"},
+    {code:"49000", procedure:"Exploratory Laparotomy", category:"Trauma"},
+    {code:"44120", procedure:"Small Bowel Resection", category:"General"},
+    {code:"38115", procedure:"Splenectomy", category:"Trauma"},
+    {code:"47100", procedure:"Liver Repair/Wedge Biopsy", category:"Trauma"},
+    {code:"35556", procedure:"Fem-Pop Bypass", category:"Vascular"},
+    {code:"35301", procedure:"Carotid Endarterectomy", category:"Vascular"},
+    {code:"60220", procedure:"Total Thyroid Lobectomy", category:"Endocrine"},
+    {code:"60240", procedure:"Total Thyroidectomy", category:"Endocrine"},
+    {code:"60500", procedure:"Parathyroidectomy", category:"Endocrine"},
+    {code:"60650", procedure:"Lap Adrenalectomy", category:"Endocrine"},
+    {code:"19301", procedure:"Partial Mastectomy (Lumpectomy)", category:"Breast"},
+    {code:"19303", procedure:"Simple/Total Mastectomy", category:"Breast"},
+    {code:"19307", procedure:"Modified Radical Mastectomy", category:"Breast"},
+    {code:"38525", procedure:"Sentinel Lymph Node Biopsy", category:"Breast"},
+    {code:"36556", procedure:"Central Venous Catheter", category:"Critical Care"},
+    {code:"32551", procedure:"Chest Tube Insertion", category:"Critical Care"},
+    {code:"31600", procedure:"Tracheostomy", category:"Critical Care"},
+    {code:"43246", procedure:"PEG Tube Placement", category:"Critical Care"},
+    {code:"12001", procedure:"Simple Wound Repair (≤2.5cm)", category:"Trauma"},
+    {code:"12031", procedure:"Intermediate Wound Repair (≤2.5cm)", category:"Trauma"},
+    {code:"35221", procedure:"Repair Blood Vessel, Abdomen", category:"Vascular"},
+    {code:"36818", procedure:"AV Fistula Creation", category:"Vascular"},
+    {code:"34812", procedure:"EVAR - Open Femoral", category:"Vascular"},
+    {code:"36245", procedure:"Selective Catheter Placement", category:"Vascular"},
+    {code:"20680", procedure:"Hardware Removal", category:"Trauma"},
+    {code:"44205", procedure:"Lap Colectomy w/ Removal", category:"Colorectal"},
+    {code:"49561", procedure:"Ventral Hernia Repair, Strangulated", category:"General"},
+];
+
+// ACGME Milestones
+const MILESTONES = [
+    {name:"Skin, Soft Tissue, Breast", minimum:35},
+    {name:"Alimentary (Esoph, Stomach, SI)", minimum:67},
+    {name:"Alimentary (Colorectal, Appendix)", minimum:62},
+    {name:"Abdominal (Liver, Biliary, Pancreas, Spleen)", minimum:43},
+    {name:"Endocrine", minimum:17},
+    {name:"Head and Neck", minimum:17},
+    {name:"Pediatric", minimum:15},
+    {name:"Trauma (OR + Non-OR)", minimum:40},
+    {name:"Vascular", minimum:25},
+    {name:"Thoracic", minimum:10},
+    {name:"Operative Total", minimum:750},
+    {name:"Chief Cases (PGY4-5)", minimum:250},
+];
+
+// Data storage
+let cases = JSON.parse(localStorage.getItem('surgicalCases') || '[]');
+let milestoneOverrides = JSON.parse(localStorage.getItem('milestoneOverrides') || '{}');
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('caseDate').valueAsDate = new Date();
+    updateDashboard();
+    renderCases();
+    renderCPT();
+    renderMilestones();
+});
+
+// Tab navigation
+function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t => {
+        if ((id === 'dashboard' && t.textContent.includes('Dashboard')) ||
+            (id === 'cases' && t.textContent.includes('Cases')) ||
+            (id === 'add' && t.textContent.includes('Add')) ||
+            (id === 'cpt' && t.textContent.includes('CPT')) ||
+            (id === 'acgme' && t.textContent.includes('ACGME')))
+            t.classList.add('active');
+    });
+    if (id === 'cases') renderCases();
+}
+
+// Add case
+function addCase(e) {
+    e.preventDefault();
+    const newCase = {
+        id: Date.now(),
+        date: document.getElementById('caseDate').value,
+        age: document.getElementById('patientAge').value,
+        sex: document.getElementById('patientSex').value,
+        rotation: document.getElementById('rotation').value,
+        procedure: document.getElementById('procedure').value,
+        cpt: document.getElementById('cptCode').value,
+        role: document.getElementById('role').value,
+        approach: document.getElementById('approach').value,
+        attending: document.getElementById('attending').value,
+        complications: document.getElementById('complications').value,
+        ebl: document.getElementById('ebl').value,
+        orTime: document.getElementById('orTime').value,
+        notes: document.getElementById('notes').value,
+    };
+    cases.unshift(newCase);
+    saveCases();
+    document.getElementById('caseForm').reset();
+    document.getElementById('caseDate').valueAsDate = new Date();
+    updateDashboard();
+    showSection('cases');
+}
+
+function deleteCase(id) {
+    if (confirm('Delete this case?')) {
+        cases = cases.filter(c => c.id !== id);
+        saveCases();
+        updateDashboard();
+        renderCases();
+    }
+}
+
+function saveCases() {
+    localStorage.setItem('surgicalCases', JSON.stringify(cases));
+}
+
+// Dashboard
+function updateDashboard() {
+    const total = cases.length;
+    const primary = cases.filter(c => c.role === 'Primary Surgeon').length;
+    const assist = cases.filter(c => c.role === 'First Assist').length;
+    const comps = cases.filter(c => c.complications && c.complications !== 'None').length;
+    const compRate = total > 0 ? ((comps/total)*100).toFixed(1) : 0;
+    const orTimes = cases.filter(c => c.orTime).map(c => parseInt(c.orTime));
+    const avgOR = orTimes.length > 0 ? Math.round(orTimes.reduce((a,b)=>a+b,0)/orTimes.length) : 0;
+    const lap = cases.filter(c => c.approach === 'Laparoscopic').length;
+    const robot = cases.filter(c => c.approach === 'Robotic').length;
+    const open = cases.filter(c => c.approach === 'Open').length;
+
+    document.getElementById('totalCases').textContent = total;
+    document.getElementById('primaryCount').textContent = primary;
+    document.getElementById('assistCount').textContent = assist;
+    document.getElementById('compRate').textContent = compRate + '%';
+    document.getElementById('avgOR').textContent = avgOR;
+    document.getElementById('lapCount').textContent = lap;
+    document.getElementById('robotCount').textContent = robot;
+    document.getElementById('openCount').textContent = open;
+
+    // Rotation breakdown
+    const rotations = {};
+    cases.forEach(c => { rotations[c.rotation] = (rotations[c.rotation]||0) + 1; });
+    const rotDiv = document.getElementById('rotationBreakdown');
+    if (Object.keys(rotations).length === 0) {
+        rotDiv.innerHTML = '<p style="color:#555">No cases logged yet</p>';
+    } else {
+        rotDiv.innerHTML = Object.entries(rotations)
+            .sort((a,b) => b[1]-a[1])
+            .map(([rot, count]) => `
+                <div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #0f1729;">
+                    <span style="flex:1">${rot}</span>
+                    <div style="flex:2;background:#0f1729;border-radius:6px;height:24px;overflow:hidden;margin:0 15px;">
+                        <div style="width:${(count/total)*100}%;background:#2E8B8B;height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:12px;font-weight:600;">${count}</div>
+                    </div>
+                    <span style="color:#888;width:40px;text-align:right">${Math.round((count/total)*100)}%</span>
+                </div>
+            `).join('');
+    }
+
+    // Recent cases
+    const recentDiv = document.getElementById('recentCases');
+    const recent = cases.slice(0, 5);
+    if (recent.length === 0) {
+        recentDiv.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No cases yet. Log your first case!</p><button class="btn btn-primary" onclick="showSection(\'add\')">+ Log Case</button></div>';
+    } else {
+        recentDiv.innerHTML = '<table class="case-table"><tr><th>Date</th><th>Procedure</th><th>Role</th><th>Rotation</th></tr>' +
+            recent.map(c => `<tr><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
+    }
+
+    // Update rotation filter
+    const filter = document.getElementById('filterRotation');
+    const currentVal = filter.value;
+    filter.innerHTML = '<option value="">All Rotations</option>' + 
+        [...new Set(cases.map(c=>c.rotation))].sort().map(r => `<option ${r===currentVal?'selected':''}>${r}</option>`).join('');
+    
+    renderMilestones();
+}
+
+// Cases list
+function renderCases() {
+    const search = (document.getElementById('searchCases')?.value || '').toLowerCase();
+    const rotFilter = document.getElementById('filterRotation')?.value || '';
+    
+    let filtered = cases.filter(c => {
+        const matchSearch = !search || c.procedure.toLowerCase().includes(search) || 
+            c.rotation.toLowerCase().includes(search) || c.attending?.toLowerCase().includes(search) ||
+            c.cpt?.includes(search);
+        const matchRot = !rotFilter || c.rotation === rotFilter;
+        return matchSearch && matchRot;
+    });
+
+    const div = document.getElementById('caseList');
+    if (filtered.length === 0) {
+        div.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No cases found</p></div>';
+        return;
+    }
+
+    div.innerHTML = `<table class="case-table">
+        <tr><th>#</th><th>Date</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
+        ${filtered.map((c,i) => `<tr>
+            <td>${filtered.length - i}</td>
+            <td>${c.date}</td>
+            <td>${c.procedure}</td>
+            <td>${c.cpt || '-'}</td>
+            <td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td>
+            <td>${c.approach || '-'}</td>
+            <td>${c.rotation}</td>
+            <td>${c.attending || '-'}</td>
+            <td>${c.complications !== 'None' && c.complications ? '<span class="badge badge-comp">'+c.complications+'</span>' : '✅'}</td>
+            <td>${c.orTime ? c.orTime+'m' : '-'}</td>
+            <td><button class="delete-btn" onclick="deleteCase(${c.id})">🗑</button></td>
+        </tr>`).join('')}
+    </table>`;
+}
+
+// CPT Reference
+function renderCPT() {
+    const div = document.getElementById('cptList');
+    renderCPTFiltered(CPT_CODES, div);
+}
+
+function filterCPT() {
+    const search = document.getElementById('cptSearch').value.toLowerCase();
+    const filtered = CPT_CODES.filter(c => 
+        c.code.includes(search) || c.procedure.toLowerCase().includes(search) || c.category.toLowerCase().includes(search)
+    );
+    renderCPTFiltered(filtered, document.getElementById('cptList'));
+}
+
+function renderCPTFiltered(codes, div) {
+    const grouped = {};
+    codes.forEach(c => { (grouped[c.category] = grouped[c.category] || []).push(c); });
+    
+    div.innerHTML = Object.entries(grouped).map(([cat, items]) => `
+        <div class="form-card" style="margin-bottom:10px;">
+            <h2 style="font-size:15px;margin-bottom:10px;">${cat}</h2>
+            <table class="case-table">
+                ${items.map(c => `<tr style="cursor:pointer" onclick="document.getElementById('cptCode').value='${c.code}';document.getElementById('procedure').value='${c.procedure}';showSection('add');">
+                    <td style="width:80px;font-weight:600;color:#2E8B8B">${c.code}</td>
+                    <td>${c.procedure}</td>
+                </tr>`).join('')}
+            </table>
+        </div>
+    `).join('');
+}
+
+// ACGME Milestones
+function renderMilestones() {
+    const div = document.getElementById('milestoneList');
+    div.innerHTML = MILESTONES.map((m, i) => {
+        const count = milestoneOverrides[i] !== undefined ? parseInt(milestoneOverrides[i]) : 0;
+        const pct = Math.min((count / m.minimum) * 100, 100);
+        const color = pct >= 100 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+        const remaining = Math.max(m.minimum - count, 0);
+        
+        return `<div class="milestone-row">
+            <div class="milestone-name">${m.name}</div>
+            <div class="milestone-bar-bg">
+                <div class="milestone-bar ${color}" style="width:${pct}%">${pct >= 15 ? Math.round(pct)+'%' : ''}</div>
+            </div>
+            <div class="milestone-count">
+                <input type="number" class="milestone-input" value="${count}" min="0" onchange="updateMilestone(${i}, this.value)"> / ${m.minimum}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function updateMilestone(idx, val) {
+    milestoneOverrides[idx] = parseInt(val) || 0;
+    localStorage.setItem('milestoneOverrides', JSON.stringify(milestoneOverrides));
+    renderMilestones();
+}
+
+// Export CSV
+function exportCSV() {
+    if (cases.length === 0) { alert('No cases to export'); return; }
+    const headers = ['Date','Age','Sex','Rotation','Procedure','CPT','Role','Approach','Attending','Complications','EBL','OR Time','Notes'];
+    const rows = cases.map(c => [c.date,c.age,c.sex,c.rotation,c.procedure,c.cpt,c.role,c.approach,c.attending,c.complications,c.ebl,c.orTime,c.notes].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'surgical_case_log.csv';
+    a.click();
+}
+</script>
+
+</body>
+</html>
