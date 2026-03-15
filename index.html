@@ -255,6 +255,42 @@
 </head>
 <body>
 
+<!-- LANDING PAGE - shown when not logged in -->
+<div id="landingPage" style="display:none; min-height:100vh; background:linear-gradient(135deg, #0f1729, #1B2A4A);">
+    <div style="max-width:600px; margin:0 auto; padding:40px 20px; text-align:center;">
+        <div style="margin-bottom:30px;">
+            <h1 style="color:#FFFFFF; font-size:28px; margin-bottom:8px;">Surgical Case Log</h1>
+            <p style="color:#D4A853; font-size:18px; font-weight:600;">PRO SYSTEM</p>
+        </div>
+        
+        <p style="color:#AAAAAA; font-size:16px; margin-bottom:30px;">Log surgical cases from your phone in 30 seconds.<br>Built by a practicing surgeon.</p>
+        
+        <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
+            <h2 style="color:#2E8B8B; font-size:18px; margin-bottom:20px;">Sign In</h2>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="email" id="landingEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="password" id="landingPassword" placeholder="Password" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <button class="btn btn-primary" style="padding:14px;font-size:16px;" onclick="doLandingLogin()">Log In</button>
+            </div>
+        </div>
+
+        <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
+            <h2 style="color:#D4A853; font-size:18px; margin-bottom:20px;">New User? Register</h2>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="landingName" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="email" id="landingRegEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="password" id="landingRegPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <button class="btn btn-gold" style="padding:14px;font-size:16px;" onclick="doLandingRegister()">Create Account</button>
+            </div>
+        </div>
+
+        <div style="color:#666; font-size:13px; margin-top:20px;">
+            <p>surgicalcaselog.com</p>
+        </div>
+    </div>
+</div>
+
+<div id="appContainer" style="display:none;">
 <div class="header">
     <h1>⚕️ Surgical <span>Case Log</span></h1>
     <div class="header-actions">
@@ -871,6 +907,8 @@ async function doRegister() {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         hideAuth();
         updateUserUI();
+        document.getElementById('appContainer').style.display = 'block';
+        document.getElementById('landingPage').style.display = 'none';
         syncLocalToServer();
     } catch(e) { alert('Registration failed'); }
 }
@@ -888,6 +926,8 @@ async function doLogin() {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         hideAuth();
         updateUserUI();
+        document.getElementById('appContainer').style.display = 'block';
+        document.getElementById('landingPage').style.display = 'none';
         loadFromServer();
     } catch(e) { alert('Login failed'); }
 }
@@ -898,6 +938,8 @@ function logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
     updateUserUI();
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('landingPage').style.display = 'block';
 }
 
 function updateUserUI() {
@@ -957,12 +999,16 @@ async function serverDeleteCase(serverId) {
     try { await api('/cases/' + serverId, 'DELETE'); } catch(e) {}
 }
 
-// Auto-load on startup
+// Auto-load on startup - REQUIRE LOGIN
 if (authToken) {
     loadFromServer();
     updateUserUI();
+    document.getElementById('appContainer').style.display = 'block';
+    document.getElementById('landingPage').style.display = 'none';
 } else {
     updateUserUI();
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('landingPage').style.display = 'block';
 }
 
 // Export CSV
@@ -977,7 +1023,46 @@ function exportCSV() {
     a.download = 'surgical_case_log.csv';
     a.click();
 }
+// Landing page login/register
+async function doLandingLogin() {
+    const email = document.getElementById('landingEmail').value;
+    const password = document.getElementById('landingPassword').value;
+    if (!email || !password) return alert('Email and password required');
+    try {
+        const result = await api('/login', 'POST', {email, password});
+        if (result.error) return alert(result.error);
+        authToken = result.token;
+        currentUser = {name: result.name, email: result.email};
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateUserUI();
+        document.getElementById('appContainer').style.display = 'block';
+        document.getElementById('landingPage').style.display = 'none';
+        loadFromServer();
+    } catch(e) { alert('Login failed. Check your email and password.'); }
+}
+
+async function doLandingRegister() {
+    const name = document.getElementById('landingName').value;
+    const email = document.getElementById('landingRegEmail').value;
+    const password = document.getElementById('landingRegPassword').value;
+    if (!email || !password) return alert('Email and password required');
+    if (password.length < 6) return alert('Password must be at least 6 characters');
+    try {
+        const result = await api('/register', 'POST', {email, password, name});
+        if (result.error) return alert(result.error);
+        authToken = result.token;
+        currentUser = {name: result.name, email: result.email};
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateUserUI();
+        document.getElementById('appContainer').style.display = 'block';
+        document.getElementById('landingPage').style.display = 'none';
+        syncLocalToServer();
+    } catch(e) { alert('Registration failed. Try a different email.'); }
+}
 </script>
 
+</div><!-- close appContainer -->
 </body>
 </html>
