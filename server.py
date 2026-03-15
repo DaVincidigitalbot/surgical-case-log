@@ -71,6 +71,24 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id);
         CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date);
     ''')
+    
+    # Migration: add columns if they don't exist
+    try:
+        conn.execute('ALTER TABLE users ADD COLUMN plan TEXT DEFAULT "trial"')
+    except:
+        pass
+    try:
+        conn.execute('ALTER TABLE users ADD COLUMN license_key TEXT')
+    except:
+        pass
+    try:
+        conn.execute('ALTER TABLE users ADD COLUMN plan_expires_at TEXT')
+    except:
+        pass
+    try:
+        conn.execute('ALTER TABLE cases ADD COLUMN diagnosis TEXT')
+    except:
+        pass
     conn.commit()
     conn.close()
 
