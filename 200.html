@@ -259,7 +259,6 @@
     <h1>⚕️ Surgical <span>Case Log</span></h1>
     <div class="header-actions">
         <button onclick="exportCSV()">📥 Export CSV</button>
-        <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
         <button class="primary" onclick="showSection('add')">+ Log Case</button>
     </div>
 </div>
@@ -270,24 +269,6 @@
     <div class="tab" onclick="showSection('add')">➕ Add Case</div>
     <div class="tab" onclick="showSection('cpt')">📖 CPT Codes</div>
     <div class="tab" onclick="showSection('acgme')">🎯 ACGME</div>
-</div>
-
-<!-- Auth Modal -->
-<div id="authModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;justify-content:center;align-items:center;">
-    <div style="background:#1a2744;border-radius:12px;padding:30px;width:90%;max-width:400px;border:1px solid #2a3a5c;">
-        <h2 style="color:#2E8B8B;margin-bottom:20px;">🔑 Sign In / Register</h2>
-        <p style="color:#888;font-size:13px;margin-bottom:15px;">Create an account to save your cases to the cloud. Your data syncs across all devices.</p>
-        <div style="display:flex;flex-direction:column;gap:12px;">
-            <input type="text" id="authName" placeholder="Your name (optional)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
-            <input type="email" id="authEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
-            <input type="password" id="authPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
-            <div style="display:flex;gap:10px;">
-                <button class="btn btn-primary" style="flex:1" onclick="doLogin()">Log In</button>
-                <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Register</button>
-            </div>
-            <button class="btn" style="background:#2a3a5c;color:#888;" onclick="hideAuth()">Continue without account</button>
-        </div>
-    </div>
 </div>
 
 <div class="content">
@@ -571,10 +552,6 @@ function addCase(e) {
     };
     cases.unshift(newCase);
     saveCases();
-    // Sync to server
-    serverAddCase(newCase).then(serverId => {
-        if (serverId) { newCase.serverId = serverId; saveCases(); }
-    });
     document.getElementById('caseForm').reset();
     document.getElementById('caseDate').valueAsDate = new Date();
     updateDashboard();
@@ -583,8 +560,6 @@ function addCase(e) {
 
 function deleteCase(id) {
     if (confirm('Delete this case?')) {
-        const theCase = cases.find(c => c.id === id);
-        if (theCase && theCase.serverId) serverDeleteCase(theCase.serverId);
         cases = cases.filter(c => c.id !== id);
         saveCases();
         updateDashboard();
@@ -750,136 +725,6 @@ function updateMilestone(idx, val) {
     milestoneOverrides[idx] = parseInt(val) || 0;
     localStorage.setItem('milestoneOverrides', JSON.stringify(milestoneOverrides));
     renderMilestones();
-}
-
-// ============ SERVER SYNC ============
-const API = window.location.origin + '/api';
-let authToken = localStorage.getItem('authToken');
-let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-
-async function api(endpoint, method='GET', body=null) {
-    const opts = { method, headers: {'Content-Type':'application/json'} };
-    if (authToken) opts.headers['Authorization'] = 'Bearer ' + authToken;
-    if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(API + endpoint, opts);
-    if (r.status === 401) { logout(); return null; }
-    return r.json();
-}
-
-function showAuth() {
-    document.getElementById('authModal').style.display = 'flex';
-}
-
-function hideAuth() {
-    document.getElementById('authModal').style.display = 'none';
-}
-
-async function doRegister() {
-    const email = document.getElementById('authEmail').value;
-    const password = document.getElementById('authPassword').value;
-    const name = document.getElementById('authName').value;
-    if (!email || !password) return alert('Email and password required');
-    try {
-        const result = await api('/register', 'POST', {email, password, name});
-        if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        hideAuth();
-        updateUserUI();
-        syncLocalToServer();
-    } catch(e) { alert('Registration failed'); }
-}
-
-async function doLogin() {
-    const email = document.getElementById('authEmail').value;
-    const password = document.getElementById('authPassword').value;
-    if (!email || !password) return alert('Email and password required');
-    try {
-        const result = await api('/login', 'POST', {email, password});
-        if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        hideAuth();
-        updateUserUI();
-        loadFromServer();
-    } catch(e) { alert('Login failed'); }
-}
-
-function logout() {
-    authToken = null;
-    currentUser = null;
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('currentUser');
-    updateUserUI();
-}
-
-function updateUserUI() {
-    const btn = document.getElementById('userBtn');
-    if (currentUser) {
-        btn.textContent = '👤 ' + (currentUser.name || currentUser.email);
-        btn.onclick = () => { if(confirm('Log out?')) logout(); };
-    } else {
-        btn.textContent = '🔑 Sign In';
-        btn.onclick = showAuth;
-    }
-}
-
-async function syncLocalToServer() {
-    if (!authToken) return;
-    for (const c of cases) {
-        if (!c.serverId) {
-            try {
-                const result = await api('/cases', 'POST', c);
-                if (result && result.id) c.serverId = result.id;
-            } catch(e) {}
-        }
-    }
-    saveCases();
-}
-
-async function loadFromServer() {
-    if (!authToken) return;
-    try {
-        const serverCases = await api('/cases');
-        if (!serverCases || serverCases.error) return;
-        cases = serverCases.map(c => ({
-            id: c.id, serverId: c.id,
-            date: c.date, age: c.age, sex: c.sex,
-            rotation: c.rotation, procedure: c.procedure_name,
-            cpt: c.cpt_code, role: c.role, approach: c.approach,
-            attending: c.attending, complications: c.complications,
-            ebl: c.ebl, orTime: c.or_time, notes: c.notes
-        }));
-        saveCases();
-        updateDashboard();
-        renderCases();
-    } catch(e) { console.error('Load error:', e); }
-}
-
-async function serverAddCase(caseData) {
-    if (!authToken) return;
-    try {
-        const result = await api('/cases', 'POST', caseData);
-        if (result && result.id) return result.id;
-    } catch(e) {}
-    return null;
-}
-
-async function serverDeleteCase(serverId) {
-    if (!authToken || !serverId) return;
-    try { await api('/cases/' + serverId, 'DELETE'); } catch(e) {}
-}
-
-// Auto-load on startup
-if (authToken) {
-    loadFromServer();
-    updateUserUI();
-} else {
-    updateUserUI();
 }
 
 // Export CSV
