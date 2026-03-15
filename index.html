@@ -280,8 +280,7 @@
                 <input type="text" id="landingName" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="email" id="landingRegEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="password" id="landingRegPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
-                <input type="text" id="landingLicenseKey" placeholder="Gumroad License Key" style="background:#0f1729;border:1px solid #D4A853;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
-                <p style="color:#888; font-size:12px;">License key is included in your Gumroad purchase email</p>
+                <p style="color:#888; font-size:12px;">Use the same email you purchased with on Gumroad</p>
                 <button class="btn btn-gold" style="padding:14px;font-size:16px;" onclick="doLandingRegister()">Create Account</button>
             </div>
         </div>
@@ -1043,6 +1042,42 @@ function exportCSV() {
     a.click();
 }
 // Landing page login/register
+async function doLandingRegister() {
+    const name = document.getElementById('landingName').value;
+    const email = document.getElementById('landingRegEmail').value;
+    const password = document.getElementById('landingRegPassword').value;
+    if (!email || !password) return alert('Email and password required');
+    if (password.length < 6) return alert('Password must be at least 6 characters');
+    try {
+        const result = await api('/register', 'POST', {email, password, name});
+        if (result.error) return alert(result.error);
+        authToken = result.token;
+        currentUser = {name: result.name, email: result.email};
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Auto-verify purchase by email
+        try {
+            const activation = await api('/activate', 'POST', {});
+            if (activation.success) {
+                currentUser.plan = activation.plan;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUserUI();
+                document.getElementById('appContainer').style.display = 'block';
+                document.getElementById('landingPage').style.display = 'none';
+                syncLocalToServer();
+            } else {
+                alert('No purchase found for ' + email + '. Please purchase at davincibot.gumroad.com first, then register with the same email.');
+                // Logout since they can't access
+                logout();
+            }
+        } catch(e) {
+            alert('No purchase found for ' + email + '. Please purchase at davincibot.gumroad.com first, then register with the same email.');
+            logout();
+        }
+    } catch(e) { alert('Registration failed. Try a different email.'); }
+}
+
 async function doLandingLogin() {
     const email = document.getElementById('landingEmail').value;
     const password = document.getElementById('landingPassword').value;
@@ -1054,43 +1089,29 @@ async function doLandingLogin() {
         currentUser = {name: result.name, email: result.email};
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        updateUserUI();
-        document.getElementById('appContainer').style.display = 'block';
-        document.getElementById('landingPage').style.display = 'none';
-        loadFromServer();
-    } catch(e) { alert('Login failed. Check your email and password.'); }
-}
-
-async function doLandingRegister() {
-    const name = document.getElementById('landingName').value;
-    const email = document.getElementById('landingRegEmail').value;
-    const password = document.getElementById('landingRegPassword').value;
-    const licenseKey = document.getElementById('landingLicenseKey').value.trim();
-    if (!email || !password) return alert('Email and password required');
-    if (password.length < 6) return alert('Password must be at least 6 characters');
-    if (!licenseKey) return alert('License key required. Purchase at davincibot.gumroad.com to get your key.');
-    try {
-        const result = await api('/register', 'POST', {email, password, name});
-        if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
         
-        // Activate license key
-        const activation = await api('/activate', 'POST', {license_key: licenseKey});
-        if (activation.error) {
-            alert('Account created but license key is invalid: ' + activation.error);
-        } else {
-            currentUser.plan = activation.plan;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        // Re-verify purchase on every login (catches cancellations)
+        try {
+            const activation = await api('/activate', 'POST', {});
+            if (activation.success) {
+                currentUser.plan = activation.plan;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+        } catch(e) {
+            // Check if plan already active from before
+            const planCheck = await api('/plan');
+            if (!planCheck.active) {
+                alert('Your subscription has expired. Please renew at davincibot.gumroad.com');
+                logout();
+                return;
+            }
         }
         
         updateUserUI();
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
-        syncLocalToServer();
-    } catch(e) { alert('Registration failed. Try a different email.'); }
+        loadFromServer();
+    } catch(e) { alert('Login failed. Check your email and password.'); }
 }
 </script>
 

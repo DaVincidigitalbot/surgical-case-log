@@ -177,50 +177,62 @@ def login():
 
 @app.route('/api/activate', methods=['POST'])
 @auth_required
-def activate_license():
-    """Verify a Gumroad license key and activate the user's plan."""
-    data = request.json
-    license_key = data.get('license_key', '').strip()
+def activate_by_email():
+    """Verify purchase by checking Gumroad sales for the user's email."""
+    import requests as req
     
-    if not license_key:
-        return jsonify({'error': 'License key required'}), 400
+    user_email = request.user['email']
     
-    # Check if key already used by another user
-    conn = get_db()
-    existing = conn.execute('SELECT id FROM users WHERE license_key = ? AND id != ?', 
-                           (license_key, request.user['id'])).fetchone()
-    if existing:
-        conn.close()
-        return jsonify({'error': 'This license key has already been used'}), 409
+    # Check Gumroad sales API for this email
+    GUMROAD_TOKEN = "X_X3q6Cw7bJuRkvmwKRGIwhN9Comr3wkjKkMXrv-ZFE"
     
-    # Verify with Gumroad API
     try:
-        import requests as req
-        r = req.post('https://api.gumroad.com/v2/licenses/verify', data={
-            'product_id': data.get('product_id', ''),
-            'license_key': license_key
-        }, timeout=10)
+        # Check all sales for matching email
+        r = req.get(f'https://api.gumroad.com/v2/sales?access_token={GUMROAD_TOKEN}&email={user_email}', timeout=15)
         
         if r.status_code == 200:
             result = r.json()
-            if result.get('success'):
-                purchase = result.get('purchase', {})
+            sales = result.get('sales', [])
+            
+            if not sales:
+                return jsonify({'error': 'No purchase found for this email. Please buy at davincibot.gumroad.com', 'needs_purchase': True}), 404
+            
+            # Find the most recent active sale
+            conn = get_db()
+            
+            for sale in sales:
+                if sale.get('refunded') or sale.get('disputed'):
+                    continue
                 
-                # Determine plan type based on product
                 # Check if subscription or one-time
-                is_subscription = purchase.get('subscription_id') is not None
+                is_subscription = sale.get('subscription_id') is not None
+                recurrence = sale.get('recurrence')
                 
-                if is_subscription:
-                    plan = 'monthly'
-                    expires = None  # Subscription managed by Gumroad
+                if is_subscription or recurrence:
+                    # Subscription - check if still active
+                    cancelled = sale.get('cancelled', False)
+                    ended = sale.get('ended', False)
+                    
+                    if not cancelled and not ended:
+                        plan = 'subscription'
+                        expires = None
+                    else:
+                        continue  # Skip cancelled subscriptions
                 else:
+                    # One-time purchase = 90-day access
                     plan = '90day'
-                    # Set expiration 90 days from now
                     from datetime import datetime, timedelta
-                    expires = (datetime.utcnow() + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
+                    # 90 days from purchase date
+                    purchase_date = sale.get('created_at', '')
+                    try:
+                        pd = datetime.fromisoformat(purchase_date.replace('Z', '+00:00'))
+                        expires = (pd + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
+                    except:
+                        expires = (datetime.utcnow() + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
                 
-                conn.execute('''UPDATE users SET plan = ?, license_key = ?, plan_expires_at = ? 
-                              WHERE id = ?''', (plan, license_key, expires, request.user['id']))
+                # Activate the user
+                conn.execute('''UPDATE users SET plan = ?, plan_expires_at = ? WHERE id = ?''',
+                           (plan, expires, request.user['id']))
                 conn.commit()
                 conn.close()
                 
@@ -228,16 +240,14 @@ def activate_license():
                     'success': True,
                     'plan': plan,
                     'plan_expires_at': expires,
-                    'message': f'License activated! Plan: {plan}'
+                    'message': f'Purchase verified! Plan: {plan}'
                 })
-            else:
-                conn.close()
-                return jsonify({'error': 'Invalid license key'}), 400
-        else:
+            
             conn.close()
-            return jsonify({'error': 'Could not verify license key'}), 400
+            return jsonify({'error': 'No active purchase found for this email.', 'needs_purchase': True}), 404
+        else:
+            return jsonify({'error': 'Could not verify purchase'}), 400
     except Exception as e:
-        conn.close()
         return jsonify({'error': f'Verification failed: {str(e)}'}), 500
 
 
