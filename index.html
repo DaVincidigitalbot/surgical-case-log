@@ -1018,8 +1018,8 @@ function logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
     updateUserUI();
-    document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('landingPage').style.display = 'block';
+    document.getElementById('appContainer').style.display = 'block';
+    document.getElementById('landingPage').style.display = 'none';
 }
 
 function updateUserUI() {
@@ -1087,8 +1087,8 @@ if (authToken) {
     document.getElementById('landingPage').style.display = 'none';
 } else {
     updateUserUI();
-    document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('landingPage').style.display = 'block';
+    document.getElementById('appContainer').style.display = 'block';
+    document.getElementById('landingPage').style.display = 'none';
 }
 
 // Export as Excel (.xlsx via CSV with Excel-compatible format)
