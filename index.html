@@ -312,7 +312,8 @@
 <div class="header">
     <h1>⚕️ Surgical <span>Case Log</span></h1>
     <div class="header-actions">
-        <button onclick="exportCSV()">📥 Export CSV</button>
+        <button onclick="exportExcel()">📥 Excel</button>
+        <button onclick="exportPDF()">📄 PDF</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
         <button class="primary" onclick="showSection('add')">+ Log Case</button>
     </div>
@@ -1029,17 +1030,129 @@ if (authToken) {
     document.getElementById('landingPage').style.display = 'block';
 }
 
-// Export CSV
-function exportCSV() {
+// Export as Excel (.xlsx via CSV with Excel-compatible format)
+function exportExcel() {
     if (cases.length === 0) { alert('No cases to export'); return; }
-    const headers = ['Date','Age','Sex','Rotation','Procedure','CPT','Role','Approach','Attending','Complications','EBL','OR Time','Notes'];
-    const rows = cases.map(c => [c.date,c.age,c.sex,c.rotation,c.procedure,c.cpt,c.role,c.approach,c.attending,c.complications,c.ebl,c.orTime,c.notes].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], {type:'text/csv'});
+    const headers = ['Case #','Date','Age','Sex','Rotation','Procedure','CPT Code','Role','Approach','Attending','Complications','EBL (mL)','OR Time (min)','Notes'];
+    const rows = cases.map((c, i) => [
+        cases.length - i, c.date, c.age, c.sex, c.rotation, c.procedure, c.cpt, 
+        c.role, c.approach, c.attending, c.complications, c.ebl, c.orTime, c.notes
+    ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+    
+    // Add BOM for Excel to recognize UTF-8
+    const bom = '\uFEFF';
+    const csv = bom + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], {type:'application/vnd.ms-excel;charset=utf-8'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'surgical_case_log.csv';
+    a.download = 'Surgical_Case_Log.xlsx';
     a.click();
+}
+
+// Export as PDF Report
+function exportPDF() {
+    if (cases.length === 0) { alert('No cases to export'); return; }
+    
+    // Calculate stats
+    const total = cases.length;
+    const primary = cases.filter(c => c.role === 'Primary Surgeon').length;
+    const assist = cases.filter(c => c.role === 'First Assist').length;
+    const comps = cases.filter(c => c.complications && c.complications !== 'None').length;
+    const compRate = total > 0 ? ((comps/total)*100).toFixed(1) : 0;
+    const orTimes = cases.filter(c => c.orTime).map(c => parseInt(c.orTime));
+    const avgOR = orTimes.length > 0 ? Math.round(orTimes.reduce((a,b)=>a+b,0)/orTimes.length) : 0;
+    const lap = cases.filter(c => c.approach === 'Laparoscopic').length;
+    const robotic = cases.filter(c => c.approach === 'Robotic').length;
+    const openCases = cases.filter(c => c.approach === 'Open').length;
+    
+    // Rotation breakdown
+    const rotations = {};
+    cases.forEach(c => { rotations[c.rotation] = (rotations[c.rotation]||0) + 1; });
+    
+    const userName = currentUser ? (currentUser.name || currentUser.email) : 'Surgical Resident';
+    const today = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+    
+    // Build printable HTML
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Surgical Case Log Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; color: #333; padding: 40px; max-width: 1000px; margin: 0 auto; }
+        h1 { font-size: 24px; color: #1B2A4A; border-bottom: 3px solid #2E8B8B; padding-bottom: 10px; margin-bottom: 5px; }
+        h2 { font-size: 18px; color: #1B2A4A; margin-top: 25px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #ddd; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: #f5f5f5; border-radius: 8px; padding: 15px; text-align: center; }
+        .stat-box .number { font-size: 28px; font-weight: 700; color: #2E8B8B; }
+        .stat-box .label { font-size: 11px; color: #888; text-transform: uppercase; margin-top: 3px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th { background: #1B2A4A; color: white; padding: 8px 6px; text-align: left; font-size: 11px; text-transform: uppercase; }
+        td { padding: 6px; border-bottom: 1px solid #eee; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .rotation-bar { display: flex; align-items: center; margin: 4px 0; }
+        .rotation-name { width: 150px; font-size: 13px; }
+        .rotation-fill { height: 18px; background: #2E8B8B; border-radius: 4px; display: flex; align-items: center; padding-left: 6px; color: white; font-size: 11px; font-weight: 600; }
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; color: #888; font-size: 11px; text-align: center; }
+        @media print { body { padding: 20px; } .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="no-print" onclick="window.print()" style="float:right; padding:10px 20px; background:#2E8B8B; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Print / Save PDF</button>
+    
+    <h1>Surgical Case Log Report</h1>
+    <p class="subtitle">${userName} | Generated ${today} | ${total} Total Cases</p>
+    
+    <h2>Summary Statistics</h2>
+    <div class="stats-grid">
+        <div class="stat-box"><div class="number">${total}</div><div class="label">Total Cases</div></div>
+        <div class="stat-box"><div class="number">${primary}</div><div class="label">Primary Surgeon</div></div>
+        <div class="stat-box"><div class="number">${assist}</div><div class="label">First Assist</div></div>
+        <div class="stat-box"><div class="number">${compRate}%</div><div class="label">Complication Rate</div></div>
+        <div class="stat-box"><div class="number">${avgOR}</div><div class="label">Avg OR Time (min)</div></div>
+        <div class="stat-box"><div class="number">${lap}</div><div class="label">Laparoscopic</div></div>
+        <div class="stat-box"><div class="number">${robotic}</div><div class="label">Robotic</div></div>
+        <div class="stat-box"><div class="number">${openCases}</div><div class="label">Open</div></div>
+    </div>
+    
+    <h2>Cases by Rotation</h2>
+    ${Object.entries(rotations).sort((a,b) => b[1]-a[1]).map(([rot, count]) => 
+        `<div class="rotation-bar">
+            <span class="rotation-name">${rot}</span>
+            <div class="rotation-fill" style="width:${Math.max((count/total)*400, 30)}px">${count}</div>
+            <span style="margin-left:8px;color:#888;font-size:12px">${Math.round((count/total)*100)}%</span>
+        </div>`
+    ).join('')}
+    
+    <h2>Complete Case Log</h2>
+    <table>
+        <tr>
+            <th>#</th><th>Date</th><th>Procedure</th><th>CPT</th><th>Role</th>
+            <th>Approach</th><th>Rotation</th><th>Attending</th><th>Complications</th><th>OR Time</th>
+        </tr>
+        ${cases.map((c, i) => `<tr>
+            <td>${cases.length - i}</td>
+            <td>${c.date || ''}</td>
+            <td>${c.procedure || ''}</td>
+            <td>${c.cpt || ''}</td>
+            <td>${c.role || ''}</td>
+            <td>${c.approach || ''}</td>
+            <td>${c.rotation || ''}</td>
+            <td>${c.attending || ''}</td>
+            <td>${c.complications !== 'None' ? (c.complications || '') : '-'}</td>
+            <td>${c.orTime ? c.orTime + 'm' : '-'}</td>
+        </tr>`).join('')}
+    </table>
+    
+    <div class="footer">
+        Generated by Surgical Case Log Pro | surgicalcaselog.com | ${today}
+    </div>
+</body>
+</html>`);
+    printWindow.document.close();
 }
 // Landing page login/register
 async function doLandingRegister() {
