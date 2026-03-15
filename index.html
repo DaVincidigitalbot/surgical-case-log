@@ -2,8 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surgical Case Log System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Surgical Case Log Pro</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1B2A4A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Case Log">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    
+    <!-- SEO -->
+    <meta name="description" content="Log surgical cases from your phone in 30 seconds. Built by a practicing surgeon. ACGME milestone tracking, CPT codes, auto-dashboard, Excel + PDF export.">
+    <meta name="keywords" content="surgical case log, surgery resident, ACGME, case tracking, CPT codes, operative log">
+    
+    <!-- Open Graph (social sharing) -->
+    <meta property="og:title" content="Surgical Case Log Pro">
+    <meta property="og:description" content="Log surgical cases from your phone in 30 seconds. Built by a practicing surgeon.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://surgicalcaselog.com">
+    <meta property="og:image" content="https://surgicalcaselog.com/icon-512.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -1232,6 +1251,62 @@ async function doLandingLogin() {
 }
 </script>
 
+<!-- Install App Banner -->
+<div id="installBanner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:linear-gradient(135deg, #1B2A4A, #243656); padding:15px 20px; z-index:300; border-top:2px solid #2E8B8B; box-shadow:0 -4px 20px rgba(0,0,0,0.3);">
+    <div style="display:flex; align-items:center; justify-content:space-between; max-width:600px; margin:0 auto;">
+        <div>
+            <p style="color:#FFFFFF; font-size:15px; font-weight:600; margin-bottom:2px;">Install Case Log App</p>
+            <p style="color:#888; font-size:12px;">Add to home screen for quick access</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="installApp()" style="background:#2E8B8B; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Install</button>
+            <button onclick="dismissInstall()" style="background:none; border:1px solid #555; color:#888; padding:10px 14px; border-radius:8px; font-size:13px; cursor:pointer;">Later</button>
+        </div>
+    </div>
+</div>
+
 </div><!-- close appContainer -->
+
+<script>
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.log('SW failed:', err));
+}
+
+// PWA Install Prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show install banner after login
+    if (authToken) {
+        document.getElementById('installBanner').style.display = 'block';
+    }
+});
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(choice => {
+            if (choice.outcome === 'accepted') {
+                console.log('App installed');
+            }
+            deferredPrompt = null;
+            document.getElementById('installBanner').style.display = 'none';
+        });
+    } else {
+        // iOS fallback
+        alert('To install: tap the Share button in your browser, then "Add to Home Screen"');
+        document.getElementById('installBanner').style.display = 'none';
+    }
+}
+
+function dismissInstall() {
+    document.getElementById('installBanner').style.display = 'none';
+    localStorage.setItem('installDismissed', 'true');
+}
+</script>
 </body>
 </html>

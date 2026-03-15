@@ -1,0 +1,27 @@
+{
+  "name": "Surgical Case Log Pro",
+  "short_name": "Case Log",
+  "description": "Log surgical cases from your phone. Built by a practicing surgeon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1729",
+  "theme_color": "#1B2A4A",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "productivity", "education"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
