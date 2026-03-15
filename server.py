@@ -32,6 +32,9 @@ def init_db():
             password_hash TEXT NOT NULL,
             name TEXT,
             token TEXT UNIQUE,
+            plan TEXT DEFAULT 'trial',
+            license_key TEXT,
+            plan_expires_at TEXT,
             created_at TEXT DEFAULT (datetime('now'))
         );
         
@@ -101,6 +104,24 @@ def auth_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def plan_required(f):
+    """Require an active plan (not expired) to access."""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        from datetime import datetime
+        plan = request.user['plan'] or 'trial'
+        expires = request.user['plan_expires_at']
+        
+        if plan == '90day' and expires:
+            if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
+                return jsonify({'error': 'Your 90-day access has expired. Please renew.', 'expired': True}), 403
+        elif plan == 'expired':
+            return jsonify({'error': 'Your access has expired. Please renew.', 'expired': True}), 403
+        
+        return f(*args, **kwargs)
+    return decorated
+
 # ============ AUTH ============
 
 @app.route('/api/register', methods=['POST'])
@@ -129,7 +150,7 @@ def register():
     conn.commit()
     conn.close()
     
-    return jsonify({'token': token, 'name': name, 'email': email})
+    return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'plan_expires_at': None})
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -150,7 +171,96 @@ def login():
     conn.commit()
     conn.close()
     
-    return jsonify({'token': token, 'name': user['name'], 'email': user['email']})
+    return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'plan_expires_at': user['plan_expires_at']})
+
+# ============ LICENSE VERIFICATION ============
+
+@app.route('/api/activate', methods=['POST'])
+@auth_required
+def activate_license():
+    """Verify a Gumroad license key and activate the user's plan."""
+    data = request.json
+    license_key = data.get('license_key', '').strip()
+    
+    if not license_key:
+        return jsonify({'error': 'License key required'}), 400
+    
+    # Check if key already used by another user
+    conn = get_db()
+    existing = conn.execute('SELECT id FROM users WHERE license_key = ? AND id != ?', 
+                           (license_key, request.user['id'])).fetchone()
+    if existing:
+        conn.close()
+        return jsonify({'error': 'This license key has already been used'}), 409
+    
+    # Verify with Gumroad API
+    try:
+        import requests as req
+        r = req.post('https://api.gumroad.com/v2/licenses/verify', data={
+            'product_id': data.get('product_id', ''),
+            'license_key': license_key
+        }, timeout=10)
+        
+        if r.status_code == 200:
+            result = r.json()
+            if result.get('success'):
+                purchase = result.get('purchase', {})
+                
+                # Determine plan type based on product
+                # Check if subscription or one-time
+                is_subscription = purchase.get('subscription_id') is not None
+                
+                if is_subscription:
+                    plan = 'monthly'
+                    expires = None  # Subscription managed by Gumroad
+                else:
+                    plan = '90day'
+                    # Set expiration 90 days from now
+                    from datetime import datetime, timedelta
+                    expires = (datetime.utcnow() + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
+                
+                conn.execute('''UPDATE users SET plan = ?, license_key = ?, plan_expires_at = ? 
+                              WHERE id = ?''', (plan, license_key, expires, request.user['id']))
+                conn.commit()
+                conn.close()
+                
+                return jsonify({
+                    'success': True,
+                    'plan': plan,
+                    'plan_expires_at': expires,
+                    'message': f'License activated! Plan: {plan}'
+                })
+            else:
+                conn.close()
+                return jsonify({'error': 'Invalid license key'}), 400
+        else:
+            conn.close()
+            return jsonify({'error': 'Could not verify license key'}), 400
+    except Exception as e:
+        conn.close()
+        return jsonify({'error': f'Verification failed: {str(e)}'}), 500
+
+
+@app.route('/api/plan', methods=['GET'])
+@auth_required
+def get_plan():
+    """Check user's current plan status."""
+    from datetime import datetime
+    
+    plan = request.user['plan'] or 'trial'
+    expires = request.user['plan_expires_at']
+    
+    # Check if 90-day plan expired
+    if plan == '90day' and expires:
+        if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
+            plan = 'expired'
+    
+    return jsonify({
+        'plan': plan,
+        'plan_expires_at': expires,
+        'active': plan in ('monthly', '90day', 'trial'),
+    })
+
 
 # ============ CASES ============
 

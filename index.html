@@ -280,8 +280,27 @@
                 <input type="text" id="landingName" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="email" id="landingRegEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="password" id="landingRegPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="text" id="landingLicenseKey" placeholder="Gumroad License Key" style="background:#0f1729;border:1px solid #D4A853;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <p style="color:#888; font-size:12px;">License key is included in your Gumroad purchase email</p>
                 <button class="btn btn-gold" style="padding:14px;font-size:16px;" onclick="doLandingRegister()">Create Account</button>
             </div>
+        </div>
+
+        <div style="background:#1a2744; border-radius:12px; padding:20px; border:1px solid #2a3a5c; margin-bottom:20px;">
+            <h3 style="color:#FFFFFF; font-size:16px; margin-bottom:15px; text-align:center;">Choose Your Plan</h3>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:140px; background:#243656; border-radius:8px; padding:15px; text-align:center; border:1px solid #2a3a5c;">
+                    <p style="color:#D4A853; font-weight:700; font-size:22px;">$19.99</p>
+                    <p style="color:#AAAAAA; font-size:13px;">90-Day Access</p>
+                    <p style="color:#666; font-size:11px; margin-top:5px;">Perfect for rotations</p>
+                </div>
+                <div style="flex:1; min-width:140px; background:#243656; border-radius:8px; padding:15px; text-align:center; border:2px solid #2E8B8B;">
+                    <p style="color:#2E8B8B; font-weight:700; font-size:22px;">$4.99<span style="font-size:14px">/mo</span></p>
+                    <p style="color:#AAAAAA; font-size:13px;">Unlimited Access</p>
+                    <p style="color:#666; font-size:11px; margin-top:5px;">Best for residents</p>
+                </div>
+            </div>
+            <a href="https://davincibot.gumroad.com" target="_blank" style="display:block; text-align:center; margin-top:15px; color:#2E8B8B; font-size:14px; text-decoration:none;">Purchase at davincibot.gumroad.com</a>
         </div>
 
         <div style="color:#666; font-size:13px; margin-top:20px;">
@@ -1046,8 +1065,10 @@ async function doLandingRegister() {
     const name = document.getElementById('landingName').value;
     const email = document.getElementById('landingRegEmail').value;
     const password = document.getElementById('landingRegPassword').value;
+    const licenseKey = document.getElementById('landingLicenseKey').value.trim();
     if (!email || !password) return alert('Email and password required');
     if (password.length < 6) return alert('Password must be at least 6 characters');
+    if (!licenseKey) return alert('License key required. Purchase at davincibot.gumroad.com to get your key.');
     try {
         const result = await api('/register', 'POST', {email, password, name});
         if (result.error) return alert(result.error);
@@ -1055,6 +1076,16 @@ async function doLandingRegister() {
         currentUser = {name: result.name, email: result.email};
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Activate license key
+        const activation = await api('/activate', 'POST', {license_key: licenseKey});
+        if (activation.error) {
+            alert('Account created but license key is invalid: ' + activation.error);
+        } else {
+            currentUser.plan = activation.plan;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+        
         updateUserUI();
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
