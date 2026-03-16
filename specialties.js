@@ -1,5 +1,148 @@
 // Specialty data with top diagnoses and procedures
 const SPECIALTIES = {
+    "CVT Surgery": {
+        diagnoses: [
+            "Coronary Artery Disease", "Aortic Stenosis", "Aortic Regurgitation",
+            "Mitral Stenosis", "Mitral Regurgitation", "Tricuspid Regurgitation",
+            "Aortic Aneurysm - Thoracic", "Aortic Aneurysm - Abdominal", "Aortic Dissection",
+            "Atrial Fibrillation (Surgical)", "Endocarditis (Surgical)",
+            "Cardiac Tamponade", "Pericardial Effusion",
+            "Lung Cancer", "Pleural Effusion", "Empyema", "Pneumothorax",
+            "Esophageal Cancer", "Mediastinal Mass", "Thymoma",
+            "Heart Failure (Surgical Candidate)", "Cardiomyopathy",
+            "Congenital Heart Disease - Adult", "Patent Foramen Ovale",
+            "Pulmonary Embolism (Surgical)", "Thoracic Outlet Syndrome"
+        ],
+        procedures: [
+            "Coronary Artery Bypass Graft (CABG)", "CABG - Off Pump",
+            "Aortic Valve Replacement (AVR)", "Mitral Valve Repair",
+            "Mitral Valve Replacement", "Tricuspid Valve Repair",
+            "TAVR (Transcatheter Aortic Valve)", "Aortic Root Replacement (Bentall)",
+            "Ascending Aortic Repair", "Aortic Arch Repair",
+            "Thoracic Endovascular Aortic Repair (TEVAR)",
+            "LVAD Implantation", "Heart Transplant",
+            "ECMO Cannulation", "ECMO Decannulation",
+            "Pericardiectomy", "Pericardial Window",
+            "Lobectomy", "Pneumonectomy", "Wedge Resection",
+            "VATS Lobectomy", "VATS Wedge Resection",
+            "Esophagectomy", "Mediastinoscopy",
+            "Chest Tube Insertion", "Thoracotomy",
+            "Sternotomy", "Cardiopulmonary Bypass",
+            "Intra-Aortic Balloon Pump", "Temporary Pacemaker Placement"
+        ]
+    },
+    "Vascular Surgery": {
+        diagnoses: [
+            "Peripheral Artery Disease", "Critical Limb Ischemia", "Acute Limb Ischemia",
+            "Abdominal Aortic Aneurysm", "Iliac Aneurysm", "Popliteal Aneurysm",
+            "Carotid Stenosis", "Carotid Artery Disease",
+            "Deep Vein Thrombosis", "Pulmonary Embolism",
+            "Chronic Venous Insufficiency", "Varicose Veins",
+            "Renal Artery Stenosis", "Mesenteric Ischemia",
+            "Diabetic Foot Ulcer", "Non-Healing Wound - Vascular",
+            "AV Fistula Thrombosis", "AV Graft Infection",
+            "Pseudoaneurysm", "Arteriovenous Malformation",
+            "Thoracic Outlet Syndrome", "Subclavian Steal Syndrome",
+            "Aortoiliac Occlusive Disease", "Claudication",
+            "Gangrene", "Compartment Syndrome - Vascular"
+        ],
+        procedures: [
+            "Fem-Pop Bypass", "Fem-Fem Bypass", "Aortobifemoral Bypass",
+            "Carotid Endarterectomy (CEA)", "Carotid Stenting",
+            "EVAR (Endovascular Aneurysm Repair)", "Open AAA Repair",
+            "AV Fistula Creation", "AV Graft Placement", "AV Fistula Revision",
+            "Dialysis Catheter Placement", "Dialysis Catheter Removal",
+            "Embolectomy/Thrombectomy", "Mechanical Thrombectomy",
+            "Angioplasty", "Stent Placement - Peripheral",
+            "IVC Filter Placement", "IVC Filter Removal",
+            "Amputation (Below Knee)", "Amputation (Above Knee)",
+            "Amputation (Toe/Transmetatarsal)", "Wound Debridement - Vascular",
+            "Vein Stripping", "Sclerotherapy", "Endovenous Ablation",
+            "Fasciotomy", "Patch Angioplasty",
+            "Angiogram - Diagnostic", "Angiogram - Interventional"
+        ]
+    },
+    "Orthopedic Surgery": {
+        diagnoses: [
+            "Hip Fracture", "Femur Fracture", "Tibia Fracture",
+            "Ankle Fracture", "Wrist Fracture (Distal Radius)", "Humerus Fracture",
+            "Clavicle Fracture", "Pelvic Fracture", "Vertebral Fracture",
+            "Open Fracture", "Pathologic Fracture",
+            "ACL Tear", "Meniscus Tear", "Rotator Cuff Tear",
+            "Labral Tear - Hip", "Labral Tear - Shoulder",
+            "Osteoarthritis - Hip", "Osteoarthritis - Knee",
+            "Osteoarthritis - Shoulder", "Rheumatoid Arthritis - Surgical",
+            "Carpal Tunnel Syndrome", "Trigger Finger", "Dupuytren Contracture",
+            "Ganglion Cyst", "DeQuervain Tenosynovitis",
+            "Herniated Disc - Lumbar", "Herniated Disc - Cervical",
+            "Spinal Stenosis", "Spondylolisthesis", "Scoliosis",
+            "Achilles Tendon Rupture", "Patellar Tendon Rupture",
+            "Dislocated Shoulder", "Dislocated Hip",
+            "Compartment Syndrome", "Osteomyelitis - Orthopedic",
+            "Bone Tumor", "Septic Arthritis",
+            "Plantar Fasciitis", "Bunion (Hallux Valgus)"
+        ],
+        procedures: [
+            "Total Hip Arthroplasty (THA)", "Total Knee Arthroplasty (TKA)",
+            "Total Shoulder Arthroplasty", "Reverse Total Shoulder",
+            "Hip Hemiarthroplasty", "Knee Arthroscopy",
+            "Shoulder Arthroscopy", "ACL Reconstruction",
+            "Rotator Cuff Repair", "Meniscectomy",
+            "ORIF - Hip", "ORIF - Femur", "ORIF - Tibia",
+            "ORIF - Ankle", "ORIF - Wrist", "ORIF - Humerus",
+            "Intramedullary Nail - Femur", "Intramedullary Nail - Tibia",
+            "External Fixation", "Closed Reduction & Casting",
+            "Carpal Tunnel Release", "Trigger Finger Release",
+            "Lumbar Discectomy", "Lumbar Laminectomy",
+            "Lumbar Fusion (PLIF/TLIF)", "Cervical Discectomy (ACDF)",
+            "Cervical Laminectomy", "Spinal Fusion - Posterior",
+            "Hardware Removal", "Amputation - Orthopedic",
+            "Achilles Tendon Repair", "Joint Aspiration",
+            "Joint Injection", "Fracture Reduction - Closed",
+            "Splinting/Casting", "Bone Biopsy",
+            "Fasciotomy", "Wound Debridement - Orthopedic"
+        ]
+    },
+    "Neurosurgery": {
+        diagnoses: [
+            "Brain Tumor - Primary (Glioma)", "Brain Tumor - Meningioma",
+            "Brain Metastasis", "Pituitary Adenoma",
+            "Subdural Hematoma - Acute", "Subdural Hematoma - Chronic",
+            "Epidural Hematoma", "Subarachnoid Hemorrhage",
+            "Intracerebral Hemorrhage", "Cerebral Aneurysm",
+            "Arteriovenous Malformation - Brain",
+            "Traumatic Brain Injury", "Skull Fracture",
+            "Hydrocephalus", "Normal Pressure Hydrocephalus",
+            "Chiari Malformation", "Spina Bifida",
+            "Herniated Disc - Lumbar (Surgical)", "Herniated Disc - Cervical (Surgical)",
+            "Spinal Stenosis (Surgical)", "Spinal Cord Tumor",
+            "Spinal Cord Injury", "Cauda Equina Syndrome",
+            "Trigeminal Neuralgia (Surgical)", "Carpal Tunnel (Surgical)",
+            "Ulnar Nerve Entrapment", "Peripheral Nerve Tumor",
+            "Epilepsy (Surgical Candidate)", "Movement Disorder (DBS Candidate)",
+            "Cervical Myelopathy", "Degenerative Disc Disease"
+        ],
+        procedures: [
+            "Craniotomy - Tumor Resection", "Craniotomy - Aneurysm Clipping",
+            "Craniotomy - Hematoma Evacuation", "Craniectomy (Decompressive)",
+            "Burr Hole Drainage", "Stereotactic Biopsy",
+            "VP Shunt Placement", "VP Shunt Revision",
+            "Endoscopic Third Ventriculostomy",
+            "Transsphenoidal Surgery (Pituitary)",
+            "Lumbar Discectomy (Neurosurgical)", "Lumbar Laminectomy",
+            "Lumbar Fusion", "Cervical Discectomy (ACDF)",
+            "Cervical Laminectomy", "Cervical Fusion - Posterior",
+            "Spinal Cord Decompression", "Spinal Tumor Resection",
+            "Deep Brain Stimulator (DBS) Placement",
+            "Vagus Nerve Stimulator Placement",
+            "Microvascular Decompression (Trigeminal Neuralgia)",
+            "Carpal Tunnel Release (Neurosurgical)",
+            "Ulnar Nerve Transposition", "Peripheral Nerve Repair",
+            "ICP Monitor Placement", "External Ventricular Drain (EVD)",
+            "Endovascular Coiling (Aneurysm)", "Flow Diverter Placement",
+            "Awake Craniotomy", "Chiari Decompression"
+        ]
+    },
     "General Surgery": {
         diagnoses: [
             "Acute Appendicitis", "Acute Cholecystitis", "Cholelithiasis", "Inguinal Hernia",

@@ -448,6 +448,10 @@
                         <select id="rotation" required onchange="updateDiagnosesAndProcedures()">
                             <option value="">Select specialty...</option>
                             <option>General Surgery</option>
+                            <option>CVT Surgery</option>
+                            <option>Vascular Surgery</option>
+                            <option>Orthopedic Surgery</option>
+                            <option>Neurosurgery</option>
                             <option>Internal Medicine</option>
                             <option>Family Medicine</option>
                             <option>Pediatrics</option>
@@ -689,7 +693,7 @@
 <script src="/codes.js"></script>
 <script>
 // Surgical vs Medical specialty detection
-const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine'];
+const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery'];
 const MEDICAL_SPECIALTIES = ['Internal Medicine', 'Family Medicine', 'Pediatrics', 'Psychiatry', 'Neurology', 'Nephrology', 'Cardiology'];
 const MIXED_SPECIALTIES = ['OB/GYN', 'Emergency Medicine']; // Show surgical fields but not required
 
@@ -913,9 +917,17 @@ function showDropdown(type) {
         return;
     }
     
-    dropdown.innerHTML = filtered.map(item => 
-        `<div class="dropdown-item" onclick="selectDropdownItem('${type}', '${item.replace(/'/g, "\\'")}')">${item}</div>`
-    ).join('');
+    dropdown.innerHTML = filtered.map(item => {
+        let display = item;
+        // Show CPT code next to procedures, ICD-10 next to diagnoses
+        if (type === 'procedure' && typeof PROCEDURE_TO_CPT !== 'undefined' && PROCEDURE_TO_CPT[item]) {
+            display = `${item} <span style="color:#2E8B8B;font-size:12px;margin-left:6px;">CPT: ${PROCEDURE_TO_CPT[item]}</span>`;
+        }
+        if (type === 'diagnosis' && typeof DIAGNOSIS_TO_ICD10 !== 'undefined' && DIAGNOSIS_TO_ICD10[item]) {
+            display = `${item} <span style="color:#2E8B8B;font-size:12px;margin-left:6px;">ICD: ${DIAGNOSIS_TO_ICD10[item]}</span>`;
+        }
+        return `<div class="dropdown-item" onclick="selectDropdownItem('${type}', '${item.replace(/'/g, "\\'")}')">${display}</div>`;
+    }).join('');
     
     dropdown.style.display = 'block';
 }
