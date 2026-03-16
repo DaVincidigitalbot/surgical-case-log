@@ -1291,9 +1291,19 @@ if (authToken) {
     document.getElementById('appContainer').style.display = 'block';
     document.getElementById('landingPage').style.display = 'none';
 } else {
-    updateUserUI();
-    document.getElementById('appContainer').style.display = 'block';
-    document.getElementById('landingPage').style.display = 'none';
+    // Check for admin demo mode
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === 'admin2026') {
+        // Admin demo access - show dashboard without login
+        updateUserUI();
+        document.getElementById('appContainer').style.display = 'block';
+        document.getElementById('landingPage').style.display = 'none';
+    } else {
+        // Normal visitors - show login
+        updateUserUI();
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('landingPage').style.display = 'block';
+    }
 }
 
 // Export as Excel (.xlsx via CSV with Excel-compatible format)
