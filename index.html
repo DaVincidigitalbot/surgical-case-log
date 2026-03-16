@@ -354,6 +354,7 @@
     <div class="header-actions">
         <button onclick="exportExcel()">📥 Excel</button>
         <button onclick="exportPDF()">📄 PDF</button>
+        <button onclick="exportForExxat()">🔄 Exxat</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
         <button class="primary" onclick="showSection('add')">+ Log Case</button>
     </div>
@@ -559,62 +560,97 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>CPT Code</label>
-                        <input type="text" id="cptCode" placeholder="47562">
+                        <label>Clinical Setting</label>
+                        <select id="clinicalSetting">
+                            <option value="">Select...</option>
+                            <option>Inpatient</option>
+                            <option>Outpatient Clinic</option>
+                            <option>Operating Room</option>
+                            <option>Emergency Department</option>
+                            <option>ICU</option>
+                            <option>Labor & Delivery</option>
+                            <option>Procedure Suite</option>
+                            <option>Telehealth</option>
+                            <option>Community/Home Visit</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Role</label>
+                        <label>ICD-10 Code</label>
+                        <div style="position:relative;">
+                            <input type="text" id="icd10Input" placeholder="Type diagnosis for ICD-10..." autocomplete="off" oninput="searchICD10()" onfocus="searchICD10()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="hidden" id="icd10Code">
+                            <div id="icd10Dropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Level of Participation</label>
                         <select id="role" required>
                             <option value="">Select...</option>
+                            <option>Observed</option>
+                            <option>Assisted</option>
+                            <option>Performed</option>
                             <option>Primary Surgeon</option>
                             <option>First Assist</option>
-                            <option>Second Assist</option>
-                            <option>Teaching Assist</option>
-                            <option>Observer</option>
+                            <option>Managed/Treated</option>
+                            <option>Evaluated/Assessed</option>
+                            <option>Counseled/Educated</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Approach</label>
-                        <select id="approach">
-                            <option value="">Select...</option>
-                            <option>Open</option>
-                            <option>Laparoscopic</option>
-                            <option>Robotic</option>
-                            <option>Endoscopic</option>
-                            <option>Hybrid</option>
-                            <option>Percutaneous</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Attending</label>
+                        <label>Attending/Preceptor</label>
                         <input type="text" id="attending" placeholder="Dr. Smith">
                     </div>
-                    <div class="form-group">
-                        <label>Complications</label>
-                        <select id="complications">
-                            <option>None</option>
-                            <option>SSI</option>
-                            <option>Bleeding</option>
-                            <option>DVT/PE</option>
-                            <option>Pneumonia</option>
-                            <option>Anastomotic Leak</option>
-                            <option>Return to OR</option>
-                            <option>Wound Dehiscence</option>
-                            <option>Ileus</option>
-                            <option>UTI</option>
-                            <option>MI</option>
-                            <option>Stroke</option>
-                            <option>Death</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>EBL (mL)</label>
-                        <input type="number" id="ebl" placeholder="50" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>OR Time (min)</label>
-                        <input type="number" id="orTime" placeholder="60" min="0">
+                    <!-- SURGICAL FIELDS - hidden for medical specialties -->
+                    <div id="surgicalFields" style="display:none; grid-column: 1 / -1;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Approach</label>
+                                <select id="approach">
+                                    <option value="">Select...</option>
+                                    <option>Open</option>
+                                    <option>Laparoscopic</option>
+                                    <option>Robotic</option>
+                                    <option>Endoscopic</option>
+                                    <option>Hybrid</option>
+                                    <option>Percutaneous</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Complications</label>
+                                <select id="complications">
+                                    <option>None</option>
+                                    <option>SSI</option>
+                                    <option>Bleeding</option>
+                                    <option>DVT/PE</option>
+                                    <option>Pneumonia</option>
+                                    <option>Anastomotic Leak</option>
+                                    <option>Return to OR</option>
+                                    <option>Wound Dehiscence</option>
+                                    <option>Ileus</option>
+                                    <option>UTI</option>
+                                    <option>MI</option>
+                                    <option>Stroke</option>
+                                    <option>Death</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>EBL (mL)</label>
+                                <input type="number" id="ebl" placeholder="50" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>OR Time (min)</label>
+                                <input type="number" id="orTime" placeholder="60" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>CPT Code</label>
+                                <input type="text" id="cptCode" placeholder="47562">
+                            </div>
+                            <div class="form-group">
+                                <label>Case Duration (min)</label>
+                                <input type="number" id="caseDuration" placeholder="90" min="0">
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group form-full">
                         <label>Notes</label>
@@ -647,12 +683,121 @@
 
 <script src="/specialties.js"></script>
 <script>
+// Surgical vs Medical specialty detection
+const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine'];
+const MEDICAL_SPECIALTIES = ['Internal Medicine', 'Family Medicine', 'Pediatrics', 'Psychiatry', 'Neurology', 'Nephrology', 'Cardiology'];
+const MIXED_SPECIALTIES = ['OB/GYN', 'Emergency Medicine']; // Show surgical fields but not required
+
+function updateFieldVisibility(specialty) {
+    const surgicalFields = document.getElementById('surgicalFields');
+    if (SURGICAL_SPECIALTIES.includes(specialty) || MIXED_SPECIALTIES.includes(specialty)) {
+        surgicalFields.style.display = 'block';
+    } else {
+        surgicalFields.style.display = 'none';
+        // Clear surgical fields when hidden
+        document.getElementById('approach').value = '';
+        document.getElementById('complications').value = 'None';
+        document.getElementById('ebl').value = '';
+        document.getElementById('orTime').value = '';
+        document.getElementById('cptCode').value = '';
+        document.getElementById('caseDuration').value = '';
+    }
+}
+
+// ICD-10 search (common codes)
+const ICD10_COMMON = [
+    {code:"I10", desc:"Essential (primary) hypertension"},
+    {code:"E11.9", desc:"Type 2 diabetes mellitus without complications"},
+    {code:"E11.65", desc:"Type 2 diabetes with hyperglycemia"},
+    {code:"J18.9", desc:"Pneumonia, unspecified organism"},
+    {code:"J44.1", desc:"COPD with acute exacerbation"},
+    {code:"J45.21", desc:"Mild intermittent asthma with acute exacerbation"},
+    {code:"N17.9", desc:"Acute kidney failure, unspecified"},
+    {code:"N39.0", desc:"Urinary tract infection, site not specified"},
+    {code:"I50.9", desc:"Heart failure, unspecified"},
+    {code:"I48.91", desc:"Unspecified atrial fibrillation"},
+    {code:"I21.9", desc:"Acute myocardial infarction, unspecified"},
+    {code:"I25.10", desc:"Atherosclerotic heart disease of native coronary artery"},
+    {code:"A41.9", desc:"Sepsis, unspecified organism"},
+    {code:"R65.20", desc:"Severe sepsis without septic shock"},
+    {code:"R65.21", desc:"Severe sepsis with septic shock"},
+    {code:"K35.80", desc:"Unspecified acute appendicitis"},
+    {code:"K80.10", desc:"Calculus of gallbladder with chronic cholecystitis without obstruction"},
+    {code:"K80.00", desc:"Calculus of gallbladder with acute cholecystitis without obstruction"},
+    {code:"K56.60", desc:"Unspecified intestinal obstruction"},
+    {code:"K57.32", desc:"Diverticulitis of large intestine without perforation or abscess"},
+    {code:"K92.2", desc:"GI hemorrhage, unspecified"},
+    {code:"K85.90", desc:"Acute pancreatitis, unspecified"},
+    {code:"K43.9", desc:"Ventral hernia without obstruction or gangrene"},
+    {code:"K40.90", desc:"Unilateral inguinal hernia without obstruction or gangrene"},
+    {code:"C18.9", desc:"Malignant neoplasm of colon, unspecified"},
+    {code:"C50.919", desc:"Malignant neoplasm of unspecified site of unspecified female breast"},
+    {code:"E05.90", desc:"Thyrotoxicosis, unspecified without thyrotoxic crisis"},
+    {code:"E03.9", desc:"Hypothyroidism, unspecified"},
+    {code:"E21.0", desc:"Primary hyperparathyroidism"},
+    {code:"C73", desc:"Malignant neoplasm of thyroid gland"},
+    {code:"I26.99", desc:"Other pulmonary embolism without acute cor pulmonale"},
+    {code:"I82.409", desc:"Acute embolism and thrombosis of unspecified deep veins of lower extremity"},
+    {code:"J96.00", desc:"Acute respiratory failure, unspecified"},
+    {code:"J80", desc:"Acute respiratory distress syndrome"},
+    {code:"G40.909", desc:"Epilepsy, unspecified, not intractable"},
+    {code:"G45.9", desc:"Transient cerebral ischemic attack, unspecified"},
+    {code:"I63.9", desc:"Cerebral infarction, unspecified"},
+    {code:"F32.9", desc:"Major depressive disorder, single episode, unspecified"},
+    {code:"F41.1", desc:"Generalized anxiety disorder"},
+    {code:"F10.239", desc:"Alcohol dependence with withdrawal, unspecified"},
+    {code:"E87.5", desc:"Hyperkalemia"},
+    {code:"E87.1", desc:"Hypo-osmolality and hyponatremia"},
+    {code:"E86.0", desc:"Dehydration"},
+    {code:"D64.9", desc:"Anemia, unspecified"},
+    {code:"D69.6", desc:"Thrombocytopenia, unspecified"},
+    {code:"S72.001A", desc:"Fracture of unspecified part of neck of right femur, initial"},
+    {code:"S06.0X0A", desc:"Concussion without loss of consciousness, initial"},
+    {code:"T81.4XXA", desc:"Infection following a procedure, initial encounter"},
+    {code:"Z51.11", desc:"Encounter for antineoplastic chemotherapy"},
+];
+
+function searchICD10() {
+    const input = document.getElementById('icd10Input').value.toLowerCase();
+    const dropdown = document.getElementById('icd10Dropdown');
+    
+    if (input.length < 2) { dropdown.style.display = 'none'; return; }
+    
+    const matches = ICD10_COMMON.filter(item => 
+        item.code.toLowerCase().includes(input) || item.desc.toLowerCase().includes(input)
+    );
+    
+    if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+    
+    dropdown.innerHTML = matches.slice(0, 15).map(item =>
+        `<div class="dropdown-item" onclick="selectICD10('${item.code}', '${item.desc.replace(/'/g, "\\'")}')">
+            <span style="color:#2E8B8B;font-weight:600;">${item.code}</span> — ${item.desc}
+        </div>`
+    ).join('');
+    dropdown.style.display = 'block';
+}
+
+function selectICD10(code, desc) {
+    document.getElementById('icd10Input').value = code + ' — ' + desc;
+    document.getElementById('icd10Code').value = code;
+    document.getElementById('icd10Dropdown').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#icd10Input') && !e.target.closest('#icd10Dropdown')) {
+        document.getElementById('icd10Dropdown').style.display = 'none';
+    }
+});
+
 // Dynamic specialty dropdowns with search
 let currentDiagnoses = [];
 let currentProcedures = [];
 
 function updateDiagnosesAndProcedures() {
     const specialty = document.getElementById('rotation').value;
+    
+    // Show/hide surgical fields
+    updateFieldVisibility(specialty);
     
     // Clear inputs
     document.getElementById('diagnosisInput').value = '';
@@ -806,21 +951,26 @@ function showSection(id) {
 // Add case
 function addCase(e) {
     e.preventDefault();
+    const isSurgical = SURGICAL_SPECIALTIES.includes(document.getElementById('rotation').value) || MIXED_SPECIALTIES.includes(document.getElementById('rotation').value);
+    
     const newCase = {
         id: Date.now(),
         date: document.getElementById('caseDate').value,
         age: document.getElementById('patientAge').value,
         sex: document.getElementById('patientSex').value,
         rotation: document.getElementById('rotation').value,
+        clinicalSetting: document.getElementById('clinicalSetting').value,
         diagnosis: document.getElementById('diagnosis').value || document.getElementById('diagnosisInput').value,
+        icd10: document.getElementById('icd10Code').value || document.getElementById('icd10Input').value,
         procedure: document.getElementById('procedure').value || document.getElementById('procedureInput').value,
-        cpt: document.getElementById('cptCode').value,
+        cpt: isSurgical ? document.getElementById('cptCode').value : '',
         role: document.getElementById('role').value,
-        approach: document.getElementById('approach').value,
+        approach: isSurgical ? document.getElementById('approach').value : '',
         attending: document.getElementById('attending').value,
-        complications: document.getElementById('complications').value,
-        ebl: document.getElementById('ebl').value,
-        orTime: document.getElementById('orTime').value,
+        complications: isSurgical ? document.getElementById('complications').value : '',
+        ebl: isSurgical ? document.getElementById('ebl').value : '',
+        orTime: isSurgical ? document.getElementById('orTime').value : '',
+        caseDuration: isSurgical ? (document.getElementById('caseDuration').value || '') : '',
         notes: document.getElementById('notes').value,
     };
     cases.unshift(newCase);
@@ -1162,6 +1312,25 @@ function exportExcel() {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'Surgical_Case_Log.xlsx';
+    a.click();
+}
+
+// Export for Exxat (CSV format matching Exxat's expected columns)
+function exportForExxat() {
+    if (cases.length === 0) { alert('No cases to export'); return; }
+    const headers = ['Date','Rotation','Setting','Patient Age','Patient Gender','Diagnosis','ICD-10 Code','Procedure','Level of Participation','Preceptor','Approach','Complications','Notes'];
+    const rows = cases.map(c => [
+        c.date, c.rotation, c.clinicalSetting || '', c.age, c.sex,
+        c.diagnosis, c.icd10 || '', c.procedure, c.role, c.attending,
+        c.approach || '', c.complications || '', c.notes || ''
+    ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+    
+    const bom = '\uFEFF';
+    const csv = bom + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CaseLog_Exxat_Export.csv';
     a.click();
 }
 
