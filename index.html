@@ -598,7 +598,11 @@
                     </div>
                     <div class="form-group">
                         <label>Attending/Preceptor</label>
-                        <input type="text" id="attending" placeholder="Dr. Smith">
+                        <div style="position:relative;">
+                            <input type="text" id="attendingInput" placeholder="Type or select attending..." autocomplete="off" oninput="filterAttending()" onfocus="filterAttending()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="hidden" id="attending">
+                            <div id="attendingDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
+                        </div>
                     </div>
                     <!-- SURGICAL FIELDS - hidden for medical specialties -->
                     <div id="surgicalFields" style="display:none; grid-column: 1 / -1;">
@@ -800,6 +804,73 @@ document.addEventListener('click', function(e) {
     }
 });
 
+// Attending/Preceptor dropdown
+// This list is customized per institution when they sign up
+const ATTENDINGS = [
+    {name: "Dr. James Mitchell, MD", specialty: "General Surgery"},
+    {name: "Dr. Sarah Chen, MD, FACS", specialty: "Trauma Surgery"},
+    {name: "Dr. Robert Williams, DO", specialty: "Internal Medicine"},
+    {name: "Dr. Maria Rodriguez, MD", specialty: "Family Medicine"},
+    {name: "Dr. David Kim, MD", specialty: "Emergency Medicine"},
+    {name: "Dr. Emily Thompson, MD", specialty: "OB/GYN"},
+    {name: "Dr. Michael Johnson, MD", specialty: "Cardiology"},
+    {name: "Dr. Lisa Patel, MD", specialty: "Pediatrics"},
+    {name: "Dr. Andrew Davis, DO", specialty: "Psychiatry"},
+    {name: "Dr. Jennifer Brooks, MD, FACS", specialty: "Surgical Oncology"},
+];
+
+function filterAttending() {
+    const input = document.getElementById('attendingInput').value.toLowerCase();
+    const dropdown = document.getElementById('attendingDropdown');
+    const rotation = document.getElementById('rotation').value;
+    
+    // Filter by typed text and optionally by selected specialty
+    let filtered = ATTENDINGS.filter(a => 
+        a.name.toLowerCase().includes(input) || a.specialty.toLowerCase().includes(input)
+    );
+    
+    // Sort: matching specialty first
+    if (rotation) {
+        filtered.sort((a, b) => {
+            const aMatch = a.specialty.toLowerCase().includes(rotation.toLowerCase()) ? 0 : 1;
+            const bMatch = b.specialty.toLowerCase().includes(rotation.toLowerCase()) ? 0 : 1;
+            return aMatch - bMatch;
+        });
+    }
+    
+    if (filtered.length === 0 && input.length > 0) {
+        // Allow custom entry
+        dropdown.innerHTML = '<div class="dropdown-item" style="color:#888;font-style:italic;">Type a custom name or select from list</div>';
+        document.getElementById('attending').value = document.getElementById('attendingInput').value;
+        dropdown.style.display = 'block';
+        return;
+    }
+    
+    dropdown.innerHTML = filtered.map(a =>
+        `<div class="dropdown-item" onclick="selectAttending('${a.name.replace(/'/g, "\\'")}')">
+            <span style="color:#FFFFFF;">${a.name}</span>
+            <span style="color:#2E8B8B; font-size:12px; margin-left:8px;">${a.specialty}</span>
+        </div>`
+    ).join('');
+    dropdown.style.display = 'block';
+}
+
+function selectAttending(name) {
+    document.getElementById('attendingInput').value = name;
+    document.getElementById('attending').value = name;
+    document.getElementById('attendingDropdown').style.display = 'none';
+}
+
+// Also allow custom entry on blur
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#attendingInput') && !e.target.closest('#attendingDropdown')) {
+        document.getElementById('attendingDropdown').style.display = 'none';
+        // Save custom entry
+        const val = document.getElementById('attendingInput').value;
+        if (val) document.getElementById('attending').value = val;
+    }
+});
+
 // Dynamic specialty dropdowns with search
 let currentDiagnoses = [];
 let currentProcedures = [];
@@ -991,7 +1062,7 @@ function addCase(e) {
         cpt: isSurgical ? document.getElementById('cptCode').value : '',
         role: document.getElementById('role').value,
         approach: isSurgical ? document.getElementById('approach').value : '',
-        attending: document.getElementById('attending').value,
+        attending: document.getElementById('attending').value || document.getElementById('attendingInput').value,
         complications: isSurgical ? document.getElementById('complications').value : '',
         ebl: isSurgical ? document.getElementById('ebl').value : '',
         orTime: isSurgical ? document.getElementById('orTime').value : '',
