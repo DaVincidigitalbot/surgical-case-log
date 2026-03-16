@@ -682,6 +682,7 @@
 </div>
 
 <script src="/specialties.js"></script>
+<script src="/codes.js"></script>
 <script>
 // Surgical vs Medical specialty detection
 const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine'];
@@ -763,7 +764,17 @@ function searchICD10() {
     
     if (input.length < 2) { dropdown.style.display = 'none'; return; }
     
-    const matches = ICD10_COMMON.filter(item => 
+    // Build matches from both ICD10_COMMON and DIAGNOSIS_TO_ICD10
+    let allCodes = [...ICD10_COMMON];
+    if (typeof DIAGNOSIS_TO_ICD10 !== 'undefined') {
+        Object.entries(DIAGNOSIS_TO_ICD10).forEach(([desc, code]) => {
+            if (!allCodes.find(c => c.code === code && c.desc === desc)) {
+                allCodes.push({code, desc});
+            }
+        });
+    }
+    
+    const matches = allCodes.filter(item => 
         item.code.toLowerCase().includes(input) || item.desc.toLowerCase().includes(input)
     );
     
@@ -846,6 +857,20 @@ function selectDropdownItem(type, value) {
     document.getElementById(type + 'Input').value = value;
     document.getElementById(type).value = value;
     document.getElementById(type + 'Dropdown').style.display = 'none';
+    
+    // Auto-fill ICD-10 when diagnosis is selected
+    if (type === 'diagnosis' && DIAGNOSIS_TO_ICD10 && DIAGNOSIS_TO_ICD10[value]) {
+        const code = DIAGNOSIS_TO_ICD10[value];
+        document.getElementById('icd10Input').value = code + ' — ' + value;
+        document.getElementById('icd10Code').value = code;
+    }
+    
+    // Auto-fill CPT when procedure is selected
+    if (type === 'procedure' && PROCEDURE_TO_CPT && PROCEDURE_TO_CPT[value]) {
+        const cpt = PROCEDURE_TO_CPT[value];
+        const cptField = document.getElementById('cptCode');
+        if (cptField) cptField.value = cpt;
+    }
 }
 
 // Close dropdowns when clicking outside
