@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 """
 Clinical Case Log — Backend API
-SQLite database for persistent storage with user accounts.
+PostgreSQL database for persistent storage with user accounts.
 """
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import sqlite3
 import os
 import hashlib
 import secrets
 import json
 from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import urllib.parse
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-DB_PATH = os.environ.get('DB_PATH', os.path.join(os.path.dirname(__file__), 'caselog.db'))
+# PostgreSQL connection
+DB_PASSWORD = urllib.parse.quote(os.environ.get('DB_PASSWORD', 'CaseLog2026!'))
+DATABASE_URL = os.environ.get('DATABASE_URL', 
+    f"postgresql://postgres.qooenxfumvitimfbuocp:{DB_PASSWORD}@aws-1-us-east-1.pooler.supabase.com:5432/postgres")
 
-# Always initialize DB on import (needed for gunicorn)
-def _ensure_db():
+def get_db():
+    conn = psycopg2.connect(DATABASE_URL)
+    return conn
+
+def init_db():
     """Initialize database tables if they don't exist."""
     try:
-        db_path = DB_PATH
-        print(f"[INIT] Initializing DB at: {db_path}", flush=True)
-        conn = sqlite3.connect(db_path)
-        conn.execute("PRAGMA journal_mode=WAL")
-        conn.executescript('''
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 name TEXT,
@@ -35,11 +41,13 @@ def _ensure_db():
                 plan TEXT DEFAULT 'trial',
                 license_key TEXT,
                 plan_expires_at TEXT,
-                created_at TEXT DEFAULT (datetime('now'))
-            );
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        ''')
+        cur.execute('''
             CREATE TABLE IF NOT EXISTS cases (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id),
                 date TEXT,
                 age INTEGER,
                 sex TEXT,
@@ -54,110 +62,28 @@ def _ensure_db():
                 or_time INTEGER,
                 notes TEXT,
                 diagnosis TEXT,
-                created_at TEXT DEFAULT (datetime('now')),
-                updated_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            );
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        ''')
+        cur.execute('''
             CREATE TABLE IF NOT EXISTS milestones (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id),
                 category TEXT NOT NULL,
                 count INTEGER DEFAULT 0,
-                FOREIGN KEY (user_id) REFERENCES users(id),
                 UNIQUE(user_id, category)
-            );
-            CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id);
-            CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date);
+            )
         ''')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date)')
         conn.commit()
         conn.close()
-        print(f"[INIT] DB initialized successfully at: {db_path}", flush=True)
+        print("[INIT] PostgreSQL database initialized successfully", flush=True)
     except Exception as e:
         print(f"[INIT] DB init error: {e}", flush=True)
 
-_ensure_db()
-
-# Also ensure DB on first request (belt and suspenders)
-@app.before_request
-def ensure_tables():
-    """Make sure tables exist before handling any request."""
-    app.before_request_funcs[None].remove(ensure_tables)  # Run only once
-    _ensure_db()
-
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    return conn
-
-def init_db():
-    conn = get_db()
-    conn.executescript('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            name TEXT,
-            token TEXT UNIQUE,
-            plan TEXT DEFAULT 'trial',
-            license_key TEXT,
-            plan_expires_at TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
-        );
-        
-        CREATE TABLE IF NOT EXISTS cases (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            date TEXT,
-            age INTEGER,
-            sex TEXT,
-            rotation TEXT,
-            procedure_name TEXT,
-            cpt_code TEXT,
-            role TEXT,
-            approach TEXT,
-            attending TEXT,
-            complications TEXT DEFAULT 'None',
-            ebl INTEGER,
-            or_time INTEGER,
-            notes TEXT,
-            created_at TEXT DEFAULT (datetime('now')),
-            updated_at TEXT DEFAULT (datetime('now')),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        );
-        
-        CREATE TABLE IF NOT EXISTS milestones (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            category TEXT NOT NULL,
-            count INTEGER DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            UNIQUE(user_id, category)
-        );
-        
-        CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id);
-        CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date);
-    ''')
-    
-    # Migration: add columns if they don't exist
-    try:
-        conn.execute('ALTER TABLE users ADD COLUMN plan TEXT DEFAULT "trial"')
-    except:
-        pass
-    try:
-        conn.execute('ALTER TABLE users ADD COLUMN license_key TEXT')
-    except:
-        pass
-    try:
-        conn.execute('ALTER TABLE users ADD COLUMN plan_expires_at TEXT')
-    except:
-        pass
-    try:
-        conn.execute('ALTER TABLE cases ADD COLUMN diagnosis TEXT')
-    except:
-        pass
-    conn.commit()
-    conn.close()
+init_db()
 
 def hash_password(password):
     salt = secrets.token_hex(16)
@@ -172,10 +98,15 @@ def verify_password(stored, provided):
 def get_user_from_token(token):
     if not token:
         return None
-    conn = get_db()
-    user = conn.execute('SELECT * FROM users WHERE token = ?', (token,)).fetchone()
-    conn.close()
-    return user
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute('SELECT * FROM users WHERE token = %s', (token,))
+        user = cur.fetchone()
+        conn.close()
+        return user
+    except:
+        return None
 
 def auth_required(f):
     from functools import wraps
@@ -186,24 +117,6 @@ def auth_required(f):
         if not user:
             return jsonify({'error': 'Unauthorized'}), 401
         request.user = user
-        return f(*args, **kwargs)
-    return decorated
-
-def plan_required(f):
-    """Require an active plan (not expired) to access."""
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        from datetime import datetime
-        plan = request.user['plan'] or 'trial'
-        expires = request.user['plan_expires_at']
-        
-        if plan == '90day' and expires:
-            if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
-                return jsonify({'error': 'Your 90-day access has expired. Please renew.', 'expired': True}), 403
-        elif plan == 'expired':
-            return jsonify({'error': 'Your access has expired. Please renew.', 'expired': True}), 403
-        
         return f(*args, **kwargs)
     return decorated
 
@@ -222,7 +135,9 @@ def register():
         return jsonify({'error': 'Password must be 6+ characters'}), 400
     
     conn = get_db()
-    existing = conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT id FROM users WHERE email = %s', (email,))
+    existing = cur.fetchone()
     if existing:
         conn.close()
         return jsonify({'error': 'Email already registered'}), 409
@@ -230,7 +145,7 @@ def register():
     token = secrets.token_urlsafe(32)
     pw_hash = hash_password(password)
     
-    conn.execute('INSERT INTO users (email, password_hash, name, token) VALUES (?, ?, ?, ?)',
+    cur.execute('INSERT INTO users (email, password_hash, name, token) VALUES (%s, %s, %s, %s)',
                  (email, pw_hash, name, token))
     conn.commit()
     conn.close()
@@ -244,7 +159,9 @@ def login():
     password = data.get('password', '')
     
     conn = get_db()
-    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT * FROM users WHERE email = %s', (email,))
+    user = cur.fetchone()
     
     if not user or not verify_password(user['password_hash'], password):
         conn.close()
@@ -254,7 +171,7 @@ def login():
     token = user['token']
     if not token:
         token = secrets.token_urlsafe(32)
-        conn.execute('UPDATE users SET token = ? WHERE id = ?', (token, user['id']))
+        cur.execute('UPDATE users SET token = %s WHERE id = %s', (token, user['id']))
         conn.commit()
     conn.close()
     
@@ -264,7 +181,6 @@ def login():
 
 @app.route('/api/me', methods=['GET'])
 def check_token():
-    """Check if stored token is still valid — returns user info or 401"""
     token = request.headers.get('Authorization', '').replace('Bearer ', '')
     user = get_user_from_token(token)
     if not user:
@@ -276,51 +192,36 @@ def check_token():
 @app.route('/api/activate', methods=['POST'])
 @auth_required
 def activate_by_email():
-    """Verify purchase by checking Gumroad sales for the user's email."""
     import requests as req
-    
     user_email = request.user['email']
-    
-    # Check Gumroad sales API for this email
     GUMROAD_TOKEN = "X_X3q6Cw7bJuRkvmwKRGIwhN9Comr3wkjKkMXrv-ZFE"
     
     try:
-        # Check all sales for matching email
         r = req.get(f'https://api.gumroad.com/v2/sales?access_token={GUMROAD_TOKEN}&email={user_email}', timeout=15)
-        
         if r.status_code == 200:
             result = r.json()
             sales = result.get('sales', [])
-            
             if not sales:
-                return jsonify({'error': 'No purchase found for this email. Please buy at davincibot.gumroad.com', 'needs_purchase': True}), 404
+                return jsonify({'error': 'No purchase found for this email.', 'needs_purchase': True}), 404
             
-            # Find the most recent active sale
             conn = get_db()
-            
+            cur = conn.cursor()
             for sale in sales:
                 if sale.get('refunded') or sale.get('disputed'):
                     continue
-                
-                # Check if subscription or one-time
                 is_subscription = sale.get('subscription_id') is not None
                 recurrence = sale.get('recurrence')
-                
                 if is_subscription or recurrence:
-                    # Subscription - check if still active
                     cancelled = sale.get('cancelled', False)
                     ended = sale.get('ended', False)
-                    
                     if not cancelled and not ended:
                         plan = 'subscription'
                         expires = None
                     else:
-                        continue  # Skip cancelled subscriptions
+                        continue
                 else:
-                    # One-time purchase = 90-day access
                     plan = '90day'
-                    from datetime import datetime, timedelta
-                    # 90 days from purchase date
+                    from datetime import timedelta
                     purchase_date = sale.get('created_at', '')
                     try:
                         pd = datetime.fromisoformat(purchase_date.replace('Z', '+00:00'))
@@ -328,47 +229,28 @@ def activate_by_email():
                     except:
                         expires = (datetime.utcnow() + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
                 
-                # Activate the user
-                conn.execute('''UPDATE users SET plan = ?, plan_expires_at = ? WHERE id = ?''',
+                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s WHERE id = %s',
                            (plan, expires, request.user['id']))
                 conn.commit()
                 conn.close()
-                
-                return jsonify({
-                    'success': True,
-                    'plan': plan,
-                    'plan_expires_at': expires,
-                    'message': f'Purchase verified! Plan: {plan}'
-                })
+                return jsonify({'success': True, 'plan': plan, 'plan_expires_at': expires})
             
             conn.close()
-            return jsonify({'error': 'No active purchase found for this email.', 'needs_purchase': True}), 404
+            return jsonify({'error': 'No active purchase found.', 'needs_purchase': True}), 404
         else:
             return jsonify({'error': 'Could not verify purchase'}), 400
     except Exception as e:
         return jsonify({'error': f'Verification failed: {str(e)}'}), 500
 
-
 @app.route('/api/plan', methods=['GET'])
 @auth_required
 def get_plan():
-    """Check user's current plan status."""
-    from datetime import datetime
-    
     plan = request.user['plan'] or 'trial'
     expires = request.user['plan_expires_at']
-    
-    # Check if 90-day plan expired
     if plan == '90day' and expires:
         if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
             plan = 'expired'
-    
-    return jsonify({
-        'plan': plan,
-        'plan_expires_at': expires,
-        'active': plan in ('monthly', '90day', 'trial'),
-    })
-
+    return jsonify({'plan': plan, 'plan_expires_at': expires, 'active': plan in ('monthly', '90day', 'trial')})
 
 # ============ CASES ============
 
@@ -376,75 +258,85 @@ def get_plan():
 @auth_required
 def get_cases():
     conn = get_db()
-    cases = conn.execute(
-        'SELECT * FROM cases WHERE user_id = ? ORDER BY date DESC, id DESC',
-        (request.user['id'],)
-    ).fetchall()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT * FROM cases WHERE user_id = %s ORDER BY date DESC, id DESC', (request.user['id'],))
+    cases = cur.fetchall()
     conn.close()
-    return jsonify([dict(c) for c in cases])
+    # Convert datetime objects to strings
+    for c in cases:
+        if c.get('created_at') and hasattr(c['created_at'], 'isoformat'):
+            c['created_at'] = c['created_at'].isoformat()
+        if c.get('updated_at') and hasattr(c['updated_at'], 'isoformat'):
+            c['updated_at'] = c['updated_at'].isoformat()
+    return jsonify(cases)
 
 @app.route('/api/cases', methods=['POST'])
 @auth_required
 def add_case():
     data = request.json
     conn = get_db()
-    cursor = conn.execute('''
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('''
         INSERT INTO cases (user_id, date, age, sex, rotation, procedure_name, cpt_code, 
                           role, approach, attending, complications, ebl, or_time, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING *
     ''', (
         request.user['id'],
-        data.get('date'), data.get('age'), data.get('sex'),
+        data.get('date'), data.get('age') or None, data.get('sex'),
         data.get('rotation'), data.get('procedure'), data.get('cpt'),
         data.get('role'), data.get('approach'), data.get('attending'),
-        data.get('complications', 'None'), data.get('ebl'), data.get('orTime'),
+        data.get('complications', 'None'), data.get('ebl') or None, data.get('orTime') or None,
         data.get('notes')
     ))
-    case_id = cursor.lastrowid
+    case = cur.fetchone()
     conn.commit()
-    
-    # Fetch and return the new case
-    case = conn.execute('SELECT * FROM cases WHERE id = ?', (case_id,)).fetchone()
     conn.close()
-    return jsonify(dict(case)), 201
+    if case.get('created_at') and hasattr(case['created_at'], 'isoformat'):
+        case['created_at'] = case['created_at'].isoformat()
+    if case.get('updated_at') and hasattr(case['updated_at'], 'isoformat'):
+        case['updated_at'] = case['updated_at'].isoformat()
+    return jsonify(case), 201
 
 @app.route('/api/cases/<int:case_id>', methods=['PUT'])
 @auth_required
 def update_case(case_id):
     data = request.json
     conn = get_db()
-    
-    # Verify ownership
-    case = conn.execute('SELECT * FROM cases WHERE id = ? AND user_id = ?', 
-                       (case_id, request.user['id'])).fetchone()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT * FROM cases WHERE id = %s AND user_id = %s', (case_id, request.user['id']))
+    case = cur.fetchone()
     if not case:
         conn.close()
         return jsonify({'error': 'Not found'}), 404
     
-    conn.execute('''
-        UPDATE cases SET date=?, age=?, sex=?, rotation=?, procedure_name=?, cpt_code=?,
-        role=?, approach=?, attending=?, complications=?, ebl=?, or_time=?, notes=?,
-        updated_at=datetime('now')
-        WHERE id = ? AND user_id = ?
+    cur.execute('''
+        UPDATE cases SET date=%s, age=%s, sex=%s, rotation=%s, procedure_name=%s, cpt_code=%s,
+        role=%s, approach=%s, attending=%s, complications=%s, ebl=%s, or_time=%s, notes=%s,
+        updated_at=NOW()
+        WHERE id = %s AND user_id = %s RETURNING *
     ''', (
-        data.get('date'), data.get('age'), data.get('sex'),
+        data.get('date'), data.get('age') or None, data.get('sex'),
         data.get('rotation'), data.get('procedure'), data.get('cpt'),
         data.get('role'), data.get('approach'), data.get('attending'),
-        data.get('complications', 'None'), data.get('ebl'), data.get('orTime'),
+        data.get('complications', 'None'), data.get('ebl') or None, data.get('orTime') or None,
         data.get('notes'), case_id, request.user['id']
     ))
+    updated = cur.fetchone()
     conn.commit()
-    
-    updated = conn.execute('SELECT * FROM cases WHERE id = ?', (case_id,)).fetchone()
     conn.close()
-    return jsonify(dict(updated))
+    if updated.get('created_at') and hasattr(updated['created_at'], 'isoformat'):
+        updated['created_at'] = updated['created_at'].isoformat()
+    if updated.get('updated_at') and hasattr(updated['updated_at'], 'isoformat'):
+        updated['updated_at'] = updated['updated_at'].isoformat()
+    return jsonify(updated)
 
 @app.route('/api/cases/<int:case_id>', methods=['DELETE'])
 @auth_required
 def delete_case(case_id):
     conn = get_db()
-    conn.execute('DELETE FROM cases WHERE id = ? AND user_id = ?', 
-                (case_id, request.user['id']))
+    cur = conn.cursor()
+    cur.execute('DELETE FROM cases WHERE id = %s AND user_id = %s', (case_id, request.user['id']))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
@@ -455,20 +347,21 @@ def delete_case(case_id):
 @auth_required
 def get_milestones():
     conn = get_db()
-    milestones = conn.execute(
-        'SELECT * FROM milestones WHERE user_id = ?', (request.user['id'],)
-    ).fetchall()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT * FROM milestones WHERE user_id = %s', (request.user['id'],))
+    milestones = cur.fetchall()
     conn.close()
-    return jsonify([dict(m) for m in milestones])
+    return jsonify(milestones)
 
 @app.route('/api/milestones', methods=['POST'])
 @auth_required
 def update_milestone():
     data = request.json
     conn = get_db()
-    conn.execute('''
-        INSERT INTO milestones (user_id, category, count) VALUES (?, ?, ?)
-        ON CONFLICT(user_id, category) DO UPDATE SET count = ?
+    cur = conn.cursor()
+    cur.execute('''
+        INSERT INTO milestones (user_id, category, count) VALUES (%s, %s, %s)
+        ON CONFLICT(user_id, category) DO UPDATE SET count = %s
     ''', (request.user['id'], data['category'], data['count'], data['count']))
     conn.commit()
     conn.close()
@@ -480,37 +373,96 @@ def update_milestone():
 @auth_required
 def get_stats():
     conn = get_db()
+    cur = conn.cursor()
     uid = request.user['id']
     
-    total = conn.execute('SELECT COUNT(*) FROM cases WHERE user_id=?', (uid,)).fetchone()[0]
-    primary = conn.execute("SELECT COUNT(*) FROM cases WHERE user_id=? AND role='Primary Surgeon'", (uid,)).fetchone()[0]
-    assist = conn.execute("SELECT COUNT(*) FROM cases WHERE user_id=? AND role='First Assist'", (uid,)).fetchone()[0]
-    comps = conn.execute("SELECT COUNT(*) FROM cases WHERE user_id=? AND complications != 'None' AND complications IS NOT NULL", (uid,)).fetchone()[0]
-    avg_or = conn.execute("SELECT AVG(or_time) FROM cases WHERE user_id=? AND or_time > 0", (uid,)).fetchone()[0]
-    lap = conn.execute("SELECT COUNT(*) FROM cases WHERE user_id=? AND approach='Laparoscopic'", (uid,)).fetchone()[0]
-    robotic = conn.execute("SELECT COUNT(*) FROM cases WHERE user_id=? AND approach='Robotic'", (uid,)).fetchone()[0]
-    open_cases = conn.execute("SELECT COUNT(*) FROM cases WHERE user_id=? AND approach='Open'", (uid,)).fetchone()[0]
+    cur.execute('SELECT COUNT(*) FROM cases WHERE user_id=%s', (uid,))
+    total = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM cases WHERE user_id=%s AND role='Primary Surgeon'", (uid,))
+    primary = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM cases WHERE user_id=%s AND role='First Assist'", (uid,))
+    assist = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM cases WHERE user_id=%s AND complications != 'None' AND complications IS NOT NULL", (uid,))
+    comps = cur.fetchone()[0]
+    cur.execute("SELECT AVG(or_time) FROM cases WHERE user_id=%s AND or_time > 0", (uid,))
+    avg_or = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM cases WHERE user_id=%s AND approach='Laparoscopic'", (uid,))
+    lap = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM cases WHERE user_id=%s AND approach='Robotic'", (uid,))
+    robotic = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM cases WHERE user_id=%s AND approach='Open'", (uid,))
+    open_cases = cur.fetchone()[0]
     
-    # Rotation breakdown
-    rotations = conn.execute(
-        "SELECT rotation, COUNT(*) as count FROM cases WHERE user_id=? GROUP BY rotation ORDER BY count DESC",
-        (uid,)
-    ).fetchall()
+    cur2 = conn.cursor(cursor_factory=RealDictCursor)
+    cur2.execute("SELECT rotation, COUNT(*) as count FROM cases WHERE user_id=%s GROUP BY rotation ORDER BY count DESC", (uid,))
+    rotations = cur2.fetchall()
     
     conn.close()
     
     return jsonify({
-        'total': total,
-        'primary': primary,
-        'assist': assist,
+        'total': total, 'primary': primary, 'assist': assist,
         'complications': comps,
         'compRate': round((comps/total)*100, 1) if total > 0 else 0,
-        'avgOR': round(avg_or) if avg_or else 0,
-        'laparoscopic': lap,
-        'robotic': robotic,
-        'open': open_cases,
-        'rotations': [{'rotation': r['rotation'], 'count': r['count']} for r in rotations]
+        'avgOR': round(float(avg_or)) if avg_or else 0,
+        'laparoscopic': lap, 'robotic': robotic, 'open': open_cases,
+        'rotations': rotations
     })
+
+# ============ ADMIN PANEL ============
+
+ADMIN_SECRET = 'stallard2026admin'
+
+@app.route('/admin')
+def admin_panel():
+    key = request.args.get('key', '')
+    if key != ADMIN_SECRET:
+        return '<h1>Access Denied</h1>', 403
+    return send_from_directory('.', 'admin.html')
+
+@app.route('/api/admin/overview', methods=['GET'])
+def admin_overview():
+    key = request.args.get('key', '') or request.headers.get('X-Admin-Key', '')
+    if key != ADMIN_SECRET:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cur.execute('SELECT id, email, name, plan, plan_expires_at, created_at FROM users ORDER BY created_at DESC')
+        users = cur.fetchall()
+        
+        cur.execute('SELECT * FROM cases ORDER BY created_at DESC')
+        cases_raw = cur.fetchall()
+        
+        cases = []
+        for c in cases_raw:
+            cur.execute('SELECT email, name FROM users WHERE id = %s', (c.get('user_id'),))
+            user = cur.fetchone()
+            c['user_email'] = user['email'] if user else 'unknown'
+            c['user_name'] = user['name'] if user else 'unknown'
+            if c.get('created_at') and hasattr(c['created_at'], 'isoformat'):
+                c['created_at'] = c['created_at'].isoformat()
+            if c.get('updated_at') and hasattr(c['updated_at'], 'isoformat'):
+                c['updated_at'] = c['updated_at'].isoformat()
+            cases.append(c)
+        
+        # Fix user timestamps too
+        for u in users:
+            if u.get('created_at') and hasattr(u['created_at'], 'isoformat'):
+                u['created_at'] = u['created_at'].isoformat()
+        
+        conn.close()
+        
+        return jsonify({
+            'total_users': len(users),
+            'total_cases': len(cases),
+            'users': users,
+            'cases': cases
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc(), 'total_users': 0, 'total_cases': 0, 'users': [], 'cases': []})
 
 # ============ STATIC FILES ============
 
@@ -518,28 +470,22 @@ def get_stats():
 def index():
     return send_from_directory('.', 'index.html')
 
-if __name__ == '__main__':
-    init_db()
-    print(f"✅ Database initialized at {DB_PATH}")
-    print(f"🚀 Server starting on port 8080...")
-    app.run(host='0.0.0.0', port=8080, debug=False)
-
 @app.route('/preview')
 def preview():
-    """Temporary admin preview - bypasses login"""
     return send_from_directory('.', 'index.html')
 
 @app.route('/api/preview-login', methods=['POST'])
 def preview_login():
-    """Auto-create and login a preview account"""
     conn = get_db()
-    email = 'admin@surgicalcaselog.com'
-    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    email = 'admin@clinicalcaselog.com'
+    cur.execute('SELECT * FROM users WHERE email = %s', (email,))
+    user = cur.fetchone()
     
     if not user:
         token = secrets.token_urlsafe(32)
         pw_hash = hash_password('preview123')
-        conn.execute('INSERT INTO users (email, password_hash, name, token, plan) VALUES (?, ?, ?, ?, ?)',
+        cur.execute('INSERT INTO users (email, password_hash, name, token, plan) VALUES (%s, %s, %s, %s, %s)',
                      (email, pw_hash, 'Admin Preview', token, 'subscription'))
         conn.commit()
     else:
@@ -548,64 +494,6 @@ def preview_login():
     conn.close()
     return jsonify({'token': token, 'name': 'Admin Preview', 'email': email, 'plan': 'subscription'})
 
-# ============ ADMIN PANEL ============
-
-ADMIN_SECRET = 'stallard2026admin'
-
-@app.route('/admin')
-def admin_panel():
-    """Admin dashboard — requires ?key= parameter"""
-    key = request.args.get('key', '')
-    if key != ADMIN_SECRET:
-        return '<h1>Access Denied</h1>', 403
-    return send_from_directory('.', 'admin.html')
-
-@app.route('/api/admin/overview', methods=['GET'])
-def admin_overview():
-    """Admin API — returns all users and cases"""
-    key = request.args.get('key', '') or request.headers.get('X-Admin-Key', '')
-    if key != ADMIN_SECRET:
-        return jsonify({'error': 'Access denied'}), 403
-    
-    try:
-        _ensure_db()  # Make absolutely sure tables exist
-        conn = get_db()
-        
-        # Get all users (exclude password hashes)
-        users_raw = conn.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
-        users = []
-        for u in users_raw:
-            d = dict(u)
-            d.pop('password_hash', None)
-            d.pop('token', None)
-            users.append(d)
-        
-        # Get all cases
-        cases_raw = conn.execute('SELECT * FROM cases ORDER BY created_at DESC').fetchall()
-        cases = []
-        for c in cases_raw:
-            d = dict(c)
-            # Look up user info
-            user = conn.execute('SELECT email, name FROM users WHERE id = ?', (d.get('user_id'),)).fetchone()
-            if user:
-                d['user_email'] = user['email']
-                d['user_name'] = user['name']
-            else:
-                d['user_email'] = 'unknown'
-                d['user_name'] = 'unknown'
-            cases.append(d)
-        
-        total_users = len(users)
-        total_cases = len(cases)
-        
-        conn.close()
-        
-        return jsonify({
-            'total_users': total_users,
-            'total_cases': total_cases,
-            'users': users,
-            'cases': cases
-        })
-    except Exception as e:
-        import traceback
-        return jsonify({'error': str(e), 'trace': traceback.format_exc(), 'total_users': 0, 'total_cases': 0, 'users': [], 'cases': []})
+if __name__ == '__main__':
+    print(f"🚀 Server starting on port 8080...")
+    app.run(host='0.0.0.0', port=8080, debug=False)
