@@ -479,6 +479,8 @@
                             <option>Neurology</option>
                             <option>Nephrology</option>
                             <option>Cardiology</option>
+                            <option>Surgical/Medical Critical Care</option>
+                            <option>Interventional Radiology</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -722,7 +724,7 @@
 <script src="/codes.js"></script>
 <script>
 // Surgical vs Medical specialty detection
-const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery'];
+const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery', 'Surgical/Medical Critical Care', 'Interventional Radiology'];
 const MEDICAL_SPECIALTIES = ['Internal Medicine', 'Family Medicine', 'Pediatrics', 'Psychiatry', 'Neurology', 'Nephrology', 'Cardiology'];
 const MIXED_SPECIALTIES = ['OB/GYN', 'Emergency Medicine']; // Show surgical fields but not required
 
@@ -1038,6 +1040,61 @@ const CPT_CODES = [
     {code:"20680", procedure:"Hardware Removal", category:"Trauma"},
     {code:"44205", procedure:"Lap Colectomy w/ Removal", category:"Colorectal"},
     {code:"49561", procedure:"Ventral Hernia Repair, Strangulated", category:"General"},
+    // Critical Care
+    {code:"31500", procedure:"Endotracheal Intubation", category:"Critical Care"},
+    {code:"31600", procedure:"Cricothyroidotomy", category:"Critical Care"},
+    {code:"31612", procedure:"Percutaneous Tracheostomy", category:"Critical Care"},
+    {code:"31622", procedure:"Diagnostic Bronchoscopy", category:"Critical Care"},
+    {code:"31624", procedure:"Therapeutic Bronchoscopy", category:"Critical Care"},
+    {code:"36556", procedure:"Central Line Placement", category:"Critical Care"},
+    {code:"36558", procedure:"Hemodialysis Catheter Placement", category:"Critical Care"},
+    {code:"36569", procedure:"PICC Line Placement", category:"Critical Care"},
+    {code:"36620", procedure:"Arterial Line - Radial", category:"Critical Care"},
+    {code:"36625", procedure:"Arterial Line - Femoral", category:"Critical Care"},
+    {code:"93503", procedure:"Swan-Ganz Catheter Placement", category:"Critical Care"},
+    {code:"32551", procedure:"Chest Tube Insertion", category:"Critical Care"},
+    {code:"32554", procedure:"Thoracentesis", category:"Critical Care"},
+    {code:"49083", procedure:"Paracentesis", category:"Critical Care"},
+    {code:"62270", procedure:"Lumbar Puncture", category:"Critical Care"},
+    {code:"33210", procedure:"Temporary Pacemaker", category:"Critical Care"},
+    {code:"92960", procedure:"Cardioversion", category:"Critical Care"},
+    {code:"92950", procedure:"Defibrillation", category:"Critical Care"},
+    {code:"33016", procedure:"Pericardiocentesis", category:"Critical Care"},
+    {code:"33946", procedure:"ECMO Cannulation", category:"Critical Care"},
+    {code:"90945", procedure:"CRRT Initiation", category:"Critical Care"},
+    {code:"36680", procedure:"Intraosseous (IO) Access", category:"Critical Care"},
+    {code:"43246", procedure:"PEG Tube Placement", category:"Critical Care"},
+    {code:"99184", procedure:"Targeted Temperature Management", category:"Critical Care"},
+    {code:"94002", procedure:"Mechanical Ventilation Management", category:"Critical Care"},
+    {code:"61210", procedure:"ICP Monitor Placement", category:"Critical Care"},
+    // Interventional Radiology
+    {code:"37191", procedure:"IVC Filter Placement", category:"Interventional Radiology"},
+    {code:"37193", procedure:"IVC Filter Retrieval", category:"Interventional Radiology"},
+    {code:"36561", procedure:"Port-a-Cath Placement", category:"Interventional Radiology"},
+    {code:"36590", procedure:"Port-a-Cath Removal", category:"Interventional Radiology"},
+    {code:"49405", procedure:"CT/US-Guided Drainage", category:"Interventional Radiology"},
+    {code:"47000", procedure:"CT-Guided Liver Biopsy", category:"Interventional Radiology"},
+    {code:"32405", procedure:"CT-Guided Lung Biopsy", category:"Interventional Radiology"},
+    {code:"50432", procedure:"Percutaneous Nephrostomy", category:"Interventional Radiology"},
+    {code:"47510", procedure:"Percutaneous Biliary Drainage", category:"Interventional Radiology"},
+    {code:"47490", procedure:"Percutaneous Cholecystostomy", category:"Interventional Radiology"},
+    {code:"37182", procedure:"TIPS Procedure", category:"Interventional Radiology"},
+    {code:"37224", procedure:"Angioplasty - Peripheral", category:"Interventional Radiology"},
+    {code:"37226", procedure:"Stent Placement - Peripheral", category:"Interventional Radiology"},
+    {code:"37215", procedure:"Carotid Stent Placement", category:"Interventional Radiology"},
+    {code:"37242", procedure:"Embolization - Hemorrhage", category:"Interventional Radiology"},
+    {code:"37243", procedure:"Embolization - Tumor/UFE", category:"Interventional Radiology"},
+    {code:"37241", procedure:"Embolization - AVM", category:"Interventional Radiology"},
+    {code:"37187", procedure:"Mechanical Thrombectomy - Venous", category:"Interventional Radiology"},
+    {code:"37184", procedure:"Mechanical Thrombectomy - Arterial", category:"Interventional Radiology"},
+    {code:"37212", procedure:"Catheter-Directed Thrombolysis", category:"Interventional Radiology"},
+    {code:"22513", procedure:"Kyphoplasty", category:"Interventional Radiology"},
+    {code:"22510", procedure:"Vertebroplasty", category:"Interventional Radiology"},
+    {code:"47382", procedure:"RFA - Liver", category:"Interventional Radiology"},
+    {code:"50592", procedure:"RFA - Kidney", category:"Interventional Radiology"},
+    {code:"47383", procedure:"Microwave Ablation - Liver", category:"Interventional Radiology"},
+    {code:"49440", procedure:"Percutaneous Gastrostomy - IR", category:"Interventional Radiology"},
+    {code:"36902", procedure:"AV Fistula Salvage/Fistulogram", category:"Interventional Radiology"},
 ];
 
 // ACGME Milestones
