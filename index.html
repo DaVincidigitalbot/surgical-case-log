@@ -288,6 +288,141 @@
             box-shadow: 0 4px 12px rgba(46,139,139,0.3);
         }
 
+        /* Program Toggle */
+        .program-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 3px;
+        }
+        .program-toggle button {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 18px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            white-space: nowrap;
+        }
+        .program-toggle button.active {
+            background: #2E8B8B;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* RNFA Card styles */
+        .rnfa-case-card {
+            background: #1a2744;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #2a3a5c;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .rnfa-case-card:hover { border-color: #2E8B8B; }
+        .rnfa-case-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .rnfa-case-card .card-header h3 {
+            color: #2E8B8B;
+            font-size: 15px;
+            margin: 0;
+        }
+        .rnfa-case-card .card-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #888;
+        }
+        .rnfa-case-card .card-meta span { display: flex; align-items: center; gap: 4px; }
+        .rnfa-case-card .card-details {
+            display: none;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #2a3a5c;
+        }
+        .rnfa-case-card.expanded .card-details { display: block; }
+        .rnfa-case-card .detail-section {
+            margin-bottom: 12px;
+        }
+        .rnfa-case-card .detail-section h4 {
+            color: #2E8B8B;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .rnfa-case-card .detail-section p {
+            color: #ccc;
+            font-size: 13px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .rnfa-case-card .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .rnfa-case-card .card-actions button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* RNFA Progress Bar */
+        .rnfa-progress-container {
+            background: #0f1729;
+            border-radius: 12px;
+            height: 28px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .rnfa-progress-bar {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #2E8B8B, #3aa5a5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            transition: width 0.5s ease;
+        }
+
+        /* RNFA form text areas */
+        .rnfa-textarea {
+            background: #0f1729;
+            border: 1px solid #2a3a5c;
+            color: #e0e0e0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+        .rnfa-textarea:focus {
+            border-color: #2E8B8B;
+            box-shadow: 0 0 0 2px rgba(46,139,139,0.2);
+            outline: none;
+        }
+        .rnfa-textarea::placeholder { color: #555; font-size: 13px; }
+
         /* Mobile */
         @media (max-width: 768px) {
             .header h1 { font-size: 14px; }
@@ -300,6 +435,7 @@
                 font-size: 14px;
                 padding: 12px;
             }
+            .program-toggle button { font-size: 10px; padding: 4px 8px; }
         }
 
         /* Empty State */
@@ -375,19 +511,27 @@
 <div class="header">
     <h1>⚕️ Clinical <span>Case Log</span></h1>
     <div class="header-actions">
-        <button class="primary" onclick="showSection('cases'); setTimeout(() => { if(!document.getElementById('addCaseFormWrapper').classList.contains('expanded')) toggleAddCaseForm(); }, 200);">+ Log Case</button>
-        <button onclick="exportExcel()">📥 Excel</button>
-        <button onclick="exportPDF()">📄 PDF</button>
-        <button onclick="exportForExxat()">🔄 Exxat</button>
+        <div id="programToggle" class="program-toggle" style="display:none;">
+            <button id="toggleMedical" class="active" onclick="switchProgram('medical')">Medical/PA</button>
+            <button id="toggleRnfa" onclick="switchProgram('rnfa')">RNFA</button>
+        </div>
+        <button class="primary" onclick="handleLogCase()">+ Log Case</button>
+        <button onclick="handleExportExcel()">📥 Excel</button>
+        <button id="pdfExportBtn" onclick="exportPDF()">📄 PDF</button>
+        <button id="exxatExportBtn" onclick="exportForExxat()">🔄 Exxat</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
     </div>
 </div>
 
-<div class="tabs">
+<div class="tabs" id="medicalTabs">
     <div class="tab active" onclick="showSection('dashboard')">📊 Dashboard</div>
     <div class="tab" onclick="showSection('cases')">📋 Case Log</div>
     <div class="tab" onclick="showSection('cpt')">📖 CPT Codes</div>
     <div class="tab" onclick="showSection('acgme')">🎯 ACGME</div>
+</div>
+<div class="tabs" id="rnfaTabs" style="display:none;">
+    <div class="tab active" onclick="showSection('rnfaDashboard')">📊 Dashboard</div>
+    <div class="tab" onclick="showSection('rnfaCases')">📋 Case Log</div>
 </div>
 
 <!-- Auth Modal -->
@@ -730,6 +874,136 @@
             <p style="color:#888; margin-bottom:20px; font-size:14px;">Track your progress toward minimum case requirements. Update counts manually or they auto-count from your logged cases.</p>
             <div id="milestoneList"></div>
         </div>
+    </div>
+
+    <!-- ===================== RNFA DASHBOARD ===================== -->
+    <div id="rnfaDashboard" class="section">
+        <div class="dashboard-grid">
+            <div class="stat-card"><div class="number" id="rnfaTotalCases">0</div><div class="label">Total Cases</div></div>
+            <div class="stat-card"><div class="number" id="rnfaIntraopHours">0</div><div class="label">Intra-op Hours</div></div>
+            <div class="stat-card"><div class="number" id="rnfaPreopHours">0</div><div class="label">Pre-op Hours</div></div>
+            <div class="stat-card"><div class="number" id="rnfaPostopHours">0</div><div class="label">Post-op Hours</div></div>
+        </div>
+        <div class="form-card">
+            <h2>🎯 Progress Toward 65 Intra-op Hours</h2>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="color:#888; font-size:13px;" id="rnfaProgressLabel">0 / 65 hours</span>
+                <span style="color:#2E8B8B; font-weight:600; font-size:13px;" id="rnfaProgressPct">0%</span>
+            </div>
+            <div class="rnfa-progress-container">
+                <div class="rnfa-progress-bar" id="rnfaProgressBar" style="width:0%">0%</div>
+            </div>
+        </div>
+        <div class="form-card">
+            <h2>Recent Cases</h2>
+            <div id="rnfaRecentCases"><p style="color:#555">No RNFA cases logged yet</p></div>
+        </div>
+    </div>
+
+    <!-- ===================== RNFA CASE LOG ===================== -->
+    <div id="rnfaCases" class="section">
+        <!-- New RNFA Case Button -->
+        <div style="margin-bottom:20px;">
+            <button id="newRnfaCaseBtn" class="btn btn-primary" style="width:100%; padding:15px; font-size:16px; font-weight:600; background:#2E8B8B; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s;" onclick="toggleRnfaCaseForm()">
+                ➕ New RNFA Case
+            </button>
+        </div>
+
+        <!-- RNFA Add Case Form -->
+        <div id="rnfaCaseForm" class="form-card" style="display:none; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+                <h2 style="color:#2E8B8B; margin:0;" id="rnfaFormTitle">➕ Log RNFA Case</h2>
+                <button type="button" onclick="toggleRnfaCaseForm()" style="background:none; border:1px solid #555; color:#888; padding:6px 12px; border-radius:6px; font-size:13px; cursor:pointer;">Cancel</button>
+            </div>
+            <form id="rnfaForm" onsubmit="saveRnfaCase(event)">
+                <input type="hidden" id="rnfaEditId" value="">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <!-- Procedure and Surgeon -->
+                    <div class="form-group">
+                        <label>Procedure Name</label>
+                        <input type="text" id="rnfaProcedure" placeholder="Full procedure name — avoid abbreviations" required style="font-size:16px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Surgeon's Name</label>
+                        <input type="text" id="rnfaSurgeon" placeholder="Dr. Last Name" required style="font-size:16px;">
+                    </div>
+                    <!-- Date/Time -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="rnfaDate" required style="font-size:16px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" id="rnfaTime" style="font-size:16px;">
+                        </div>
+                    </div>
+                    <!-- Time Inputs -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                        <div class="form-group">
+                            <label>Pre-op (min)</label>
+                            <input type="number" id="rnfaPreopTime" placeholder="30" min="0" style="font-size:16px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Intra-op (min)</label>
+                            <input type="number" id="rnfaIntraopTime" placeholder="120" min="0" style="font-size:16px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Post-op (min)</label>
+                            <input type="number" id="rnfaPostopTime" placeholder="15" min="0" style="font-size:16px;">
+                        </div>
+                    </div>
+
+                    <!-- First Assisting Behaviors -->
+                    <div style="border:1px solid #2a3a5c; border-radius:10px; padding:16px; background:#141e33;">
+                        <h3 style="color:#D4A853; font-size:14px; margin-bottom:14px; text-transform:uppercase; letter-spacing:1px;">First Assisting Behaviors</h3>
+
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>1. Pre-op</label>
+                            <textarea id="rnfaPreopBehaviors" class="rnfa-textarea" rows="3" placeholder="Significant actions/observations/teaching, orders per protocol, surgical assessments, team collaboration"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>2. Draping / Prepping / Positioning</label>
+                            <textarea id="rnfaDrapingPrepping" class="rnfa-textarea" rows="3" placeholder="Prep solution, specific drapes, nerve/structure protection considerations"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>3. Special Instruments</label>
+                            <textarea id="rnfaSpecialInstruments" class="rnfa-textarea" rows="3" placeholder="Aesculap/Hospital pans, peel packs. Lap/robotic: Cadier, Fenestrated Bipolar, Maryland, etc. Implants: vendor name"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>4. Medical Devices</label>
+                            <textarea id="rnfaMedicalDevices" class="rnfa-textarea" rows="3" placeholder="Anything with a hose or cord used by the surgical team"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>5. Exposure, Hemostasis, Tissue Handling/Cutting</label>
+                            <textarea id="rnfaExposureHemostasis" class="rnfa-textarea" rows="4" placeholder="Skin-to-skin visualization of your involvement. How you arrived at/exposed target anatomy, addressed it, and what you did prior to closure"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label>6. Layer Closure</label>
+                            <textarea id="rnfaLayerClosure" class="rnfa-textarea" rows="4" placeholder="For each suture: type & size (e.g. 4-0 monocryl), needle (e.g. PS-2), layer (e.g. deep dermal), technique (e.g. inverted simple interrupted/buried knot)"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>7. Post-op</label>
+                            <textarea id="rnfaPostopBehaviors" class="rnfa-textarea" rows="3" placeholder="Significant actions/observations/teaching, patient evaluation, postop orders, follow-up, rounds, discharge planning"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Learning Log -->
+                    <div class="form-group">
+                        <label>📝 Learning Log</label>
+                        <textarea id="rnfaLearningLog" class="rnfa-textarea" rows="4" placeholder="New skills/techniques learned, struggled with, or mastered. Surgeon comments. Light-bulb moments. Should be different for every case."></textarea>
+                    </div>
+
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">✅ Save RNFA Case</button>
+                        <button type="button" class="btn" style="background:#2a3a5c; color:#888;" onclick="resetRnfaForm()">Clear</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- RNFA Cases List -->
+        <div id="rnfaCaseList"><div class="empty-state"><div class="icon">📋</div><p>No RNFA cases logged yet</p></div></div>
     </div>
 </div>
 
@@ -1302,7 +1576,6 @@ function showSection(id) {
     // Handle legacy 'add' id by redirecting to 'cases'
     if (id === 'add') {
         id = 'cases';
-        // Also show the add form when navigating to old 'add' section
         setTimeout(() => {
             const form = document.getElementById('addCaseForm');
             if (form && form.style.display === 'none') {
@@ -1312,16 +1585,28 @@ function showSection(id) {
     }
     
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.tab').forEach(t => {
-        if ((id === 'dashboard' && t.textContent.includes('Dashboard')) ||
-            (id === 'cases' && t.textContent.includes('Case Log')) ||
-            (id === 'cpt' && t.textContent.includes('CPT')) ||
-            (id === 'acgme' && t.textContent.includes('ACGME')))
-            t.classList.add('active');
-    });
+
+    // Handle tab highlighting for both tab bars
+    if (id === 'rnfaDashboard' || id === 'rnfaCases') {
+        document.querySelectorAll('#rnfaTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('#rnfaTabs .tab').forEach(t => {
+            if ((id === 'rnfaDashboard' && t.textContent.includes('Dashboard')) ||
+                (id === 'rnfaCases' && t.textContent.includes('Case Log')))
+                t.classList.add('active');
+        });
+    } else {
+        document.querySelectorAll('#medicalTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('#medicalTabs .tab').forEach(t => {
+            if ((id === 'dashboard' && t.textContent.includes('Dashboard')) ||
+                (id === 'cases' && t.textContent.includes('Case Log')) ||
+                (id === 'cpt' && t.textContent.includes('CPT')) ||
+                (id === 'acgme' && t.textContent.includes('ACGME')))
+                t.classList.add('active');
+        });
+    }
     if (id === 'cases') renderCases();
+    if (id === 'rnfaCases') renderRnfaCases();
 }
 
 // Add case
@@ -1581,6 +1866,7 @@ async function doRegister() {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         hideAuth();
         updateUserUI();
+        initProgramMode();
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
         syncLocalToServer();
@@ -1599,8 +1885,13 @@ async function doLogin() {
         currentUser = {name: result.name, email: result.email};
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        if (result.program_type) {
+            programType = result.program_type;
+            localStorage.setItem('programType', programType);
+        }
         hideAuth();
         updateUserUI();
+        initProgramMode();
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
         loadFromServer();
@@ -1611,11 +1902,18 @@ async function doLogin() {
 function logout() {
     authToken = null;
     currentUser = null;
+    programType = 'medical';
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('programType');
     updateUserUI();
-    document.getElementById('appContainer').style.display = 'block';
-    document.getElementById('landingPage').style.display = 'none';
+    document.getElementById('programToggle').style.display = 'none';
+    document.getElementById('medicalTabs').style.display = 'flex';
+    document.getElementById('rnfaTabs').style.display = 'none';
+    document.getElementById('pdfExportBtn').style.display = '';
+    document.getElementById('exxatExportBtn').style.display = '';
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('landingPage').style.display = 'block';
 }
 
 function updateUserUI() {
@@ -1675,11 +1973,37 @@ async function serverDeleteCase(serverId) {
     try { await api('/cases/' + serverId, 'DELETE'); } catch(e) {}
 }
 
+function initProgramMode() {
+    // Show toggle if logged in
+    if (authToken) {
+        document.getElementById('programToggle').style.display = 'flex';
+    } else {
+        document.getElementById('programToggle').style.display = 'none';
+    }
+    // Apply current program type
+    const type = programType;
+    document.getElementById('toggleMedical').classList.toggle('active', type === 'medical');
+    document.getElementById('toggleRnfa').classList.toggle('active', type === 'rnfa');
+    document.getElementById('medicalTabs').style.display = type === 'medical' ? 'flex' : 'none';
+    document.getElementById('rnfaTabs').style.display = type === 'rnfa' ? 'flex' : 'none';
+    document.getElementById('pdfExportBtn').style.display = type === 'medical' ? '' : 'none';
+    document.getElementById('exxatExportBtn').style.display = type === 'medical' ? '' : 'none';
+    // Show correct dashboard
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    if (type === 'rnfa') {
+        document.getElementById('rnfaDashboard').classList.add('active');
+        loadRnfaCases();
+    } else {
+        document.getElementById('dashboard').classList.add('active');
+    }
+}
+
 // Auto-load on startup - REQUIRE LOGIN
 if (authToken) {
     loadFromServer();
     loadUserAttendings();
     updateUserUI();
+    initProgramMode();
     document.getElementById('appContainer').style.display = 'block';
     document.getElementById('landingPage').style.display = 'none';
 } else {
@@ -1841,6 +2165,286 @@ function exportPDF() {
 </html>`);
     printWindow.document.close();
 }
+// ============ RNFA MODE ============
+let programType = localStorage.getItem('programType') || 'medical';
+let rnfaCases = [];
+let rnfaStats = {};
+
+function switchProgram(type) {
+    programType = type;
+    localStorage.setItem('programType', type);
+    // Update toggle buttons
+    document.getElementById('toggleMedical').classList.toggle('active', type === 'medical');
+    document.getElementById('toggleRnfa').classList.toggle('active', type === 'rnfa');
+    // Show/hide tabs
+    document.getElementById('medicalTabs').style.display = type === 'medical' ? 'flex' : 'none';
+    document.getElementById('rnfaTabs').style.display = type === 'rnfa' ? 'flex' : 'none';
+    // Show/hide export buttons
+    document.getElementById('pdfExportBtn').style.display = type === 'medical' ? '' : 'none';
+    document.getElementById('exxatExportBtn').style.display = type === 'medical' ? '' : 'none';
+    // Hide all sections, show appropriate dashboard
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    if (type === 'rnfa') {
+        document.getElementById('rnfaDashboard').classList.add('active');
+        // Reset RNFA tab highlighting
+        document.querySelectorAll('#rnfaTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#rnfaTabs .tab:first-child').classList.add('active');
+        loadRnfaCases();
+    } else {
+        document.getElementById('dashboard').classList.add('active');
+        document.querySelectorAll('#medicalTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#medicalTabs .tab:first-child').classList.add('active');
+        updateDashboard();
+    }
+    // Save to server
+    if (authToken) {
+        api('/user/program', 'PUT', { program_type: type }).catch(() => {});
+    }
+}
+
+function handleLogCase() {
+    if (programType === 'rnfa') {
+        showSection('rnfaCases');
+        setTimeout(() => {
+            const form = document.getElementById('rnfaCaseForm');
+            if (form.style.display === 'none') toggleRnfaCaseForm();
+        }, 200);
+    } else {
+        showSection('cases');
+        setTimeout(() => {
+            const form = document.getElementById('addCaseForm');
+            if (form.style.display === 'none') toggleAddCaseForm();
+        }, 200);
+    }
+}
+
+function handleExportExcel() {
+    if (programType === 'rnfa') {
+        exportRnfaExcel();
+    } else {
+        exportExcel();
+    }
+}
+
+function toggleRnfaCaseForm() {
+    const form = document.getElementById('rnfaCaseForm');
+    const btn = document.getElementById('newRnfaCaseBtn');
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        btn.textContent = '📋 View Cases';
+        btn.style.background = '#1a2744';
+        // Set default date
+        if (!document.getElementById('rnfaDate').value) {
+            document.getElementById('rnfaDate').valueAsDate = new Date();
+        }
+        setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    } else {
+        form.style.display = 'none';
+        btn.textContent = '➕ New RNFA Case';
+        btn.style.background = '#2E8B8B';
+        resetRnfaForm();
+    }
+}
+
+function resetRnfaForm() {
+    document.getElementById('rnfaForm').reset();
+    document.getElementById('rnfaEditId').value = '';
+    document.getElementById('rnfaFormTitle').textContent = '➕ Log RNFA Case';
+    document.getElementById('rnfaDate').valueAsDate = new Date();
+}
+
+async function saveRnfaCase(e) {
+    e.preventDefault();
+    if (!authToken) { alert('Please sign in to save cases'); return; }
+    const editId = document.getElementById('rnfaEditId').value;
+    const data = {
+        procedure_name: document.getElementById('rnfaProcedure').value,
+        surgeon_name: document.getElementById('rnfaSurgeon').value,
+        case_date: document.getElementById('rnfaDate').value,
+        case_time: document.getElementById('rnfaTime').value,
+        preop_time: parseInt(document.getElementById('rnfaPreopTime').value) || 0,
+        intraop_time: parseInt(document.getElementById('rnfaIntraopTime').value) || 0,
+        postop_time: parseInt(document.getElementById('rnfaPostopTime').value) || 0,
+        preop_behaviors: document.getElementById('rnfaPreopBehaviors').value,
+        draping_prepping: document.getElementById('rnfaDrapingPrepping').value,
+        special_instruments: document.getElementById('rnfaSpecialInstruments').value,
+        medical_devices: document.getElementById('rnfaMedicalDevices').value,
+        exposure_hemostasis: document.getElementById('rnfaExposureHemostasis').value,
+        layer_closure: document.getElementById('rnfaLayerClosure').value,
+        postop_behaviors: document.getElementById('rnfaPostopBehaviors').value,
+        learning_log: document.getElementById('rnfaLearningLog').value,
+    };
+    try {
+        let result;
+        if (editId) {
+            result = await api('/rnfa-cases/' + editId, 'PUT', data);
+        } else {
+            result = await api('/rnfa-cases', 'POST', data);
+        }
+        if (result && !result.error) {
+            toggleRnfaCaseForm();
+            loadRnfaCases();
+        } else {
+            alert(result?.error || 'Failed to save case');
+        }
+    } catch(e) { alert('Failed to save case'); }
+}
+
+async function loadRnfaCases() {
+    if (!authToken) return;
+    try {
+        const [casesResult, statsResult] = await Promise.all([
+            api('/rnfa-cases'),
+            api('/rnfa-stats')
+        ]);
+        if (casesResult && !casesResult.error) {
+            rnfaCases = casesResult;
+        }
+        if (statsResult && !statsResult.error) {
+            rnfaStats = statsResult;
+        }
+        renderRnfaDashboard();
+        renderRnfaCases();
+    } catch(e) { console.error('Failed to load RNFA data:', e); }
+}
+
+function renderRnfaDashboard() {
+    const s = rnfaStats;
+    document.getElementById('rnfaTotalCases').textContent = s.total_cases || 0;
+    document.getElementById('rnfaIntraopHours').textContent = s.total_intraop_hours || 0;
+    document.getElementById('rnfaPreopHours').textContent = s.total_preop_hours || 0;
+    document.getElementById('rnfaPostopHours').textContent = s.total_postop_hours || 0;
+    const pct = s.intraop_progress_pct || 0;
+    const hours = s.total_intraop_hours || 0;
+    document.getElementById('rnfaProgressLabel').textContent = hours + ' / 65 hours';
+    document.getElementById('rnfaProgressPct').textContent = pct + '%';
+    const bar = document.getElementById('rnfaProgressBar');
+    bar.style.width = pct + '%';
+    bar.textContent = pct >= 10 ? pct + '%' : '';
+
+    // Recent cases
+    const recentDiv = document.getElementById('rnfaRecentCases');
+    const recent = rnfaCases.slice(0, 5);
+    if (recent.length === 0) {
+        recentDiv.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No RNFA cases yet. Log your first case!</p><button class="btn btn-primary" onclick="showSection(\'rnfaCases\'); setTimeout(() => toggleRnfaCaseForm(), 200);">+ Log Case</button></div>';
+    } else {
+        recentDiv.innerHTML = recent.map(c => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #0f1729;">
+                <div>
+                    <span style="color:#2E8B8B; font-weight:600;">#${c.case_number}</span>
+                    <span style="margin-left:8px;">${c.procedure_name || ''}</span>
+                </div>
+                <div style="color:#888; font-size:13px;">
+                    ${c.case_date || ''} • ${c.intraop_time || 0}min
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function renderRnfaCases() {
+    const div = document.getElementById('rnfaCaseList');
+    if (rnfaCases.length === 0) {
+        div.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No RNFA cases logged yet</p></div>';
+        return;
+    }
+    div.innerHTML = rnfaCases.map(c => {
+        const behaviors = [];
+        if (c.preop_behaviors) behaviors.push({title: 'Pre-op', text: c.preop_behaviors});
+        if (c.draping_prepping) behaviors.push({title: 'Draping/Prepping/Positioning', text: c.draping_prepping});
+        if (c.special_instruments) behaviors.push({title: 'Special Instruments', text: c.special_instruments});
+        if (c.medical_devices) behaviors.push({title: 'Medical Devices', text: c.medical_devices});
+        if (c.exposure_hemostasis) behaviors.push({title: 'Exposure, Hemostasis, Tissue Handling', text: c.exposure_hemostasis});
+        if (c.layer_closure) behaviors.push({title: 'Layer Closure', text: c.layer_closure});
+        if (c.postop_behaviors) behaviors.push({title: 'Post-op', text: c.postop_behaviors});
+
+        return `
+        <div class="rnfa-case-card" id="rnfa-card-${c.id}" onclick="toggleRnfaCard(${c.id})">
+            <div class="card-header">
+                <h3>Case #${c.case_number} — ${c.procedure_name || 'Untitled'}</h3>
+            </div>
+            <div class="card-meta">
+                <span>👨‍⚕️ ${c.surgeon_name || '-'}</span>
+                <span>📅 ${c.case_date || '-'}</span>
+                <span>⏱️ ${c.intraop_time || 0} min intra-op</span>
+            </div>
+            <div class="card-details">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px;">
+                    <div class="stat-card" style="padding:10px;"><div class="number" style="font-size:20px;">${c.preop_time || 0}</div><div class="label" style="font-size:10px;">Pre-op min</div></div>
+                    <div class="stat-card" style="padding:10px;"><div class="number" style="font-size:20px;">${c.intraop_time || 0}</div><div class="label" style="font-size:10px;">Intra-op min</div></div>
+                    <div class="stat-card" style="padding:10px;"><div class="number" style="font-size:20px;">${c.postop_time || 0}</div><div class="label" style="font-size:10px;">Post-op min</div></div>
+                </div>
+                ${behaviors.map(b => `<div class="detail-section"><h4>${b.title}</h4><p>${b.text}</p></div>`).join('')}
+                ${c.learning_log ? `<div class="detail-section"><h4>📝 Learning Log</h4><p>${c.learning_log}</p></div>` : ''}
+                <div class="card-actions">
+                    <button onclick="event.stopPropagation(); editRnfaCase(${c.id})" style="background:#2E8B8B; color:#fff;">✏️ Edit</button>
+                    <button onclick="event.stopPropagation(); deleteRnfaCase(${c.id})" style="background:#c0392b; color:#fff;">🗑 Delete</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleRnfaCard(id) {
+    const card = document.getElementById('rnfa-card-' + id);
+    if (card) card.classList.toggle('expanded');
+}
+
+function editRnfaCase(id) {
+    const c = rnfaCases.find(x => x.id === id);
+    if (!c) return;
+    // Show form in edit mode
+    const form = document.getElementById('rnfaCaseForm');
+    if (form.style.display === 'none') toggleRnfaCaseForm();
+    document.getElementById('rnfaEditId').value = c.id;
+    document.getElementById('rnfaFormTitle').textContent = '✏️ Edit RNFA Case #' + c.case_number;
+    document.getElementById('rnfaProcedure').value = c.procedure_name || '';
+    document.getElementById('rnfaSurgeon').value = c.surgeon_name || '';
+    document.getElementById('rnfaDate').value = c.case_date || '';
+    document.getElementById('rnfaTime').value = c.case_time || '';
+    document.getElementById('rnfaPreopTime').value = c.preop_time || '';
+    document.getElementById('rnfaIntraopTime').value = c.intraop_time || '';
+    document.getElementById('rnfaPostopTime').value = c.postop_time || '';
+    document.getElementById('rnfaPreopBehaviors').value = c.preop_behaviors || '';
+    document.getElementById('rnfaDrapingPrepping').value = c.draping_prepping || '';
+    document.getElementById('rnfaSpecialInstruments').value = c.special_instruments || '';
+    document.getElementById('rnfaMedicalDevices').value = c.medical_devices || '';
+    document.getElementById('rnfaExposureHemostasis').value = c.exposure_hemostasis || '';
+    document.getElementById('rnfaLayerClosure').value = c.layer_closure || '';
+    document.getElementById('rnfaPostopBehaviors').value = c.postop_behaviors || '';
+    document.getElementById('rnfaLearningLog').value = c.learning_log || '';
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function deleteRnfaCase(id) {
+    if (!confirm('Delete this RNFA case?')) return;
+    try {
+        const result = await api('/rnfa-cases/' + id, 'DELETE');
+        if (result && result.success) {
+            loadRnfaCases();
+        }
+    } catch(e) { alert('Failed to delete case'); }
+}
+
+async function exportRnfaExcel() {
+    if (!authToken) { alert('Please sign in first'); return; }
+    try {
+        const response = await fetch(API + '/rnfa-cases/export', {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            alert(err.error || 'Export failed');
+            return;
+        }
+        const blob = await response.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'RNFA_Procedure_Log.xlsx';
+        a.click();
+    } catch(e) { alert('Export failed: ' + e.message); }
+}
+
 // Landing page login/register
 async function doLandingRegister() {
     const name = document.getElementById('landingName').value;
@@ -1863,6 +2467,7 @@ async function doLandingRegister() {
                 currentUser.plan = activation.plan;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateUserUI();
+                initProgramMode();
                 document.getElementById('appContainer').style.display = 'block';
                 document.getElementById('landingPage').style.display = 'none';
                 syncLocalToServer();
@@ -1890,6 +2495,10 @@ async function doLandingLogin() {
         currentUser = {name: result.name, email: result.email};
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        if (result.program_type) {
+            programType = result.program_type;
+            localStorage.setItem('programType', programType);
+        }
         
         // Re-verify purchase on every login (catches cancellations)
         try {
@@ -1909,6 +2518,7 @@ async function doLandingLogin() {
         }
         
         updateUserUI();
+        initProgramMode();
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
         loadFromServer();

@@ -4,7 +4,7 @@
 
 ---
 
-**Effective Date:** _____________, 2026
+**Effective Date:** March 16, 2026
 
 This Operating Agreement ("Agreement") is entered into by the sole Member of Clinical Case Log, LLC ("Company"), a North Carolina limited liability company.
 
@@ -18,14 +18,12 @@ This Operating Agreement ("Agreement") is entered into by the sole Member of Cli
 
 **1.3 Principal Office.** The principal office of the Company shall be at:
 
-> [ADDRESS TO BE INSERTED]
-> North Carolina
+> 202 Keyhole Ct, Cramerton, NC 28032
 
 **1.4 Registered Agent.** The registered agent for service of process is:
 
 > **Graydon Stallard**
-> [ADDRESS TO BE INSERTED]
-> North Carolina
+> 202 Keyhole Ct, Cramerton, NC 28032
 
 **1.5 Term.** The Company shall continue in existence perpetually unless dissolved in accordance with this Agreement or the Act.
 
@@ -69,7 +67,7 @@ This Operating Agreement ("Agreement") is entered into by the sole Member of Cli
 
 | Member | Contribution | Description |
 |--------|-------------|-------------|
-| Graydon Stallard | Intellectual property + cash | Software platform "Clinical Case Log Pro," all associated source code, designs, domain names, trademarks, customer relationships, and $_______ in cash |
+| Graydon Stallard | Intellectual property | Software platform "Clinical Case Log Pro," all associated source code, designs, domain names (clinicalcaselog.com), trademarks, and customer relationships |
 
 **4.2 Additional Contributions.** No Member shall be required to make additional capital contributions. Additional contributions may be made at the Member's discretion.
 
@@ -147,7 +145,7 @@ _________________________________________
 
 **Graydon Stallard**
 
-Date: _______________, 2026
+Date: March 16, 2026
 
 ---
 
