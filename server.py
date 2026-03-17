@@ -491,24 +491,29 @@ def admin_overview():
         conn = get_db()
         
         # Get all users (exclude password hashes)
-        users = conn.execute('''
-            SELECT id, email, name, plan, plan_expires_at, created_at 
-            FROM users ORDER BY created_at DESC
-        ''').fetchall()
+        users_raw = conn.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
+        users = []
+        for u in users_raw:
+            d = dict(u)
+            d.pop('password_hash', None)
+            d.pop('token', None)
+            users.append(d)
         
-        # Get all cases with user info
-        cases = conn.execute('''
-            SELECT c.id, c.user_id, c.date, c.age, c.sex, c.rotation, 
-                   c.procedure_name, c.cpt_code, c.role, c.approach, 
-                   c.attending, c.complications, c.ebl, c.or_time, c.notes,
-                   c.created_at, c.updated_at,
-                   u.email as user_email, u.name as user_name
-            FROM cases c
-            JOIN users u ON c.user_id = u.id
-            ORDER BY c.created_at DESC
-        ''').fetchall()
+        # Get all cases
+        cases_raw = conn.execute('SELECT * FROM cases ORDER BY created_at DESC').fetchall()
+        cases = []
+        for c in cases_raw:
+            d = dict(c)
+            # Look up user info
+            user = conn.execute('SELECT email, name FROM users WHERE id = ?', (d.get('user_id'),)).fetchone()
+            if user:
+                d['user_email'] = user['email']
+                d['user_name'] = user['name']
+            else:
+                d['user_email'] = 'unknown'
+                d['user_name'] = 'unknown'
+            cases.append(d)
         
-        # Summary stats
         total_users = len(users)
         total_cases = len(cases)
         
@@ -517,8 +522,9 @@ def admin_overview():
         return jsonify({
             'total_users': total_users,
             'total_cases': total_cases,
-            'users': [dict(u) for u in users],
-            'cases': [dict(c) for c in cases]
+            'users': users,
+            'cases': cases
         })
     except Exception as e:
-        return jsonify({'error': str(e), 'total_users': 0, 'total_cases': 0, 'users': [], 'cases': []})
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc(), 'total_users': 0, 'total_cases': 0, 'users': [], 'cases': []})
