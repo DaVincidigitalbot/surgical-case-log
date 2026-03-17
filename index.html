@@ -371,11 +371,11 @@
 <div class="header">
     <h1>⚕️ Clinical <span>Case Log</span></h1>
     <div class="header-actions">
+        <button class="primary" onclick="showSection('cases'); setTimeout(() => { if(!document.getElementById('addCaseFormWrapper').classList.contains('expanded')) toggleAddCaseForm(); }, 200);">+ Log Case</button>
         <button onclick="exportExcel()">📥 Excel</button>
         <button onclick="exportPDF()">📄 PDF</button>
         <button onclick="exportForExxat()">🔄 Exxat</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
-        <button class="primary" onclick="showSection('cases'); setTimeout(() => { if(!document.getElementById('addCaseFormWrapper').classList.contains('expanded')) toggleAddCaseForm(); }, 200);">+ Log Case</button>
     </div>
 </div>
 
