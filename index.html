@@ -375,7 +375,7 @@
         <button onclick="exportPDF()">📄 PDF</button>
         <button onclick="exportForExxat()">🔄 Exxat</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
-        <button class="primary" onclick="showSection('cases')">+ Log Case</button>
+        <button class="primary" onclick="showSection('cases'); setTimeout(() => { if(!document.getElementById('addCaseFormWrapper').classList.contains('expanded')) toggleAddCaseForm(); }, 200);">+ Log Case</button>
     </div>
 </div>
 
