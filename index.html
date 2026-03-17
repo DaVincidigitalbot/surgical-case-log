@@ -1804,6 +1804,7 @@ function showSection(id) {
 // Add case
 function addCase(e) {
     e.preventDefault();
+    if (isDemoMode) { showDemoModal(); return; }
     const isSurgical = SURGICAL_SPECIALTIES.includes(document.getElementById('rotation').value) || MIXED_SPECIALTIES.includes(document.getElementById('rotation').value);
     
     const newCase = {
@@ -2328,25 +2329,7 @@ function initDemoMode() {
 // Demo mode switchProgram logic is now handled inline in the main switchProgram function
 
 // Intercept save actions in demo mode
-const _originalAddCase = addCase;
-addCase = function(e) {
-    e.preventDefault();
-    if (isDemoMode) {
-        showDemoModal();
-        return;
-    }
-    return _originalAddCase(e);
-};
-
-const _originalSaveRnfaCase = saveRnfaCase;
-saveRnfaCase = function(e) {
-    e.preventDefault();
-    if (isDemoMode) {
-        showDemoModal();
-        return;
-    }
-    return _originalSaveRnfaCase(e);
-};
+// Demo mode save guards are now inline in addCase() and saveRnfaCase()
 
 function showDemoModal() {
     document.getElementById('demoModal').classList.add('show');
@@ -2644,6 +2627,7 @@ function resetRnfaForm() {
 
 async function saveRnfaCase(e) {
     e.preventDefault();
+    if (isDemoMode) { showDemoModal(); return; }
     if (!authToken) { alert('Please sign in to save cases'); return; }
     const editId = document.getElementById('rnfaEditId').value;
     const data = {
