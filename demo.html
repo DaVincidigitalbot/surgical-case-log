@@ -1130,6 +1130,8 @@
 <script>
 // FORCE DEMO MODE - this is demo.html
 var isDemoMode = true;
+var programType = 'medical'; // Declare early to avoid hoisting issues
+var authToken = null; // No auth in demo mode
 // Surgical vs Medical specialty detection
 const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery', 'Surgical/Medical Critical Care', 'Interventional Radiology', 'Interventional Cardiology'];
 const MEDICAL_SPECIALTIES = ['Internal Medicine', 'Family Medicine', 'Pediatrics', 'Psychiatry', 'Neurology', 'Nephrology', 'Cardiology'];
@@ -2024,7 +2026,7 @@ function updateMilestone(idx, val) {
 
 // ============ SERVER SYNC ============
 const API = window.location.origin + '/api';
-let authToken = isDemoMode ? null : localStorage.getItem('authToken');
+// authToken already declared at top for demo mode
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
 async function api(endpoint, method='GET', body=null) {
@@ -2535,7 +2537,7 @@ function exportPDF() {
     printWindow.document.close();
 }
 // ============ RNFA MODE ============
-let programType = isDemoMode ? 'medical' : (localStorage.getItem('programType') || 'medical');
+// programType already declared at top for demo mode
 let rnfaCases = [];
 let rnfaStats = {};
 
