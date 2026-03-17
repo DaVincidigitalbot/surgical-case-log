@@ -862,7 +862,7 @@ def preview():
 
 @app.route('/demo')
 def demo():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('.', 'demo.html')
 
 @app.route('/api/preview-login', methods=['POST'])
 def preview_login():
