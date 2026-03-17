@@ -142,6 +142,28 @@
             box-shadow: 0 0 0 2px rgba(46,139,139,0.2);
         }
         .form-group select { appearance: auto; }
+        .multi-chip {
+            display: inline-flex;
+            align-items: center;
+            background: #1a2744;
+            border: 1px solid #2E8B8B;
+            color: #e0e0e0;
+            padding: 4px 8px;
+            border-radius: 16px;
+            font-size: 13px;
+            margin: 3px;
+            gap: 4px;
+        }
+        .multi-chip .chip-remove {
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            line-height: 1;
+            padding: 0 2px;
+        }
+        .multi-chip .chip-remove:hover {
+            color: #ff4444;
+        }
         .form-full { grid-column: 1 / -1; }
 
         .btn {
@@ -633,9 +655,10 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Diagnosis</label>
+                        <label>Diagnosis (select multiple)</label>
                         <div style="position:relative;">
-                            <input type="text" id="diagnosisInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
+                            <div id="diagnosisChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;"></div>
+                            <input type="text" id="diagnosisInput" placeholder="Type to search and add diagnoses..." autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                             <input type="hidden" id="diagnosis">
                             <div id="diagnosisDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
@@ -750,8 +773,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>ICD-10 Code</label>
+                        <label>ICD-10 Code (select multiple)</label>
                         <div style="position:relative;">
+                            <div id="icd10Chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;"></div>
                             <input type="text" id="icd10Input" placeholder="Type diagnosis for ICD-10..." autocomplete="off" oninput="searchICD10()" onfocus="searchICD10()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                             <input type="hidden" id="icd10Code">
                             <div id="icd10Dropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
@@ -1114,14 +1138,78 @@ function searchICD10() {
     dropdown.style.display = 'block';
 }
 
+// Multi-select arrays for diagnosis and ICD-10
+let selectedDiagnoses = [];
+let selectedICD10s = []; // Each: { code, desc }
+
+function addDiagnosisChip(value) {
+    if (selectedDiagnoses.includes(value)) return;
+    selectedDiagnoses.push(value);
+    renderDiagnosisChips();
+    document.getElementById('diagnosis').value = selectedDiagnoses.join('; ');
+}
+
+function addICD10Chip(code, desc) {
+    if (selectedICD10s.some(item => item.code === code)) return;
+    selectedICD10s.push({ code, desc });
+    renderICD10Chips();
+    document.getElementById('icd10Code').value = selectedICD10s.map(item => item.code).join('; ');
+}
+
+function removeDiagnosisChip(index) {
+    // Also remove corresponding ICD-10 if it was auto-added
+    const diagName = selectedDiagnoses[index];
+    if (DIAGNOSIS_TO_ICD10 && DIAGNOSIS_TO_ICD10[diagName]) {
+        const code = DIAGNOSIS_TO_ICD10[diagName];
+        const icdIdx = selectedICD10s.findIndex(item => item.code === code);
+        if (icdIdx !== -1) {
+            selectedICD10s.splice(icdIdx, 1);
+            renderICD10Chips();
+            document.getElementById('icd10Code').value = selectedICD10s.map(item => item.code).join('; ');
+        }
+    }
+    selectedDiagnoses.splice(index, 1);
+    renderDiagnosisChips();
+    document.getElementById('diagnosis').value = selectedDiagnoses.join('; ');
+}
+
+function removeICD10Chip(index) {
+    selectedICD10s.splice(index, 1);
+    renderICD10Chips();
+    document.getElementById('icd10Code').value = selectedICD10s.map(item => item.code).join('; ');
+}
+
+function renderDiagnosisChips() {
+    const container = document.getElementById('diagnosisChips');
+    container.innerHTML = selectedDiagnoses.map((d, i) =>
+        `<span class="multi-chip">${d}<span class="chip-remove" onclick="removeDiagnosisChip(${i})">×</span></span>`
+    ).join('');
+}
+
+function renderICD10Chips() {
+    const container = document.getElementById('icd10Chips');
+    container.innerHTML = selectedICD10s.map((item, i) =>
+        `<span class="multi-chip"><span style="color:#2E8B8B;font-weight:600;">${item.code}</span> — ${item.desc}<span class="chip-remove" onclick="removeICD10Chip(${i})">×</span></span>`
+    ).join('');
+}
+
+function clearDiagnosisChips() {
+    selectedDiagnoses = [];
+    selectedICD10s = [];
+    renderDiagnosisChips();
+    renderICD10Chips();
+    document.getElementById('diagnosis').value = '';
+    document.getElementById('icd10Code').value = '';
+}
+
 function selectICD10(code, desc) {
-    document.getElementById('icd10Input').value = code + ' — ' + desc;
-    document.getElementById('icd10Code').value = code;
+    addICD10Chip(code, desc);
+    document.getElementById('icd10Input').value = '';
     document.getElementById('icd10Dropdown').style.display = 'none';
 }
 
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('#icd10Input') && !e.target.closest('#icd10Dropdown')) {
+    if (!e.target.closest('#icd10Input') && !e.target.closest('#icd10Dropdown') && !e.target.closest('#icd10Chips')) {
         document.getElementById('icd10Dropdown').style.display = 'none';
     }
 });
@@ -1326,6 +1414,7 @@ function updateDiagnosesAndProcedures() {
     document.getElementById('diagnosis').value = '';
     document.getElementById('procedureInput').value = '';
     document.getElementById('procedure').value = '';
+    clearDiagnosisChips();
     
     currentDiagnoses = [];
     currentProcedures = [];
@@ -1373,15 +1462,21 @@ function filterDropdown(type) {
 }
 
 function selectDropdownItem(type, value) {
-    document.getElementById(type + 'Input').value = value;
-    document.getElementById(type).value = value;
-    document.getElementById(type + 'Dropdown').style.display = 'none';
-    
-    // Auto-fill ICD-10 when diagnosis is selected
-    if (type === 'diagnosis' && DIAGNOSIS_TO_ICD10 && DIAGNOSIS_TO_ICD10[value]) {
-        const code = DIAGNOSIS_TO_ICD10[value];
-        document.getElementById('icd10Input').value = code + ' — ' + value;
-        document.getElementById('icd10Code').value = code;
+    if (type === 'diagnosis') {
+        // Multi-select for diagnosis
+        addDiagnosisChip(value);
+        document.getElementById('diagnosisInput').value = '';
+        document.getElementById('diagnosisDropdown').style.display = 'none';
+        
+        // Auto-add ICD-10 when diagnosis is selected
+        if (DIAGNOSIS_TO_ICD10 && DIAGNOSIS_TO_ICD10[value]) {
+            const code = DIAGNOSIS_TO_ICD10[value];
+            addICD10Chip(code, value);
+        }
+    } else {
+        document.getElementById(type + 'Input').value = value;
+        document.getElementById(type).value = value;
+        document.getElementById(type + 'Dropdown').style.display = 'none';
     }
     
     // Auto-fill CPT when procedure is selected
@@ -1394,7 +1489,7 @@ function selectDropdownItem(type, value) {
 
 // Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('#diagnosisInput') && !e.target.closest('#diagnosisDropdown')) {
+    if (!e.target.closest('#diagnosisInput') && !e.target.closest('#diagnosisDropdown') && !e.target.closest('#diagnosisChips')) {
         document.getElementById('diagnosisDropdown').style.display = 'none';
     }
     if (!e.target.closest('#procedureInput') && !e.target.closest('#procedureDropdown')) {
@@ -1621,8 +1716,8 @@ function addCase(e) {
         sex: document.getElementById('patientSex').value,
         rotation: document.getElementById('rotation').value,
         clinicalSetting: document.getElementById('clinicalSetting').value,
-        diagnosis: document.getElementById('diagnosis').value || document.getElementById('diagnosisInput').value,
-        icd10: document.getElementById('icd10Code').value || document.getElementById('icd10Input').value,
+        diagnosis: selectedDiagnoses.length > 0 ? selectedDiagnoses.join('; ') : document.getElementById('diagnosisInput').value,
+        icd10: selectedICD10s.length > 0 ? selectedICD10s.map(item => item.code).join('; ') : document.getElementById('icd10Input').value,
         procedure: document.getElementById('procedure').value || document.getElementById('procedureInput').value,
         cpt: isSurgical ? document.getElementById('cptCode').value : '',
         role: document.getElementById('role').value,
@@ -1641,6 +1736,7 @@ function addCase(e) {
         if (serverId) { newCase.serverId = serverId; saveCases(); }
     });
     document.getElementById('caseForm').reset();
+    clearDiagnosisChips();
     document.getElementById('caseDate').valueAsDate = new Date();
     updateDashboard();
     
@@ -1736,7 +1832,8 @@ function renderCases() {
     let filtered = cases.filter(c => {
         const matchSearch = !search || c.procedure.toLowerCase().includes(search) || 
             c.rotation.toLowerCase().includes(search) || c.attending?.toLowerCase().includes(search) ||
-            c.cpt?.includes(search);
+            c.cpt?.includes(search) || (c.diagnosis && c.diagnosis.toLowerCase().includes(search)) ||
+            (c.icd10 && c.icd10.toLowerCase().includes(search));
         const matchRot = !rotFilter || c.rotation === rotFilter;
         return matchSearch && matchRot;
     });
@@ -1748,10 +1845,11 @@ function renderCases() {
     }
 
     div.innerHTML = `<table class="case-table">
-        <tr><th>#</th><th>Date</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
+        <tr><th>#</th><th>Date</th><th>Diagnosis</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
         ${filtered.map((c,i) => `<tr>
             <td>${filtered.length - i}</td>
             <td>${c.date}</td>
+            <td style="max-width:180px;white-space:normal;font-size:12px;">${c.diagnosis || '-'}</td>
             <td>${c.procedure}</td>
             <td>${c.cpt || '-'}</td>
             <td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td>
@@ -2025,9 +2123,9 @@ if (authToken) {
 // Export as Excel (.xlsx via CSV with Excel-compatible format)
 function exportExcel() {
     if (cases.length === 0) { alert('No cases to export'); return; }
-    const headers = ['Case #','Date','Age','Sex','Rotation','Procedure','CPT Code','Role','Approach','Attending','Complications','EBL (mL)','OR Time (min)','Notes'];
+    const headers = ['Case #','Date','Age','Sex','Rotation','Diagnosis','ICD-10','Procedure','CPT Code','Role','Approach','Attending','Complications','EBL (mL)','OR Time (min)','Notes'];
     const rows = cases.map((c, i) => [
-        cases.length - i, c.date, c.age, c.sex, c.rotation, c.procedure, c.cpt, 
+        cases.length - i, c.date, c.age, c.sex, c.rotation, c.diagnosis, c.icd10, c.procedure, c.cpt, 
         c.role, c.approach, c.attending, c.complications, c.ebl, c.orTime, c.notes
     ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
     
