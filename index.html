@@ -2360,8 +2360,15 @@ function exitDemoMode() {
     }, 200);
 }
 
+// Check for demo mode FIRST — before auth check
+const urlParams = new URLSearchParams(window.location.search);
+const isDemoUrl = urlParams.get('demo') === 'true' || window.location.pathname === '/demo';
+
 // Auto-load on startup - REQUIRE LOGIN
-if (authToken) {
+if (isDemoUrl) {
+    // Guest demo mode - full app preview (skip auth even if token exists)
+    initDemoMode();
+} else if (authToken) {
     loadFromServer();
     loadUserAttendings();
     updateUserUI();
@@ -2369,14 +2376,7 @@ if (authToken) {
     document.getElementById('appContainer').style.display = 'block';
     document.getElementById('landingPage').style.display = 'none';
 } else {
-    // Check for demo mode: ?demo=true or /demo path
-    const urlParams = new URLSearchParams(window.location.search);
-    const isDemoUrl = urlParams.get('demo') === 'true' || window.location.pathname === '/demo';
-    
-    if (isDemoUrl) {
-        // Guest demo mode - full app preview
-        initDemoMode();
-    } else if (urlParams.get('demo') === 'admin2026') {
+    if (urlParams.get('demo') === 'admin2026') {
         // Legacy admin demo access
         updateUserUI();
         document.getElementById('appContainer').style.display = 'block';
