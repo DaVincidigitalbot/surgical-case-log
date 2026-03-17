@@ -1730,12 +1730,15 @@ let cases = JSON.parse(localStorage.getItem('surgicalCases') || '[]');
 let milestoneOverrides = JSON.parse(localStorage.getItem('milestoneOverrides') || '{}');
 
 // Initialize
+var isDemoMode = false;
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('caseDate').valueAsDate = new Date();
-    updateDashboard();
-    renderCases();
-    renderCPT();
-    renderMilestones();
+    if (!isDemoMode) {
+        updateDashboard();
+        renderCases();
+        renderCPT();
+        renderMilestones();
+    }
 });
 
 // Toggle add case form
@@ -2167,8 +2170,8 @@ async function serverDeleteCase(serverId) {
 }
 
 function initProgramMode() {
-    // Show toggle if logged in
-    if (authToken) {
+    // Show toggle if logged in or in demo mode
+    if (authToken || isDemoMode) {
         document.getElementById('programToggle').style.display = 'flex';
     } else {
         document.getElementById('programToggle').style.display = 'none';
@@ -2192,7 +2195,6 @@ function initProgramMode() {
 }
 
 // ============ DEMO MODE ============
-let isDemoMode = false;
 
 const DEMO_RNFA_CASES = [
     {
