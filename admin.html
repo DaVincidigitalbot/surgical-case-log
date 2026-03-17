@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Case Log — Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a1628; color: #e0e0e0; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1a2a4a, #2a4a6a); padding: 24px 32px; border-bottom: 3px solid #00b4d8; }
+        .header h1 { font-size: 24px; color: #fff; }
+        .header p { color: #90caf9; margin-top: 4px; }
+        .stats-row { display: flex; gap: 20px; padding: 24px 32px; flex-wrap: wrap; }
+        .stat-card { background: #1a2a4a; border-radius: 12px; padding: 24px; flex: 1; min-width: 200px; border: 1px solid #2a4a6a; }
+        .stat-card .number { font-size: 48px; font-weight: 700; color: #00b4d8; }
+        .stat-card .label { color: #90caf9; font-size: 14px; margin-top: 4px; }
+        .section { padding: 0 32px 24px; }
+        .section h2 { font-size: 20px; color: #fff; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #2a4a6a; }
+        table { width: 100%; border-collapse: collapse; background: #1a2a4a; border-radius: 12px; overflow: hidden; }
+        th { background: #2a4a6a; color: #90caf9; text-align: left; padding: 12px 16px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #2a4a6a; font-size: 14px; }
+        tr:hover td { background: rgba(0,180,216,0.05); }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-trial { background: #ffd60033; color: #ffd600; }
+        .badge-active { background: #00b4d833; color: #00b4d8; }
+        .badge-subscription { background: #00e67633; color: #00e676; }
+        .empty { text-align: center; padding: 48px; color: #607d8b; font-size: 16px; }
+        .loading { text-align: center; padding: 48px; color: #90caf9; }
+        .refresh-btn { background: #00b4d8; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; margin-left: 16px; }
+        .refresh-btn:hover { background: #0096c7; }
+        .timestamp { color: #607d8b; font-size: 12px; }
+        @media (max-width: 768px) {
+            .stats-row { flex-direction: column; }
+            .section { padding: 0 16px 16px; }
+            .header { padding: 16px; }
+            table { font-size: 12px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏥 Clinical Case Log — Admin Dashboard <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button></h1>
+        <p id="lastUpdate">Loading...</p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number" id="totalUsers">—</div>
+            <div class="label">Registered Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="totalCases">—</div>
+            <div class="label">Cases Logged</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="todayCases">—</div>
+            <div class="label">Cases Today</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>👥 Registered Users</h2>
+        <div id="usersTable"><div class="loading">Loading...</div></div>
+    </div>
+
+    <div class="section">
+        <h2>📋 All Logged Cases</h2>
+        <div id="casesTable"><div class="loading">Loading...</div></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const adminKey = urlParams.get('key');
+
+        async function loadData() {
+            try {
+                const res = await fetch(`/api/admin/overview?key=${adminKey}`);
+                if (!res.ok) throw new Error('Access denied');
+                const data = await res.json();
+
+                document.getElementById('totalUsers').textContent = data.total_users;
+                document.getElementById('totalCases').textContent = data.total_cases;
+
+                // Count today's cases
+                const today = new Date().toISOString().split('T')[0];
+                const todayCases = data.cases.filter(c => c.date === today || (c.created_at && c.created_at.startsWith(today)));
+                document.getElementById('todayCases').textContent = todayCases.length;
+
+                document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleString()}`;
+
+                // Render users table
+                if (data.users.length === 0) {
+                    document.getElementById('usersTable').innerHTML = '<div class="empty">No registered users yet</div>';
+                } else {
+                    let html = '<table><tr><th>Name</th><th>Email</th><th>Plan</th><th>Registered</th></tr>';
+                    for (const u of data.users) {
+                        const plan = u.plan || 'trial';
+                        const badgeClass = plan === 'subscription' ? 'badge-subscription' : plan === 'trial' ? 'badge-trial' : 'badge-active';
+                        html += `<tr>
+                            <td>${u.name || '—'}</td>
+                            <td>${u.email}</td>
+                            <td><span class="badge ${badgeClass}">${plan}</span></td>
+                            <td class="timestamp">${u.created_at || '—'}</td>
+                        </tr>`;
+                    }
+                    html += '</table>';
+                    document.getElementById('usersTable').innerHTML = html;
+                }
+
+                // Render cases table
+                if (data.cases.length === 0) {
+                    document.getElementById('casesTable').innerHTML = '<div class="empty">No cases logged yet</div>';
+                } else {
+                    let html = '<table><tr><th>Date</th><th>User</th><th>Rotation</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Attending</th><th>Logged</th></tr>';
+                    for (const c of data.cases) {
+                        html += `<tr>
+                            <td>${c.date || '—'}</td>
+                            <td>${c.user_name || c.user_email}</td>
+                            <td>${c.rotation || '—'}</td>
+                            <td>${c.procedure_name || '—'}</td>
+                            <td>${c.cpt_code || '—'}</td>
+                            <td>${c.role || '—'}</td>
+                            <td>${c.attending || '—'}</td>
+                            <td class="timestamp">${c.created_at || '—'}</td>
+                        </tr>`;
+                    }
+                    html += '</table>';
+                    document.getElementById('casesTable').innerHTML = html;
+                }
+
+            } catch (err) {
+                document.getElementById('usersTable').innerHTML = `<div class="empty">Error: ${err.message}</div>`;
+                document.getElementById('casesTable').innerHTML = '';
+            }
+        }
+
+        loadData();
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>

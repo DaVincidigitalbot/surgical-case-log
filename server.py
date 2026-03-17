@@ -467,3 +467,51 @@ def preview_login():
     
     conn.close()
     return jsonify({'token': token, 'name': 'Admin Preview', 'email': email, 'plan': 'subscription'})
+
+# ============ ADMIN PANEL ============
+
+ADMIN_SECRET = 'stallard2026admin'
+
+@app.route('/admin')
+def admin_panel():
+    """Admin dashboard — requires ?key= parameter"""
+    key = request.args.get('key', '')
+    if key != ADMIN_SECRET:
+        return '<h1>Access Denied</h1>', 403
+    return send_from_directory('.', 'admin.html')
+
+@app.route('/api/admin/overview', methods=['GET'])
+def admin_overview():
+    """Admin API — returns all users and cases"""
+    key = request.args.get('key', '') or request.headers.get('X-Admin-Key', '')
+    if key != ADMIN_SECRET:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    conn = get_db()
+    
+    # Get all users (exclude password hashes)
+    users = conn.execute('''
+        SELECT id, email, name, plan, plan_expires_at, created_at 
+        FROM users ORDER BY created_at DESC
+    ''').fetchall()
+    
+    # Get all cases with user info
+    cases = conn.execute('''
+        SELECT c.*, u.email as user_email, u.name as user_name
+        FROM cases c
+        JOIN users u ON c.user_id = u.id
+        ORDER BY c.created_at DESC
+    ''').fetchall()
+    
+    # Summary stats
+    total_users = len(users)
+    total_cases = len(cases)
+    
+    conn.close()
+    
+    return jsonify({
+        'total_users': total_users,
+        'total_cases': total_cases,
+        'users': [dict(u) for u in users],
+        'cases': [dict(c) for c in cases]
+    })
