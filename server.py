@@ -17,6 +17,63 @@ CORS(app)
 
 DB_PATH = os.environ.get('DB_PATH', os.path.join(os.path.dirname(__file__), 'caselog.db'))
 
+# Always initialize DB on import (needed for gunicorn)
+def _ensure_db():
+    """Initialize database tables if they don't exist."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.executescript('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                name TEXT,
+                token TEXT UNIQUE,
+                plan TEXT DEFAULT 'trial',
+                license_key TEXT,
+                plan_expires_at TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            );
+            CREATE TABLE IF NOT EXISTS cases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                date TEXT,
+                age INTEGER,
+                sex TEXT,
+                rotation TEXT,
+                procedure_name TEXT,
+                cpt_code TEXT,
+                role TEXT,
+                approach TEXT,
+                attending TEXT,
+                complications TEXT DEFAULT 'None',
+                ebl INTEGER,
+                or_time INTEGER,
+                notes TEXT,
+                diagnosis TEXT,
+                created_at TEXT DEFAULT (datetime('now')),
+                updated_at TEXT DEFAULT (datetime('now')),
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            );
+            CREATE TABLE IF NOT EXISTS milestones (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                category TEXT NOT NULL,
+                count INTEGER DEFAULT 0,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                UNIQUE(user_id, category)
+            );
+            CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id);
+            CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date);
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+_ensure_db()
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
