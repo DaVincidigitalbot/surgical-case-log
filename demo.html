@@ -2024,7 +2024,7 @@ function updateMilestone(idx, val) {
 
 // ============ SERVER SYNC ============
 const API = window.location.origin + '/api';
-let authToken = localStorage.getItem('authToken');
+let authToken = isDemoMode ? null : localStorage.getItem('authToken');
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
 async function api(endpoint, method='GET', body=null) {
@@ -2535,7 +2535,7 @@ function exportPDF() {
     printWindow.document.close();
 }
 // ============ RNFA MODE ============
-let programType = localStorage.getItem('programType') || 'medical';
+let programType = isDemoMode ? 'medical' : (localStorage.getItem('programType') || 'medical');
 let rnfaCases = [];
 let rnfaStats = {};
 
