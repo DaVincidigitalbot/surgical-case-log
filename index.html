@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical Case Log Pro — For Medical, PA & NP Students</title>
     
     <!-- PWA -->
@@ -124,13 +124,13 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input, .form-group select, .form-group textarea, .search-dropdown {
             background: #0f1729;
             border: 1px solid #2a3a5c;
             color: #e0e0e0;
             padding: 10px 12px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             outline: none;
         }
         .form-group input:focus, .form-group select:focus {
@@ -487,7 +487,7 @@
                     <div class="form-group">
                         <label>Diagnosis</label>
                         <div style="position:relative;">
-                            <input type="text" id="diagnosisInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="text" id="diagnosisInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                             <input type="hidden" id="diagnosis">
                             <div id="diagnosisDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
@@ -495,7 +495,7 @@
                     <div class="form-group" style="grid-column: span 2;">
                         <label>Procedure / Encounter</label>
                         <div style="position:relative;">
-                            <input type="text" id="procedureInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('procedure')" onfocus="showDropdown('procedure')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="text" id="procedureInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('procedure')" onfocus="showDropdown('procedure')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                             <input type="hidden" id="procedure">
                             <div id="procedureDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
@@ -503,8 +503,10 @@
                             <option value="">Select procedure...</option>
                             <optgroup label="General Surgery">
                                 <option>Laparoscopic Cholecystectomy</option>
+                                <option>Robotic-Assisted Cholecystectomy</option>
                                 <option>Open Cholecystectomy</option>
                                 <option>Laparoscopic Appendectomy</option>
+                                <option>Robotic-Assisted Appendectomy</option>
                                 <option>Open Appendectomy</option>
                                 <option>Inguinal Hernia Repair</option>
                                 <option>Laparoscopic Inguinal Hernia Repair</option>
@@ -602,7 +604,7 @@
                     <div class="form-group">
                         <label>ICD-10 Code</label>
                         <div style="position:relative;">
-                            <input type="text" id="icd10Input" placeholder="Type diagnosis for ICD-10..." autocomplete="off" oninput="searchICD10()" onfocus="searchICD10()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
+                            <input type="text" id="icd10Input" placeholder="Type diagnosis for ICD-10..." autocomplete="off" oninput="searchICD10()" onfocus="searchICD10()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                             <input type="hidden" id="icd10Code">
                             <div id="icd10Dropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
@@ -622,11 +624,17 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Attending/Preceptor</label>
-                        <div style="position:relative;">
-                            <input type="text" id="attendingInput" placeholder="Type or select attending..." autocomplete="off" oninput="filterAttending()" onfocus="filterAttending()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;">
-                            <input type="hidden" id="attending">
-                            <div id="attendingDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
+                        <label style="display:flex; align-items:center; justify-content:space-between;">
+                            <span>Attending/Preceptor</span>
+                            <span onclick="showManageAttendings()" style="color:#2E8B8B; font-size:11px; cursor:pointer; text-transform:none; letter-spacing:0;">⚙️ Manage</span>
+                        </label>
+                        <div style="position:relative; display:flex; align-items:center; gap:6px;">
+                            <div style="position:relative; flex:1;">
+                                <input type="text" id="attendingInput" placeholder="Type or select attending..." autocomplete="off" oninput="filterAttending()" onfocus="filterAttending()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
+                                <input type="hidden" id="attending">
+                                <div id="attendingDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2E8B8B;border-radius:0 0 8px 8px;z-index:50;"></div>
+                            </div>
+                            <button type="button" id="saveAttendingBtn" onclick="quickSaveAttending()" style="display:none; align-items:center; justify-content:center; background:#2E8B8B; border:none; color:#fff; width:38px; height:38px; border-radius:8px; font-size:18px; cursor:pointer; flex-shrink:0;" title="Save this attending">💾</button>
                         </div>
                     </div>
                     <!-- SURGICAL FIELDS - hidden for medical specialties -->
@@ -840,44 +848,97 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Attending/Preceptor dropdown
-// This list is customized per institution when they sign up
-const ATTENDINGS = [
-    {name: "Dr. James Mitchell, MD", specialty: "General Surgery"},
-    {name: "Dr. Sarah Chen, MD, FACS", specialty: "Trauma Surgery"},
-    {name: "Dr. Robert Williams, DO", specialty: "Internal Medicine"},
-    {name: "Dr. Maria Rodriguez, MD", specialty: "Family Medicine"},
-    {name: "Dr. David Kim, MD", specialty: "Emergency Medicine"},
-    {name: "Dr. Emily Thompson, MD", specialty: "OB/GYN"},
-    {name: "Dr. Michael Johnson, MD", specialty: "Cardiology"},
-    {name: "Dr. Lisa Patel, MD", specialty: "Pediatrics"},
-    {name: "Dr. Andrew Davis, DO", specialty: "Psychiatry"},
-    {name: "Dr. Jennifer Brooks, MD, FACS", specialty: "Surgical Oncology"},
-];
+// Attending/Preceptor dropdown — user-saved attendings
+let userAttendings = [];
+
+async function loadUserAttendings() {
+    if (!authToken) { userAttendings = []; return; }
+    try {
+        const result = await fetch(API + '/attendings', {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        if (result.ok) {
+            userAttendings = await result.json();
+        }
+    } catch(e) { console.error('Failed to load attendings:', e); }
+}
+
+async function saveNewAttending(name, specialty) {
+    if (!authToken || !name) return null;
+    try {
+        const result = await fetch(API + '/attendings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken
+            },
+            body: JSON.stringify({ name: name.trim(), specialty: specialty || '' })
+        });
+        if (result.ok) {
+            const attending = await result.json();
+            userAttendings.push(attending);
+            return attending;
+        } else if (result.status === 409) {
+            // Already exists
+            return userAttendings.find(a => a.name.toLowerCase() === name.trim().toLowerCase()) || null;
+        }
+    } catch(e) { console.error('Failed to save attending:', e); }
+    return null;
+}
+
+async function deleteUserAttending(id) {
+    if (!authToken) return false;
+    try {
+        const result = await fetch(API + '/attendings/' + id, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        if (result.ok) {
+            userAttendings = userAttendings.filter(a => a.id !== id);
+            return true;
+        }
+    } catch(e) { console.error('Failed to delete attending:', e); }
+    return false;
+}
 
 function filterAttending() {
     const input = document.getElementById('attendingInput').value.toLowerCase();
     const dropdown = document.getElementById('attendingDropdown');
     const rotation = document.getElementById('rotation').value;
+    const saveBtn = document.getElementById('saveAttendingBtn');
     
-    // Filter by typed text and optionally by selected specialty
-    let filtered = ATTENDINGS.filter(a => 
-        a.name.toLowerCase().includes(input) || a.specialty.toLowerCase().includes(input)
+    // Filter user's saved attendings by typed text
+    let filtered = userAttendings.filter(a => 
+        a.name.toLowerCase().includes(input) || (a.specialty && a.specialty.toLowerCase().includes(input))
     );
     
     // Sort: matching specialty first
     if (rotation) {
         filtered.sort((a, b) => {
-            const aMatch = a.specialty.toLowerCase().includes(rotation.toLowerCase()) ? 0 : 1;
-            const bMatch = b.specialty.toLowerCase().includes(rotation.toLowerCase()) ? 0 : 1;
+            const aMatch = (a.specialty || '').toLowerCase().includes(rotation.toLowerCase()) ? 0 : 1;
+            const bMatch = (b.specialty || '').toLowerCase().includes(rotation.toLowerCase()) ? 0 : 1;
             return aMatch - bMatch;
         });
     }
     
+    // Check if typed name is already saved
+    const typedName = document.getElementById('attendingInput').value.trim();
+    const alreadySaved = userAttendings.some(a => a.name.toLowerCase() === typedName.toLowerCase());
+    
+    // Show/hide save button
+    if (saveBtn) {
+        saveBtn.style.display = (typedName.length > 1 && !alreadySaved && authToken) ? 'inline-flex' : 'none';
+    }
+    
     if (filtered.length === 0 && input.length > 0) {
-        // Allow custom entry
-        dropdown.innerHTML = '<div class="dropdown-item" style="color:#888;font-style:italic;">Type a custom name or select from list</div>';
+        dropdown.innerHTML = '<div class="dropdown-item" style="color:#888;font-style:italic;">Type a name — tap 💾 to save for next time</div>';
         document.getElementById('attending').value = document.getElementById('attendingInput').value;
+        dropdown.style.display = 'block';
+        return;
+    }
+    
+    if (filtered.length === 0 && input.length === 0 && userAttendings.length === 0) {
+        dropdown.innerHTML = '<div class="dropdown-item" style="color:#888;font-style:italic;">No saved attendings yet — type a name and save it</div>';
         dropdown.style.display = 'block';
         return;
     }
@@ -885,7 +946,7 @@ function filterAttending() {
     dropdown.innerHTML = filtered.map(a =>
         `<div class="dropdown-item" onclick="selectAttending('${a.name.replace(/'/g, "\\'")}')">
             <span style="color:#FFFFFF;">${a.name}</span>
-            <span style="color:#2E8B8B; font-size:12px; margin-left:8px;">${a.specialty}</span>
+            ${a.specialty ? `<span style="color:#2E8B8B; font-size:12px; margin-left:8px;">${a.specialty}</span>` : ''}
         </div>`
     ).join('');
     dropdown.style.display = 'block';
@@ -895,11 +956,76 @@ function selectAttending(name) {
     document.getElementById('attendingInput').value = name;
     document.getElementById('attending').value = name;
     document.getElementById('attendingDropdown').style.display = 'none';
+    // Hide save button since they picked a saved one
+    const saveBtn = document.getElementById('saveAttendingBtn');
+    if (saveBtn) saveBtn.style.display = 'none';
+}
+
+async function quickSaveAttending() {
+    const name = document.getElementById('attendingInput').value.trim();
+    if (!name) return;
+    const rotation = document.getElementById('rotation').value || '';
+    const btn = document.getElementById('saveAttendingBtn');
+    btn.textContent = '⏳';
+    btn.disabled = true;
+    const result = await saveNewAttending(name, rotation);
+    if (result) {
+        btn.textContent = '✅';
+        setTimeout(() => { btn.style.display = 'none'; btn.textContent = '💾'; btn.disabled = false; }, 1200);
+    } else {
+        btn.textContent = '💾';
+        btn.disabled = false;
+    }
+}
+
+// Manage Attendings Modal
+function showManageAttendings() {
+    let modal = document.getElementById('manageAttendingsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'manageAttendingsModal';
+        document.body.appendChild(modal);
+    }
+    
+    const list = userAttendings.length === 0
+        ? '<p style="color:#888; text-align:center; padding:20px;">No saved attendings yet.<br>Type a name in the attending field and tap 💾 to save.</p>'
+        : userAttendings.map(a => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #1a2744;" id="att-row-${a.id}">
+                <div>
+                    <span style="color:#fff; font-size:14px;">${a.name}</span>
+                    ${a.specialty ? `<span style="color:#2E8B8B; font-size:12px; margin-left:8px;">${a.specialty}</span>` : ''}
+                </div>
+                <button onclick="confirmDeleteAttending(${a.id}, '${a.name.replace(/'/g, "\\'")}')" style="background:none; border:none; color:#c0392b; cursor:pointer; font-size:18px; padding:4px 8px;">🗑</button>
+            </div>
+        `).join('');
+    
+    modal.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:250; justify-content:center; align-items:center;';
+    modal.innerHTML = `
+        <div style="background:#1a2744; border-radius:12px; padding:25px; width:90%; max-width:450px; border:1px solid #2a3a5c; max-height:80vh; overflow-y:auto;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+                <h2 style="color:#2E8B8B; font-size:18px; margin:0;">👨‍⚕️ Saved Attendings</h2>
+                <button onclick="document.getElementById('manageAttendingsModal').style.display='none'" style="background:none; border:1px solid #555; color:#888; padding:6px 12px; border-radius:6px; font-size:13px; cursor:pointer;">Close</button>
+            </div>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">${userAttendings.length} saved attending${userAttendings.length !== 1 ? 's' : ''}</p>
+            <div id="attendingsList">${list}</div>
+        </div>
+    `;
+}
+
+async function confirmDeleteAttending(id, name) {
+    if (!confirm('Remove "' + name + '" from your saved attendings?')) return;
+    const ok = await deleteUserAttending(id);
+    if (ok) {
+        const row = document.getElementById('att-row-' + id);
+        if (row) row.remove();
+        // Update count
+        showManageAttendings();
+    }
 }
 
 // Also allow custom entry on blur
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('#attendingInput') && !e.target.closest('#attendingDropdown')) {
+    if (!e.target.closest('#attendingInput') && !e.target.closest('#attendingDropdown') && !e.target.closest('#saveAttendingBtn')) {
         document.getElementById('attendingDropdown').style.display = 'none';
         // Save custom entry
         const val = document.getElementById('attendingInput').value;
@@ -1454,6 +1580,7 @@ async function doRegister() {
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
         syncLocalToServer();
+        loadUserAttendings();
     } catch(e) { alert('Registration failed'); }
 }
 
@@ -1473,6 +1600,7 @@ async function doLogin() {
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
         loadFromServer();
+        loadUserAttendings();
     } catch(e) { alert('Login failed'); }
 }
 
@@ -1546,6 +1674,7 @@ async function serverDeleteCase(serverId) {
 // Auto-load on startup - REQUIRE LOGIN
 if (authToken) {
     loadFromServer();
+    loadUserAttendings();
     updateUserUI();
     document.getElementById('appContainer').style.display = 'block';
     document.getElementById('landingPage').style.display = 'none';
@@ -1733,6 +1862,7 @@ async function doLandingRegister() {
                 document.getElementById('appContainer').style.display = 'block';
                 document.getElementById('landingPage').style.display = 'none';
                 syncLocalToServer();
+                loadUserAttendings();
             } else {
                 alert('No purchase found for ' + email + '. Please purchase at davincibot.gumroad.com first, then register with the same email.');
                 // Logout since they can't access
@@ -1778,6 +1908,7 @@ async function doLandingLogin() {
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
         loadFromServer();
+        loadUserAttendings();
     } catch(e) { alert('Login failed. Check your email and password.'); }
 }
 </script>

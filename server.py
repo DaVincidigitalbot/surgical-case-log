@@ -75,8 +75,18 @@ def init_db():
                 UNIQUE(user_id, category)
             )
         ''')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS user_attendings (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                name TEXT NOT NULL,
+                specialty TEXT,
+                UNIQUE(user_id, name)
+            )
+        ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_user_attendings_user ON user_attendings(user_id)')
         conn.commit()
         conn.close()
         print("[INIT] PostgreSQL database initialized successfully", flush=True)
@@ -365,6 +375,53 @@ def update_milestone():
     ''', (request.user['id'], data['category'], data['count'], data['count']))
     conn.commit()
     conn.close()
+    return jsonify({'success': True})
+
+# ============ ATTENDINGS ============
+
+@app.route('/api/attendings', methods=['GET'])
+@auth_required
+def get_attendings():
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT id, name, specialty FROM user_attendings WHERE user_id = %s ORDER BY name ASC', (request.user['id'],))
+    attendings = cur.fetchall()
+    conn.close()
+    return jsonify(attendings)
+
+@app.route('/api/attendings', methods=['POST'])
+@auth_required
+def add_attending():
+    data = request.json
+    name = (data.get('name') or '').strip()
+    specialty = (data.get('specialty') or '').strip() or None
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute('INSERT INTO user_attendings (user_id, name, specialty) VALUES (%s, %s, %s) RETURNING id, name, specialty',
+                     (request.user['id'], name, specialty))
+        attending = cur.fetchone()
+        conn.commit()
+        conn.close()
+        return jsonify(attending), 201
+    except psycopg2.errors.UniqueViolation:
+        return jsonify({'error': 'Attending already saved'}), 409
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/attendings/<int:attending_id>', methods=['DELETE'])
+@auth_required
+def delete_attending(attending_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM user_attendings WHERE id = %s AND user_id = %s', (attending_id, request.user['id']))
+    deleted = cur.rowcount
+    conn.commit()
+    conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Not found'}), 404
     return jsonify({'success': True})
 
 # ============ STATS ============
