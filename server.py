@@ -263,14 +263,14 @@ def activate_by_email():
                     else:
                         continue
                 else:
-                    plan = '90day'
+                    plan = 'annual'
                     from datetime import timedelta
                     purchase_date = sale.get('created_at', '')
                     try:
                         pd = datetime.fromisoformat(purchase_date.replace('Z', '+00:00'))
-                        expires = (pd + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
+                        expires = (pd + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
                     except:
-                        expires = (datetime.utcnow() + timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
+                        expires = (datetime.utcnow() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
                 
                 cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s WHERE id = %s',
                            (plan, expires, request.user['id']))
@@ -290,10 +290,10 @@ def activate_by_email():
 def get_plan():
     plan = request.user['plan'] or 'trial'
     expires = request.user['plan_expires_at']
-    if plan == '90day' and expires:
+    if plan in ('annual', '90day') and expires:
         if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
             plan = 'expired'
-    return jsonify({'plan': plan, 'plan_expires_at': expires, 'active': plan in ('monthly', '90day', 'trial')})
+    return jsonify({'plan': plan, 'plan_expires_at': expires, 'active': plan in ('monthly', 'annual', '90day', 'subscription', 'trial')})
 
 # ============ CASES ============
 
