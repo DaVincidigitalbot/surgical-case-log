@@ -1,4 +1,4 @@
-// Service Worker for Surgical Case Log Pro PWA
+// Service Worker for Clinical Case Log Pro PWA
 const CACHE_NAME = 'caselog-v1';
 const ASSETS_TO_CACHE = [
   '/',

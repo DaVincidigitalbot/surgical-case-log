@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Surgical Case Log — Backend API
+Clinical Case Log — Backend API
 SQLite database for persistent storage with user accounts.
 """
 from flask import Flask, request, jsonify, send_from_directory
