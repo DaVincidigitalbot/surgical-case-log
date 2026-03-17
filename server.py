@@ -805,9 +805,83 @@ def admin_panel():
         return '<h1>Access Denied</h1>', 403
     return send_from_directory('.', 'admin.html')
 
-@app.route('/api/admin/overview', methods=['GET'])
-def admin_overview():
-    key = request.args.get('key', '') or request.headers.get('X-Admin-Key', '')
+@app.route('/api/admin/stats', methods=['GET'])
+def admin_stats():
+    key = request.args.get('key', '')
+    if key != ADMIN_SECRET:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        # Total registered users
+        cur.execute('SELECT COUNT(*) FROM users')
+        total_users = cur.fetchone()[0]
+        
+        # Active users (users with cases in last 7 days)
+        cur.execute('''
+            SELECT COUNT(DISTINCT user_id) FROM cases 
+            WHERE created_at >= NOW() - INTERVAL '7 days'
+        ''')
+        active_users = cur.fetchone()[0]
+        
+        # Total cases (medical + RNFA)
+        cur.execute('SELECT COUNT(*) FROM cases')
+        medical_cases = cur.fetchone()[0]
+        cur.execute('SELECT COUNT(*) FROM rnfa_cases')
+        rnfa_cases = cur.fetchone()[0]
+        total_cases = medical_cases + rnfa_cases
+        
+        # Plan breakdown
+        cur.execute('''
+            SELECT 
+                plan,
+                COUNT(*) as count,
+                CASE 
+                    WHEN plan = 'annual' AND plan_expires_at IS NOT NULL AND plan_expires_at < NOW()::text THEN 'expired'
+                    WHEN plan = '90day' AND plan_expires_at IS NOT NULL AND plan_expires_at < NOW()::text THEN 'expired'
+                    ELSE plan
+                END as effective_plan
+            FROM users 
+            GROUP BY plan, effective_plan
+            ORDER BY count DESC
+        ''')
+        plan_data = cur.fetchall()
+        
+        # Consolidate plan counts
+        plan_counts = {}
+        for row in plan_data:
+            plan = row[2]  # effective_plan
+            count = row[1]
+            if plan in plan_counts:
+                plan_counts[plan] += count
+            else:
+                plan_counts[plan] = count
+        
+        paid_users = plan_counts.get('annual', 0) + plan_counts.get('subscription', 0)
+        trial_users = plan_counts.get('trial', 0)
+        expired_users = plan_counts.get('expired', 0)
+        
+        conn.close()
+        
+        return jsonify({
+            'total_users': total_users,
+            'active_users': active_users,
+            'total_cases': total_cases,
+            'medical_cases': medical_cases,
+            'rnfa_cases': rnfa_cases,
+            'paid_users': paid_users,
+            'trial_users': trial_users,
+            'expired_users': expired_users,
+            'plan_breakdown': plan_counts
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/api/admin/users', methods=['GET'])
+def admin_users():
+    key = request.args.get('key', '')
     if key != ADMIN_SECRET:
         return jsonify({'error': 'Access denied'}), 403
     
@@ -815,40 +889,114 @@ def admin_overview():
         conn = get_db()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        cur.execute('SELECT id, email, name, plan, plan_expires_at, created_at FROM users ORDER BY created_at DESC')
+        # Get all users with case counts
+        cur.execute('''
+            SELECT 
+                u.id, u.email, u.name, u.plan, u.program_type, u.plan_expires_at, u.created_at,
+                COALESCE(c.case_count, 0) as medical_cases,
+                COALESCE(r.rnfa_count, 0) as rnfa_cases,
+                COALESCE(c.case_count, 0) + COALESCE(r.rnfa_count, 0) as total_cases
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) as case_count 
+                FROM cases 
+                GROUP BY user_id
+            ) c ON u.id = c.user_id
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) as rnfa_count 
+                FROM rnfa_cases 
+                GROUP BY user_id
+            ) r ON u.id = r.user_id
+            ORDER BY u.created_at DESC
+        ''')
         users = cur.fetchall()
         
-        cur.execute('SELECT * FROM cases ORDER BY created_at DESC')
-        cases_raw = cur.fetchall()
+        # Convert timestamps to strings
+        for user in users:
+            if user.get('created_at') and hasattr(user['created_at'], 'isoformat'):
+                user['created_at'] = user['created_at'].isoformat()
         
-        cases = []
-        for c in cases_raw:
-            cur.execute('SELECT email, name FROM users WHERE id = %s', (c.get('user_id'),))
-            user = cur.fetchone()
-            c['user_email'] = user['email'] if user else 'unknown'
-            c['user_name'] = user['name'] if user else 'unknown'
-            if c.get('created_at') and hasattr(c['created_at'], 'isoformat'):
-                c['created_at'] = c['created_at'].isoformat()
-            if c.get('updated_at') and hasattr(c['updated_at'], 'isoformat'):
-                c['updated_at'] = c['updated_at'].isoformat()
-            cases.append(c)
+        conn.close()
+        return jsonify(users)
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/api/admin/activity', methods=['GET'])
+def admin_activity():
+    key = request.args.get('key', '')
+    if key != ADMIN_SECRET:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
         
-        # Fix user timestamps too
-        for u in users:
-            if u.get('created_at') and hasattr(u['created_at'], 'isoformat'):
-                u['created_at'] = u['created_at'].isoformat()
+        # Daily signups for last 30 days
+        cur.execute('''
+            SELECT 
+                DATE(created_at) as signup_date,
+                COUNT(*) as signups
+            FROM users 
+            WHERE created_at >= NOW() - INTERVAL '30 days'
+            GROUP BY DATE(created_at)
+            ORDER BY signup_date ASC
+        ''')
+        signup_data = cur.fetchall()
+        
+        # Daily case counts for last 30 days
+        cur.execute('''
+            SELECT 
+                DATE(created_at) as case_date,
+                COUNT(*) as medical_cases
+            FROM cases 
+            WHERE created_at >= NOW() - INTERVAL '30 days'
+            GROUP BY DATE(created_at)
+            ORDER BY case_date ASC
+        ''')
+        medical_case_data = cur.fetchall()
+        
+        cur.execute('''
+            SELECT 
+                DATE(created_at) as case_date,
+                COUNT(*) as rnfa_cases
+            FROM rnfa_cases 
+            WHERE created_at >= NOW() - INTERVAL '30 days'
+            GROUP BY DATE(created_at)
+            ORDER BY case_date ASC
+        ''')
+        rnfa_case_data = cur.fetchall()
+        
+        # Top 10 most active users
+        cur.execute('''
+            SELECT 
+                u.name, u.email,
+                COALESCE(c.case_count, 0) + COALESCE(r.rnfa_count, 0) as total_cases
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) as case_count 
+                FROM cases 
+                GROUP BY user_id
+            ) c ON u.id = c.user_id
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) as rnfa_count 
+                FROM rnfa_cases 
+                GROUP BY user_id
+            ) r ON u.id = r.user_id
+            ORDER BY total_cases DESC
+            LIMIT 10
+        ''')
+        top_users = cur.fetchall()
         
         conn.close()
         
         return jsonify({
-            'total_users': len(users),
-            'total_cases': len(cases),
-            'users': users,
-            'cases': cases
+            'signups': [{'date': str(row[0]), 'count': row[1]} for row in signup_data],
+            'medical_cases': [{'date': str(row[0]), 'count': row[1]} for row in medical_case_data],
+            'rnfa_cases': [{'date': str(row[0]), 'count': row[1]} for row in rnfa_case_data],
+            'top_users': [{'name': row[0], 'email': row[1], 'cases': row[2]} for row in top_users]
         })
     except Exception as e:
-        import traceback
-        return jsonify({'error': str(e), 'trace': traceback.format_exc(), 'total_users': 0, 'total_cases': 0, 'users': [], 'cases': []})
+        return jsonify({'error': str(e)})
 
 # ============ STATIC FILES ============
 
