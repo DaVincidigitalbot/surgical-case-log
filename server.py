@@ -250,13 +250,26 @@ def login():
         conn.close()
         return jsonify({'error': 'Invalid email or password'}), 401
     
-    # Generate new token
-    token = secrets.token_urlsafe(32)
-    conn.execute('UPDATE users SET token = ? WHERE id = ?', (token, user['id']))
-    conn.commit()
+    # Reuse existing token if present, otherwise generate new one
+    token = user['token']
+    if not token:
+        token = secrets.token_urlsafe(32)
+        conn.execute('UPDATE users SET token = ? WHERE id = ?', (token, user['id']))
+        conn.commit()
     conn.close()
     
     return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'plan_expires_at': user['plan_expires_at']})
+
+# ============ TOKEN CHECK ============
+
+@app.route('/api/me', methods=['GET'])
+def check_token():
+    """Check if stored token is still valid — returns user info or 401"""
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    user = get_user_from_token(token)
+    if not user:
+        return jsonify({'error': 'Invalid token'}), 401
+    return jsonify({'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial'})
 
 # ============ LICENSE VERIFICATION ============
 
