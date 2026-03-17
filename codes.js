@@ -608,8 +608,68 @@ const IR_CPTS = {
     "Drain Check/Exchange": "49423",
 };
 
+// Interventional Cardiology CPT codes
+const IC_CPTS = {
+    "Left Heart Catheterization": "93452",
+    "Left Heart Cath w/ Ventriculography": "93458",
+    "Right Heart Catheterization": "93451",
+    "Combined Right & Left Heart Catheterization": "93453",
+    "Coronary Angiography (Diagnostic)": "93454",
+    "PCI w/ Stent Placement - Single Vessel": "92928",
+    "PCI w/ Stent Placement - Two Vessels": "92929",
+    "PCI w/ Stent Placement - Three Vessels": "92929",
+    "PCI w/ Drug-Eluting Stent (DES)": "92928",
+    "PCI w/ Bare Metal Stent (BMS)": "92928",
+    "PCI w/ Balloon Angioplasty Only": "92920",
+    "PCI w/ Atherectomy - Rotational": "92924",
+    "PCI w/ Atherectomy - Orbital": "92924",
+    "PCI w/ Atherectomy - Laser": "92924",
+    "PCI - Chronic Total Occlusion (CTO)": "92928",
+    "PCI - Acute MI (Primary)": "92941",
+    "PCI - Bifurcation Lesion": "92928",
+    "PCI - Left Main": "92928",
+    "IVUS (Intravascular Ultrasound)": "92978",
+    "FFR (Fractional Flow Reserve)": "93571",
+    "iFR (Instantaneous Wave-Free Ratio)": "93571",
+    "OCT (Optical Coherence Tomography)": "92978",
+    "TAVR - Transfemoral Approach": "33361",
+    "TAVR - Transapical Approach": "33362",
+    "TAVR - Transaortic Approach": "33362",
+    "Balloon Aortic Valvuloplasty (BAV)": "92986",
+    "MitraClip (Transcatheter Mitral Valve Repair)": "33418",
+    "TEER (Transcatheter Edge-to-Edge Repair)": "33418",
+    "Transcatheter Mitral Valve Replacement (TMVR)": "33419",
+    "Percutaneous Balloon Mitral Valvuloplasty": "92987",
+    "ASD Closure - Transcatheter": "93580",
+    "PFO Closure - Transcatheter": "93580",
+    "VSD Closure - Transcatheter": "93581",
+    "Left Atrial Appendage Closure (Watchman/Amulet)": "33340",
+    "Alcohol Septal Ablation (HCM)": "93583",
+    "Percutaneous Thrombectomy - Coronary": "92973",
+    "Coronary Thrombolysis - Catheter Directed": "92975",
+    "Peripheral Angiography": "36247",
+    "Peripheral Angioplasty": "37224",
+    "Peripheral Stent Placement": "37226",
+    "Renal Artery Stent Placement": "37236",
+    "Carotid Artery Stent Placement": "37215",
+    "Intra-Aortic Balloon Pump (IABP) Placement": "33967",
+    "Impella Placement": "33990",
+    "TandemHeart Placement": "33991",
+    "Pericardiocentesis": "33016",
+    "Temporary Pacemaker Placement - Transvenous": "33210",
+    "Permanent Pacemaker Implantation": "33208",
+    "ICD Implantation": "33249",
+    "CRT-D (Cardiac Resynchronization) Implantation": "33224",
+    "Leadless Pacemaker Insertion (Micra)": "33274",
+    "Implantable Loop Recorder (ILR) Insertion": "33285",
+    "Lead Extraction": "33234",
+    "Endomyocardial Biopsy": "93505",
+    "Coronary Physiology Assessment (FFR/iFR)": "93571",
+    "Hemodynamic Assessment": "93451",
+};
+
 // Merge all new CPT codes into PROCEDURE_TO_CPT
-Object.assign(PROCEDURE_TO_CPT, CVT_CPTS, VASC_CPTS, ORTHO_CPTS, NEURO_CPTS, CRITCARE_CPTS, IR_CPTS);
+Object.assign(PROCEDURE_TO_CPT, CVT_CPTS, VASC_CPTS, ORTHO_CPTS, NEURO_CPTS, CRITCARE_CPTS, IR_CPTS, IC_CPTS);
 
 // ICD-10 codes for new specialties
 const NEW_ICD10 = {
@@ -760,4 +820,37 @@ const IR_ICD10 = {
     "Lymphadenopathy - Biopsy Indicated": "R59.9",
 };
 
-Object.assign(DIAGNOSIS_TO_ICD10, NEW_ICD10, CRITCARE_ICD10, IR_ICD10);
+// Interventional Cardiology ICD-10 codes
+const IC_ICD10 = {
+    "Coronary Artery Disease - Single Vessel": "I25.10",
+    "Coronary Artery Disease - Multi Vessel": "I25.10",
+    "Coronary Artery Disease - Left Main": "I25.10",
+    "Acute ST-Elevation MI (STEMI)": "I21.3",
+    "Acute Non-ST-Elevation MI (NSTEMI)": "I21.4",
+    "Unstable Angina": "I20.0",
+    "Stable Angina": "I20.9",
+    "Prinzmetal (Vasospastic) Angina": "I20.1",
+    "In-Stent Restenosis": "T82.855A",
+    "Stent Thrombosis": "T82.867A",
+    "Aortic Stenosis (TAVR Candidate)": "I35.0",
+    "Mitral Regurgitation (MitraClip Candidate)": "I34.0",
+    "Atrial Septal Defect (ASD)": "Q21.1",
+    "Ventricular Septal Defect (VSD)": "Q21.0",
+    "Patent Foramen Ovale (PFO)": "Q21.1",
+    "Left Atrial Appendage (LAA) - Stroke Risk": "I48.91",
+    "Bradycardia - Symptomatic": "R00.1",
+    "Heart Block - Complete": "I44.2",
+    "Heart Block - Second Degree": "I44.1",
+    "Sick Sinus Syndrome": "I49.5",
+    "Ventricular Tachycardia": "I47.2",
+    "Ventricular Fibrillation": "I49.01",
+    "Sudden Cardiac Death - Survivor": "I46.9",
+    "Long QT Syndrome": "I45.81",
+    "Hypertrophic Cardiomyopathy (Obstructive)": "I42.1",
+    "Heart Failure - Systolic (Reduced EF)": "I50.20",
+    "Heart Failure - Diastolic (Preserved EF)": "I50.30",
+    "Coronary Artery Aneurysm": "I25.41",
+    "Coronary Artery Dissection - Spontaneous (SCAD)": "I25.42",
+};
+
+Object.assign(DIAGNOSIS_TO_ICD10, NEW_ICD10, CRITCARE_ICD10, IR_ICD10, IC_ICD10);

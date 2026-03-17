@@ -481,6 +481,7 @@
                             <option>Cardiology</option>
                             <option>Surgical/Medical Critical Care</option>
                             <option>Interventional Radiology</option>
+                            <option>Interventional Cardiology</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -724,7 +725,7 @@
 <script src="/codes.js"></script>
 <script>
 // Surgical vs Medical specialty detection
-const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery', 'Surgical/Medical Critical Care', 'Interventional Radiology'];
+const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery', 'Surgical/Medical Critical Care', 'Interventional Radiology', 'Interventional Cardiology'];
 const MEDICAL_SPECIALTIES = ['Internal Medicine', 'Family Medicine', 'Pediatrics', 'Psychiatry', 'Neurology', 'Nephrology', 'Cardiology'];
 const MIXED_SPECIALTIES = ['OB/GYN', 'Emergency Medicine']; // Show surgical fields but not required
 
@@ -1095,6 +1096,24 @@ const CPT_CODES = [
     {code:"47383", procedure:"Microwave Ablation - Liver", category:"Interventional Radiology"},
     {code:"49440", procedure:"Percutaneous Gastrostomy - IR", category:"Interventional Radiology"},
     {code:"36902", procedure:"AV Fistula Salvage/Fistulogram", category:"Interventional Radiology"},
+    // Interventional Cardiology
+    {code:"93458", procedure:"Left Heart Catheterization w/ Ventriculography", category:"Interventional Cardiology"},
+    {code:"93454", procedure:"Coronary Angiography (Diagnostic)", category:"Interventional Cardiology"},
+    {code:"92928", procedure:"PCI w/ Stent - Single Vessel", category:"Interventional Cardiology"},
+    {code:"92929", procedure:"PCI w/ Stent - Additional Vessel", category:"Interventional Cardiology"},
+    {code:"92920", procedure:"PCI w/ Balloon Angioplasty - Single", category:"Interventional Cardiology"},
+    {code:"92924", procedure:"PCI w/ Atherectomy - Single", category:"Interventional Cardiology"},
+    {code:"33361", procedure:"TAVR - Transfemoral", category:"Interventional Cardiology"},
+    {code:"33362", procedure:"TAVR - Transapical", category:"Interventional Cardiology"},
+    {code:"93580", procedure:"ASD Closure (Transcatheter)", category:"Interventional Cardiology"},
+    {code:"93581", procedure:"VSD Closure (Transcatheter)", category:"Interventional Cardiology"},
+    {code:"33274", procedure:"Leadless Pacemaker Insertion", category:"Interventional Cardiology"},
+    {code:"33285", procedure:"Implantable Loop Recorder", category:"Interventional Cardiology"},
+    {code:"92941", procedure:"PCI - Acute MI", category:"Interventional Cardiology"},
+    {code:"92973", procedure:"Percutaneous Thrombectomy - Coronary", category:"Interventional Cardiology"},
+    {code:"92978", procedure:"IVUS (Intravascular Ultrasound)", category:"Interventional Cardiology"},
+    {code:"92975", procedure:"Coronary Thrombolysis", category:"Interventional Cardiology"},
+    {code:"33289", procedure:"Transcatheter Implant of Wireless Cardiac Stimulator", category:"Interventional Cardiology"},
 ];
 
 // ACGME Milestones
