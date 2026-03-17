@@ -21,7 +21,9 @@ DB_PATH = os.environ.get('DB_PATH', os.path.join(os.path.dirname(__file__), 'cas
 def _ensure_db():
     """Initialize database tables if they don't exist."""
     try:
-        conn = sqlite3.connect(DB_PATH)
+        db_path = DB_PATH
+        print(f"[INIT] Initializing DB at: {db_path}", flush=True)
+        conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA journal_mode=WAL")
         conn.executescript('''
             CREATE TABLE IF NOT EXISTS users (
@@ -69,10 +71,18 @@ def _ensure_db():
         ''')
         conn.commit()
         conn.close()
-    except Exception:
-        pass
+        print(f"[INIT] DB initialized successfully at: {db_path}", flush=True)
+    except Exception as e:
+        print(f"[INIT] DB init error: {e}", flush=True)
 
 _ensure_db()
+
+# Also ensure DB on first request (belt and suspenders)
+@app.before_request
+def ensure_tables():
+    """Make sure tables exist before handling any request."""
+    app.before_request_funcs[None].remove(ensure_tables)  # Run only once
+    _ensure_db()
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -545,6 +555,7 @@ def admin_overview():
         return jsonify({'error': 'Access denied'}), 403
     
     try:
+        _ensure_db()  # Make absolutely sure tables exist
         conn = get_db()
         
         # Get all users (exclude password hashes)
