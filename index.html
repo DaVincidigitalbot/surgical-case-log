@@ -2325,34 +2325,7 @@ function initDemoMode() {
     renderCases();
 }
 
-// Override switchProgram in demo mode to use local data
-const _originalSwitchProgram = switchProgram;
-switchProgram = function(type) {
-    if (!isDemoMode) {
-        return _originalSwitchProgram(type);
-    }
-    programType = type;
-    document.getElementById('toggleMedical').classList.toggle('active', type === 'medical');
-    document.getElementById('toggleRnfa').classList.toggle('active', type === 'rnfa');
-    document.getElementById('medicalTabs').style.display = type === 'medical' ? 'flex' : 'none';
-    document.getElementById('rnfaTabs').style.display = type === 'rnfa' ? 'flex' : 'none';
-    document.getElementById('pdfExportBtn').style.display = type === 'medical' ? '' : 'none';
-    document.getElementById('exxatExportBtn').style.display = type === 'medical' ? '' : 'none';
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    if (type === 'rnfa') {
-        document.getElementById('rnfaDashboard').classList.add('active');
-        document.querySelectorAll('#rnfaTabs .tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('#rnfaTabs .tab:first-child').classList.add('active');
-        renderRnfaDashboard();
-        renderRnfaCases();
-    } else {
-        document.getElementById('dashboard').classList.add('active');
-        document.querySelectorAll('#medicalTabs .tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('#medicalTabs .tab:first-child').classList.add('active');
-        updateDashboard();
-        renderCases();
-    }
-};
+// Demo mode switchProgram logic is now handled inline in the main switchProgram function
 
 // Intercept save actions in demo mode
 const _originalAddCase = addCase;
@@ -2583,7 +2556,7 @@ let rnfaStats = {};
 
 function switchProgram(type) {
     programType = type;
-    localStorage.setItem('programType', type);
+    if (!isDemoMode) localStorage.setItem('programType', type);
     // Update toggle buttons
     document.getElementById('toggleMedical').classList.toggle('active', type === 'medical');
     document.getElementById('toggleRnfa').classList.toggle('active', type === 'rnfa');
@@ -2597,18 +2570,23 @@ function switchProgram(type) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     if (type === 'rnfa') {
         document.getElementById('rnfaDashboard').classList.add('active');
-        // Reset RNFA tab highlighting
         document.querySelectorAll('#rnfaTabs .tab').forEach(t => t.classList.remove('active'));
         document.querySelector('#rnfaTabs .tab:first-child').classList.add('active');
-        loadRnfaCases();
+        if (isDemoMode) {
+            renderRnfaDashboard();
+            renderRnfaCases();
+        } else {
+            loadRnfaCases();
+        }
     } else {
         document.getElementById('dashboard').classList.add('active');
         document.querySelectorAll('#medicalTabs .tab').forEach(t => t.classList.remove('active'));
         document.querySelector('#medicalTabs .tab:first-child').classList.add('active');
         updateDashboard();
+        if (isDemoMode) renderCases();
     }
     // Save to server
-    if (authToken) {
+    if (authToken && !isDemoMode) {
         api('/user/program', 'PUT', { program_type: type }).catch(() => {});
     }
 }
