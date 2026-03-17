@@ -468,6 +468,84 @@
         }
         .empty-state .icon { font-size: 48px; margin-bottom: 15px; }
         .empty-state p { font-size: 16px; margin-bottom: 20px; }
+
+        /* Demo Mode Banner */
+        .demo-banner {
+            background: #D4A843;
+            color: #0f1729;
+            font-weight: 700;
+            padding: 10px 20px;
+            text-align: center;
+            position: sticky;
+            top: 56px;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 14px;
+        }
+        .demo-banner .demo-cta-btn {
+            background: #0f1729;
+            color: #D4A843;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .demo-banner .demo-cta-btn:hover {
+            background: #1a2744;
+        }
+
+        /* Demo Mode Modal */
+        .demo-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+        .demo-modal-overlay.show { display: flex; }
+        .demo-modal {
+            background: #1a2744;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 420px;
+            border: 1px solid #2a3a5c;
+            text-align: center;
+        }
+        .demo-modal h2 { color: #D4A843; font-size: 20px; margin-bottom: 12px; }
+        .demo-modal p { color: #aaa; font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
+        .demo-modal .demo-register-btn {
+            background: #D4A843;
+            color: #0f1729;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .demo-modal .demo-register-btn:hover { background: #c99a38; }
+        .demo-modal .demo-dismiss-btn {
+            background: none;
+            border: 1px solid #555;
+            color: #888;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -517,7 +595,7 @@
                 </div>
             </div>
             <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
-                <a href="https://davincibot.gumroad.com/l/surgical-case-log" target="_blank" class="btn btn-primary" style="flex:1; text-align:center; text-decoration:none; min-width:140px;">Subscribe Monthly</a>
+                <a href="https://davincibot.gumroad.com/l/clinical-case-log" target="_blank" class="btn btn-primary" style="flex:1; text-align:center; text-decoration:none; min-width:140px;">Subscribe Monthly</a>
                 <a href="https://davincibot.gumroad.com/l/mtccpc" target="_blank" class="btn btn-gold" style="flex:1; text-align:center; text-decoration:none; min-width:140px;">90-Day Pass</a>
             </div>
             <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">After purchase, register below with the same email</p>
@@ -542,6 +620,22 @@
         <button id="pdfExportBtn" onclick="exportPDF()">📄 PDF</button>
         <button id="exxatExportBtn" onclick="exportForExxat()">🔄 Exxat</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
+    </div>
+</div>
+
+<!-- Demo Mode Banner (hidden by default, shown in demo mode) -->
+<div id="demoBanner" class="demo-banner" style="display:none;">
+    <span>🎯 DEMO MODE — Exploring Clinical Case Log</span>
+    <button class="demo-cta-btn" onclick="exitDemoMode()">Create Account</button>
+</div>
+
+<!-- Demo Mode Save Modal -->
+<div id="demoModal" class="demo-modal-overlay">
+    <div class="demo-modal">
+        <h2>🔒 Demo Preview</h2>
+        <p>This is a demo preview. Create an account to start logging your clinical cases and tracking your progress.</p>
+        <button class="demo-register-btn" onclick="exitDemoMode()">Register Now</button>
+        <button class="demo-dismiss-btn" onclick="closeDemoModal()">Continue Exploring</button>
     </div>
 </div>
 
@@ -1749,6 +1843,7 @@ function addCase(e) {
 }
 
 function deleteCase(id) {
+    if (isDemoMode) { showDemoModal(); return; }
     if (confirm('Delete this case?')) {
         const theCase = cases.find(c => c.id === id);
         if (theCase && theCase.serverId) serverDeleteCase(theCase.serverId);
@@ -2096,6 +2191,217 @@ function initProgramMode() {
     }
 }
 
+// ============ DEMO MODE ============
+let isDemoMode = false;
+
+const DEMO_RNFA_CASES = [
+    {
+        id: 9001, case_number: 1, procedure_name: 'Laparoscopic Cholecystectomy',
+        surgeon_name: 'Dr. Sarah Chen', case_date: '2026-03-10', case_time: '07:30',
+        preop_time: 25, intraop_time: 95, postop_time: 20,
+        preop_behaviors: 'Reviewed labs and imaging. Confirmed consent. Performed surgical site assessment.',
+        draping_prepping: 'ChloraPrep, four-corner draping with laparoscopic drape.',
+        special_instruments: 'Karl Storz laparoscopic tower, Maryland dissector, hook cautery.',
+        medical_devices: 'Bovie electrosurgery, Veress needle insufflator.',
+        exposure_hemostasis: 'Retracted gallbladder fundus for critical view of safety. Clipped cystic duct and artery.',
+        layer_closure: '0 Vicryl fascial closure at umbilical port. 4-0 Monocryl subcuticular skin.',
+        postop_behaviors: 'Evaluated patient in PACU. Reviewed discharge instructions.',
+        learning_log: 'First time maintaining critical view retraction throughout entire dissection. Dr. Chen praised tissue handling.',
+        created_at: '2026-03-10T12:00:00'
+    },
+    {
+        id: 9002, case_number: 2, procedure_name: 'Robotic-Assisted Inguinal Hernia Repair',
+        surgeon_name: 'Dr. James Mitchell', case_date: '2026-03-12', case_time: '09:00',
+        preop_time: 30, intraop_time: 120, postop_time: 15,
+        preop_behaviors: 'Assisted with robot docking and port placement planning.',
+        draping_prepping: 'ChloraPrep, robotic-specific draping protocol. Patient supine, Trendelenburg.',
+        special_instruments: 'da Vinci Xi, Cadiere forceps, fenestrated bipolar, ProGrip mesh.',
+        medical_devices: 'Insufflator, robotic tower, AirSeal system.',
+        exposure_hemostasis: 'Reduced hernia sac, identified cord structures, placed ProGrip mesh in preperitoneal space.',
+        layer_closure: 'Peritoneal flap closure with 3-0 V-Loc barbed suture. Port sites with 4-0 Monocryl.',
+        postop_behaviors: 'Patient stable, ambulatory in PACU. Reviewed lifting restrictions.',
+        learning_log: 'Learned robotic port placement triangle for TAPP approach. Need to practice knot tying at bedside console.',
+        created_at: '2026-03-12T14:00:00'
+    },
+    {
+        id: 9003, case_number: 3, procedure_name: 'Open Appendectomy',
+        surgeon_name: 'Dr. Robert Williams', case_date: '2026-03-15', case_time: '14:30',
+        preop_time: 20, intraop_time: 65, postop_time: 18,
+        preop_behaviors: 'Urgent case. Reviewed CT findings. Administered pre-op antibiotics per protocol.',
+        draping_prepping: 'Betadine prep, standard laparotomy draping. RLQ McBurney incision marked.',
+        special_instruments: 'Standard laparotomy tray, Babcock clamps, appendectomy peel pack.',
+        medical_devices: 'Bovie electrosurgery, suction irrigator.',
+        exposure_hemostasis: 'Delivered cecum through incision. Identified inflamed appendix. Doubly ligated base with 0 Vicryl.',
+        layer_closure: 'Peritoneum and fascia closed with 0 PDS running. Subcutaneous 3-0 Vicryl. Skin staples.',
+        postop_behaviors: 'Monitored in PACU. Ordered IV antibiotics and diet advancement.',
+        learning_log: 'First open appendectomy. Practiced hand-tied ligature technique on appendiceal stump.',
+        created_at: '2026-03-15T17:00:00'
+    }
+];
+
+const DEMO_MEDICAL_CASES = [
+    {
+        id: 8001, serverId: 8001, date: '2026-03-10', age: 58, sex: 'F',
+        rotation: 'General Surgery', procedure: 'Laparoscopic Cholecystectomy',
+        cpt: '47562', role: 'Assisted', approach: 'Laparoscopic',
+        attending: 'Dr. Sarah Chen', complications: 'None', ebl: '25', orTime: '95',
+        diagnosis: 'Calculus of gallbladder with chronic cholecystitis',
+        notes: 'Uneventful case. Maintained critical view of safety.'
+    },
+    {
+        id: 8002, serverId: 8002, date: '2026-03-12', age: 72, sex: 'M',
+        rotation: 'Internal Medicine', procedure: 'Inpatient Management',
+        cpt: '', role: 'Primary', approach: '',
+        attending: 'Dr. Lisa Park', complications: 'None', ebl: '', orTime: '',
+        diagnosis: 'Type 2 Diabetes; Hypertension; CKD Stage 3',
+        notes: 'Managed insulin regimen, titrated antihypertensives.'
+    },
+    {
+        id: 8003, serverId: 8003, date: '2026-03-15', age: 34, sex: 'M',
+        rotation: 'Orthopedic Surgery', procedure: 'Closed Reduction Distal Radius Fracture',
+        cpt: '25600', role: 'Observed', approach: '',
+        attending: 'Dr. Michael Torres', complications: 'None', ebl: '', orTime: '',
+        diagnosis: 'Closed fracture of distal radius',
+        notes: 'Hematoma block, closed reduction under fluoroscopy, short arm cast applied.'
+    }
+];
+
+function initDemoMode() {
+    isDemoMode = true;
+
+    // Show app, hide landing
+    document.getElementById('appContainer').style.display = 'block';
+    document.getElementById('landingPage').style.display = 'none';
+
+    // Show demo banner
+    document.getElementById('demoBanner').style.display = 'flex';
+
+    // Show program toggle and default to RNFA
+    document.getElementById('programToggle').style.display = 'flex';
+
+    // Update user button for demo
+    const btn = document.getElementById('userBtn');
+    btn.textContent = '🔑 Sign Up';
+    btn.onclick = exitDemoMode;
+
+    // Default to RNFA mode
+    programType = 'rnfa';
+    document.getElementById('toggleMedical').classList.remove('active');
+    document.getElementById('toggleRnfa').classList.add('active');
+    document.getElementById('medicalTabs').style.display = 'none';
+    document.getElementById('rnfaTabs').style.display = 'flex';
+    document.getElementById('pdfExportBtn').style.display = 'none';
+    document.getElementById('exxatExportBtn').style.display = 'none';
+
+    // Populate RNFA demo data
+    rnfaCases = DEMO_RNFA_CASES;
+    rnfaStats = {
+        total_cases: 12,
+        total_intraop_minutes: 1110,
+        total_intraop_hours: 18.5,
+        total_preop_minutes: 372,
+        total_preop_hours: 6.2,
+        total_postop_minutes: 288,
+        total_postop_hours: 4.8,
+        intraop_goal_hours: 65,
+        intraop_progress_pct: 28
+    };
+
+    // Populate Medical/PA demo data
+    cases = DEMO_MEDICAL_CASES;
+
+    // Show RNFA dashboard
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('rnfaDashboard').classList.add('active');
+    document.querySelectorAll('#rnfaTabs .tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('#rnfaTabs .tab:first-child').classList.add('active');
+
+    // Render demo data
+    renderRnfaDashboard();
+    renderRnfaCases();
+    updateDashboard();
+    renderCases();
+}
+
+// Override switchProgram in demo mode to use local data
+const _originalSwitchProgram = switchProgram;
+switchProgram = function(type) {
+    if (!isDemoMode) {
+        return _originalSwitchProgram(type);
+    }
+    programType = type;
+    document.getElementById('toggleMedical').classList.toggle('active', type === 'medical');
+    document.getElementById('toggleRnfa').classList.toggle('active', type === 'rnfa');
+    document.getElementById('medicalTabs').style.display = type === 'medical' ? 'flex' : 'none';
+    document.getElementById('rnfaTabs').style.display = type === 'rnfa' ? 'flex' : 'none';
+    document.getElementById('pdfExportBtn').style.display = type === 'medical' ? '' : 'none';
+    document.getElementById('exxatExportBtn').style.display = type === 'medical' ? '' : 'none';
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    if (type === 'rnfa') {
+        document.getElementById('rnfaDashboard').classList.add('active');
+        document.querySelectorAll('#rnfaTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#rnfaTabs .tab:first-child').classList.add('active');
+        renderRnfaDashboard();
+        renderRnfaCases();
+    } else {
+        document.getElementById('dashboard').classList.add('active');
+        document.querySelectorAll('#medicalTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#medicalTabs .tab:first-child').classList.add('active');
+        updateDashboard();
+        renderCases();
+    }
+};
+
+// Intercept save actions in demo mode
+const _originalAddCase = addCase;
+addCase = function(e) {
+    e.preventDefault();
+    if (isDemoMode) {
+        showDemoModal();
+        return;
+    }
+    return _originalAddCase(e);
+};
+
+const _originalSaveRnfaCase = saveRnfaCase;
+saveRnfaCase = function(e) {
+    e.preventDefault();
+    if (isDemoMode) {
+        showDemoModal();
+        return;
+    }
+    return _originalSaveRnfaCase(e);
+};
+
+function showDemoModal() {
+    document.getElementById('demoModal').classList.add('show');
+}
+
+function closeDemoModal() {
+    document.getElementById('demoModal').classList.remove('show');
+}
+
+function exitDemoMode() {
+    // Close any open modal
+    closeDemoModal();
+    // Clear demo state
+    isDemoMode = false;
+    cases = [];
+    rnfaCases = [];
+    rnfaStats = {};
+    programType = 'medical';
+    // Hide demo banner
+    document.getElementById('demoBanner').style.display = 'none';
+    // Show landing page with registration
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('landingPage').style.display = 'block';
+    // Scroll to registration section
+    setTimeout(() => {
+        const regSection = document.getElementById('landingRegEmail');
+        if (regSection) regSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+}
+
 // Auto-load on startup - REQUIRE LOGIN
 if (authToken) {
     loadFromServer();
@@ -2105,10 +2411,15 @@ if (authToken) {
     document.getElementById('appContainer').style.display = 'block';
     document.getElementById('landingPage').style.display = 'none';
 } else {
-    // Check for admin demo mode
+    // Check for demo mode: ?demo=true or /demo path
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('demo') === 'admin2026') {
-        // Admin demo access - show dashboard without login
+    const isDemoUrl = urlParams.get('demo') === 'true' || window.location.pathname === '/demo';
+    
+    if (isDemoUrl) {
+        // Guest demo mode - full app preview
+        initDemoMode();
+    } else if (urlParams.get('demo') === 'admin2026') {
+        // Legacy admin demo access
         updateUserUI();
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('landingPage').style.display = 'none';
@@ -2389,6 +2700,12 @@ async function saveRnfaCase(e) {
 }
 
 async function loadRnfaCases() {
+    if (isDemoMode) {
+        // In demo mode, just render existing demo data
+        renderRnfaDashboard();
+        renderRnfaCases();
+        return;
+    }
     if (!authToken) return;
     try {
         const [casesResult, statsResult] = await Promise.all([
@@ -2515,6 +2832,7 @@ function editRnfaCase(id) {
 }
 
 async function deleteRnfaCase(id) {
+    if (isDemoMode) { showDemoModal(); return; }
     if (!confirm('Delete this RNFA case?')) return;
     try {
         const result = await api('/rnfa-cases/' + id, 'DELETE');
@@ -2525,6 +2843,7 @@ async function deleteRnfaCase(id) {
 }
 
 async function exportRnfaExcel() {
+    if (isDemoMode) { showDemoModal(); return; }
     if (!authToken) { alert('Please sign in first'); return; }
     try {
         const response = await fetch(API + '/rnfa-cases/export', {

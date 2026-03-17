@@ -860,6 +860,10 @@ def index():
 def preview():
     return send_from_directory('.', 'index.html')
 
+@app.route('/demo')
+def demo():
+    return send_from_directory('.', 'index.html')
+
 @app.route('/api/preview-login', methods=['POST'])
 def preview_login():
     conn = get_db()
