@@ -14,6 +14,11 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import urllib.parse
 import io
+import smtplib
+import random
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import timedelta
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
@@ -116,10 +121,21 @@ def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         ''')
+        # Password reset table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id SERIAL PRIMARY KEY,
+                email TEXT NOT NULL,
+                code TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                used BOOLEAN DEFAULT FALSE
+            )
+        ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_date ON cases(user_id, date)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_user_attendings_user ON user_attendings(user_id)')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_rnfa_cases_user ON rnfa_cases(user_id)')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)')
         conn.commit()
         conn.close()
         print("[INIT] PostgreSQL database initialized successfully", flush=True)
@@ -219,6 +235,129 @@ def login():
     conn.close()
     
     return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'plan_expires_at': user['plan_expires_at'], 'program_type': user.get('program_type', 'medical') or 'medical'})
+
+# ============ PASSWORD RESET ============
+
+def send_reset_email(email, code):
+    """Send password reset email via SMTP"""
+    try:
+        smtp_email = "Graydon.F.Stallard@gmail.com"
+        smtp_password = "zjcyxpsbybkkyjum"
+        
+        msg = MIMEMultipart()
+        msg['From'] = "support@clinicalcaselog.com"
+        msg['To'] = email
+        msg['Subject'] = "Clinical Case Log — Password Reset Code"
+        
+        body = f"""
+Hi there,
+
+You requested a password reset for your Clinical Case Log account.
+
+Your 6-digit reset code is: {code}
+
+This code expires in 15 minutes.
+
+If you didn't request this reset, you can safely ignore this email.
+
+Best regards,
+Clinical Case Log Support Team
+support@clinicalcaselog.com
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(smtp_email, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        return True
+    except Exception as e:
+        print(f"Email send error: {e}", flush=True)
+        return False
+
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+    
+    # Check if user exists
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT id FROM users WHERE email = %s', (email,))
+    user = cur.fetchone()
+    
+    if not user:
+        # Still return success to avoid email enumeration
+        return jsonify({'success': True, 'message': 'If an account with this email exists, a reset code has been sent.'})
+    
+    # Generate 6-digit code
+    code = str(random.randint(100000, 999999))
+    
+    # Store reset code (expire old codes first)
+    cur.execute('UPDATE password_resets SET used = TRUE WHERE email = %s AND used = FALSE', (email,))
+    cur.execute('INSERT INTO password_resets (email, code) VALUES (%s, %s)', (email, code))
+    conn.commit()
+    conn.close()
+    
+    # Send email
+    if send_reset_email(email, code):
+        return jsonify({'success': True, 'message': 'Reset code sent to your email.'})
+    else:
+        return jsonify({'error': 'Failed to send reset email. Please try again.'}), 500
+
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password():
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    code = data.get('code', '').strip()
+    new_password = data.get('new_password', '')
+    
+    if not email or not code or not new_password:
+        return jsonify({'error': 'Email, code, and new password are required'}), 400
+    
+    if len(new_password) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Verify reset code
+    cur.execute('''
+        SELECT id FROM password_resets 
+        WHERE email = %s AND code = %s AND used = FALSE 
+        AND created_at > NOW() - INTERVAL '15 minutes'
+    ''', (email, code))
+    reset_record = cur.fetchone()
+    
+    if not reset_record:
+        conn.close()
+        return jsonify({'error': 'Invalid or expired reset code'}), 400
+    
+    # Check if user exists
+    cur.execute('SELECT id FROM users WHERE email = %s', (email,))
+    user = cur.fetchone()
+    
+    if not user:
+        conn.close()
+        return jsonify({'error': 'User not found'}), 404
+    
+    # Update password
+    pw_hash = hash_password(new_password)
+    cur.execute('UPDATE users SET password_hash = %s WHERE email = %s', (pw_hash, email))
+    
+    # Mark reset code as used
+    cur.execute('UPDATE password_resets SET used = TRUE WHERE id = %s', (reset_record['id'],))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Password updated successfully'})
 
 # ============ TOKEN CHECK ============
 
@@ -1011,6 +1150,10 @@ def preview():
 @app.route('/demo')
 def demo():
     return send_from_directory('.', 'demo.html')
+
+@app.route('/legal')
+def legal():
+    return send_from_directory('.', 'legal.html')
 
 @app.route('/api/preview-login', methods=['POST'])
 def preview_login():

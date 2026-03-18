@@ -571,6 +571,7 @@
                 <input type="email" id="landingEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="password" id="landingPassword" placeholder="Password" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <button class="btn btn-primary" style="padding:14px;font-size:16px;" onclick="doLandingLogin()">Log In</button>
+                <p style="text-align:center; margin-top:8px;"><a href="#" onclick="showForgotPassword(); return false;" style="color:#2E8B8B; text-decoration:none; font-size:14px;">Forgot Password?</a></p>
             </div>
         </div>
 
@@ -599,8 +600,45 @@
         </div>
 
         <div style="color:#666; font-size:13px; margin-top:20px;">
-            <p>clinicalcaselog.com</p>
+            <p>clinicalcaselog.com | <a href="/legal" style="color:#2E8B8B;text-decoration:none;">Privacy & Legal</a></p>
         </div>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000;">
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; max-width:400px; width:90%;">
+        
+        <!-- Step 1: Enter Email -->
+        <div id="resetStep1">
+            <h2 style="color:#2E8B8B; font-size:18px; margin-bottom:20px; text-align:center;">Reset Password</h2>
+            <p style="color:#e0e0e0; font-size:14px; margin-bottom:20px;">Enter your email address and we'll send you a 6-digit reset code.</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="email" id="resetEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <button class="btn btn-primary" style="padding:14px;font-size:16px;" onclick="sendResetCode()">Send Reset Code</button>
+                <button class="btn" style="background:#2a3a5c;color:#888;padding:14px;font-size:16px;" onclick="hideForgotPassword()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Enter Code + New Password -->
+        <div id="resetStep2" style="display:none;">
+            <h2 style="color:#2E8B8B; font-size:18px; margin-bottom:20px; text-align:center;">Enter Reset Code</h2>
+            <p style="color:#e0e0e0; font-size:14px; margin-bottom:20px;">We sent a 6-digit code to your email. Enter it below with your new password.</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" id="resetCode" placeholder="6-digit code" maxlength="6" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;text-align:center;letter-spacing:2px;">
+                <input type="password" id="resetNewPassword" placeholder="New password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <button class="btn btn-primary" style="padding:14px;font-size:16px;" onclick="submitPasswordReset()">Reset Password</button>
+                <button class="btn" style="background:#2a3a5c;color:#888;padding:14px;font-size:16px;" onclick="hideForgotPassword()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div id="resetStep3" style="display:none;">
+            <h2 style="color:#2E8B8B; font-size:18px; margin-bottom:20px; text-align:center;">Password Reset!</h2>
+            <p style="color:#e0e0e0; font-size:14px; margin-bottom:20px; text-align:center;">Your password has been updated successfully. You can now log in with your new password.</p>
+            <button class="btn btn-primary" style="padding:14px;font-size:16px;width:100%;" onclick="hideForgotPassword()">Continue</button>
+        </div>
+
     </div>
 </div>
 
@@ -660,6 +698,7 @@
                 <button class="btn btn-primary" style="flex:1" onclick="doLogin()">Log In</button>
                 <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Register</button>
             </div>
+            <p style="text-align:center; margin:8px 0;"><a href="#" onclick="hideAuth(); showForgotPassword(); return false;" style="color:#2E8B8B; text-decoration:none; font-size:13px;">Forgot Password?</a></p>
             <button class="btn" style="background:#2a3a5c;color:#888;" onclick="hideAuth()">Continue without account</button>
         </div>
     </div>
@@ -2097,6 +2136,65 @@ async function doLogin() {
     } catch(e) { alert('Login failed'); }
 }
 
+// ============ PASSWORD RESET ============
+
+function showForgotPassword() {
+    document.getElementById('forgotPasswordModal').style.display = 'block';
+    document.getElementById('resetStep1').style.display = 'block';
+    document.getElementById('resetStep2').style.display = 'none';
+    document.getElementById('resetStep3').style.display = 'none';
+    document.getElementById('resetEmail').value = '';
+    document.getElementById('resetCode').value = '';
+    document.getElementById('resetNewPassword').value = '';
+}
+
+function hideForgotPassword() {
+    document.getElementById('forgotPasswordModal').style.display = 'none';
+}
+
+async function sendResetCode() {
+    const email = document.getElementById('resetEmail').value.trim();
+    if (!email) return alert('Email is required');
+    
+    try {
+        const result = await api('/forgot-password', 'POST', { email });
+        if (result.error) return alert(result.error);
+        
+        // Move to step 2
+        document.getElementById('resetStep1').style.display = 'none';
+        document.getElementById('resetStep2').style.display = 'block';
+        
+        alert('Reset code sent to your email!');
+    } catch(e) { 
+        alert('Failed to send reset code. Please try again.'); 
+    }
+}
+
+async function submitPasswordReset() {
+    const email = document.getElementById('resetEmail').value.trim();
+    const code = document.getElementById('resetCode').value.trim();
+    const newPassword = document.getElementById('resetNewPassword').value;
+    
+    if (!code || !newPassword) return alert('Code and new password are required');
+    if (newPassword.length < 6) return alert('Password must be at least 6 characters');
+    
+    try {
+        const result = await api('/reset-password', 'POST', { 
+            email, 
+            code, 
+            new_password: newPassword 
+        });
+        if (result.error) return alert(result.error);
+        
+        // Move to step 3 (success)
+        document.getElementById('resetStep2').style.display = 'none';
+        document.getElementById('resetStep3').style.display = 'block';
+        
+    } catch(e) { 
+        alert('Password reset failed. Please check your code and try again.'); 
+    }
+}
+
 function logout() {
     authToken = null;
     currentUser = null;
@@ -2921,6 +3019,11 @@ async function doLandingLogin() {
             <button onclick="dismissInstall()" style="background:none; border:1px solid #555; color:#888; padding:10px 14px; border-radius:8px; font-size:13px; cursor:pointer;">Later</button>
         </div>
     </div>
+</div>
+
+<!-- App Footer -->
+<div style="text-align:center; padding:20px; color:#666; font-size:12px; border-top:1px solid #2a3a5c; margin-top:20px;">
+    <a href="/legal" style="color:#2E8B8B;text-decoration:none;">Privacy Policy & Terms</a>
 </div>
 
 </div><!-- close appContainer -->

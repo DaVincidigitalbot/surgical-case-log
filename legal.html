@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal — Clinical Case Log Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1729;
+            color: #e0e0e0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2E8B8B;
+        }
+
+        .header h1 {
+            color: #2E8B8B;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #2E8B8B;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+            background: rgba(46, 139, 139, 0.1);
+            border-radius: 8px;
+            border: 1px solid #2E8B8B;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: rgba(46, 139, 139, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .section {
+            background: #1a2744;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #2a3a5c;
+        }
+
+        .section h2 {
+            color: #2E8B8B;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5c;
+        }
+
+        .section h3 {
+            color: #D4A853;
+            font-size: 18px;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+
+        .section ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .section ul li {
+            margin-bottom: 8px;
+            color: #e0e0e0;
+        }
+
+        .contact-info {
+            background: rgba(46, 139, 139, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2E8B8B;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #2a3a5c;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Clinical Case Log</a>
+        
+        <div class="header">
+            <h1>Legal Information</h1>
+            <p>Privacy Policy, Terms of Service & FERPA Compliance Notice</p>
+        </div>
+
+        <!-- Privacy Policy -->
+        <div class="section">
+            <h2>Privacy Policy</h2>
+            
+            <div class="contact-info">
+                <strong>Clinical Case Log, LLC</strong><br>
+                Contact: <a href="mailto:support@clinicalcaselog.com" style="color: #2E8B8B;">support@clinicalcaselog.com</a>
+            </div>
+
+            <h3>Data We Collect</h3>
+            <p>Clinical Case Log collects and stores the following information:</p>
+            <ul>
+                <li><strong>Account Information:</strong> Name and email address for account creation and authentication</li>
+                <li><strong>Clinical Case Data:</strong> Procedures, diagnoses, case dates, and related clinical documentation that you voluntarily enter</li>
+                <li><strong>Important:</strong> We explicitly prohibit and do not collect any patient identifiable information (PII) such as patient names, medical record numbers, or other identifying data</li>
+            </ul>
+
+            <h3>Data Storage & Security</h3>
+            <p>Your data is stored securely in a PostgreSQL database on secure cloud infrastructure with industry-standard encryption and access controls. We implement appropriate technical and organizational measures to protect your information against unauthorized access, alteration, disclosure, or destruction.</p>
+
+            <h3>Data Usage</h3>
+            <p>We use your data solely to provide the Clinical Case Log service to you. We do not sell, rent, or share your personal data or clinical case information with third parties for marketing or commercial purposes.</p>
+
+            <h3>Your Rights</h3>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Request export of your data in a portable format</li>
+                <li>Request deletion of your account and all associated data</li>
+                <li>Update or correct your account information</li>
+                <li>Contact us with privacy-related questions or concerns</li>
+            </ul>
+
+            <h3>Cookies & Tracking</h3>
+            <p>Clinical Case Log uses minimal tracking technology. We only store a session authentication token in your browser's localStorage to keep you logged in. We do not use advertising cookies or third-party tracking scripts.</p>
+
+            <h3>Data Retention</h3>
+            <p>We retain your account and case data for as long as you maintain an active account. Upon account deletion, all associated data is permanently removed from our systems within 30 days.</p>
+        </div>
+
+        <!-- Terms of Service -->
+        <div class="section">
+            <h2>Terms of Service</h2>
+
+            <h3>Service Description</h3>
+            <p>Clinical Case Log is an educational tool designed to help medical students, residents, and other healthcare trainees track and organize their clinical case experiences. This is <strong>not a medical record system</strong> and should not be used to store official patient information.</p>
+
+            <h3>Subscription & Billing</h3>
+            <ul>
+                <li><strong>Annual Subscription:</strong> $49.99 per year</li>
+                <li><strong>Access Period:</strong> 365 days from date of purchase</li>
+                <li><strong>Payment:</strong> Processed through Gumroad payment system</li>
+                <li><strong>Refund Policy:</strong> 30-day money-back guarantee from date of purchase</li>
+            </ul>
+
+            <h3>Acceptable Use</h3>
+            <p><strong>Educational Use Only:</strong> This application is intended solely for educational and training purposes. Users must comply with the following:</p>
+            <ul>
+                <li>Do NOT enter patient identifiable information (names, medical record numbers, SSN, etc.)</li>
+                <li>Use only for tracking your own clinical case experiences and learning</li>
+                <li>Comply with your institution's policies regarding case logging and patient privacy</li>
+                <li>Ensure all case entries are de-identified and HIPAA-compliant</li>
+            </ul>
+
+            <h3>Service Availability</h3>
+            <p>Clinical Case Log is provided on an "as-is" basis. While we strive for 99.9% uptime, we cannot guarantee uninterrupted service. We are not liable for any disruption of service or loss of data, though we maintain regular backups.</p>
+
+            <h3>Data Ownership</h3>
+            <p>You retain full ownership of all case data and information you enter into Clinical Case Log. You may export your data at any time and request account deletion if desired.</p>
+
+            <h3>Limitation of Liability</h3>
+            <p>Clinical Case Log, LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the service.</p>
+
+            <h3>Termination</h3>
+            <p>We may terminate or suspend your account immediately if you violate these terms, particularly regarding patient privacy or acceptable use policies.</p>
+        </div>
+
+        <!-- FERPA Compliance -->
+        <div class="section">
+            <h2>FERPA Compliance Notice</h2>
+
+            <h3>Educational Records Clarification</h3>
+            <p>Clinical Case Log does <strong>not</strong> collect, store, or process student education records as defined by the Family Educational Rights and Privacy Act (FERPA).</p>
+
+            <h3>What We Store</h3>
+            <p>Our application stores only:</p>
+            <ul>
+                <li>Clinical case documentation that you voluntarily create and enter</li>
+                <li>Your personal case tracking and learning logs</li>
+                <li>Self-reported procedure counts and clinical experiences</li>
+            </ul>
+
+            <h3>What We Do NOT Store</h3>
+            <p>Clinical Case Log does not involve:</p>
+            <ul>
+                <li>Academic grades or transcripts</li>
+                <li>Official institutional evaluation records</li>
+                <li>Faculty assessments or evaluations</li>
+                <li>Any records maintained by educational institutions</li>
+            </ul>
+
+            <h3>Institutional Data Sharing</h3>
+            <p>We do not share your case data with educational institutions unless you explicitly authorize such sharing. The application is designed as a personal learning tool, and you control all aspects of your data sharing and privacy.</p>
+
+            <h3>Student Rights</h3>
+            <p>As this service does not maintain FERPA-covered education records, standard FERPA rights regarding inspection, amendment, and consent do not apply. However, you maintain full control over your clinical case data through our standard privacy controls outlined in our Privacy Policy.</p>
+        </div>
+
+        <div class="last-updated">
+            Last updated: March 17, 2026
+        </div>
+    </div>
+</body>
+</html>
