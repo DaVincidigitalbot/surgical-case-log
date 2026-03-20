@@ -1,6 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style id="redesign-override">
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+* { font-family: 'Inter', -apple-system, sans-serif !important; }
+code, pre, .mono { font-family: 'JetBrains Mono', monospace !important; }
+
+body {
+    background: #F7F9FB !important;
+    color: #1a1a2e !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+.header, header, [class*="header"] {
+    background: rgba(11, 31, 59, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.card, [class*="card"], .panel, .stat-card {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+    border: 1px solid rgba(0,0,0,0.04) !important;
+    transition: all 0.3s ease !important;
+}
+
+button, .btn, input[type="submit"] {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+button.primary, .btn-primary, [class*="primary"] {
+    background: linear-gradient(135deg, #2EA8FF, #1a8fd4) !important;
+    border: none !important;
+    color: white !important;
+}
+
+input, select, textarea {
+    border-radius: 8px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    transition: all 0.2s ease !important;
+}
+
+input:focus, select:focus {
+    border-color: #2EA8FF !important;
+    box-shadow: 0 0 0 3px rgba(46,168,255,0.15) !important;
+}
+
+table { border-radius: 8px !important; overflow: hidden !important; }
+th { background: #0B1F3B !important; color: white !important; font-weight: 600 !important; }
+td { border-bottom: 1px solid #f0f0f0 !important; }
+tr:hover td { background: #f8fafc !important; }
+
+h1, h2, h3 { font-weight: 700 !important; letter-spacing: -0.02em !important; color: #0B1F3B !important; }
+
+a { color: #2EA8FF !important; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+</style>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical Case Log - Admin Dashboard</title>

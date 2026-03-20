@@ -1,6 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style id="redesign-override">
+/* ============================================
+   CLINICAL CASE LOG PRO — PREMIUM REDESIGN
+   CSS Override — preserves all JS functionality
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* Global overrides */
+* { font-family: 'Inter', -apple-system, sans-serif !important; }
+code, pre, .mono, [class*="code"], [class*="cpt"], [class*="icd"] { font-family: 'JetBrains Mono', monospace !important; }
+
+/* Color system */
+:root {
+    --navy: #0B1F3B !important;
+    --surgical-blue: #2EA8FF !important;
+    --teal: #3FE0C5 !important;
+    --off-white: #F7F9FB !important;
+    --card-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+}
+
+body {
+    background: var(--off-white) !important;
+    color: #1a1a2e !important;
+    font-family: 'Inter', sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* Header/Nav */
+.header, header, [class*="header"] {
+    background: rgba(11, 31, 59, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1) !important;
+}
+
+.header h1, header h1 {
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+}
+
+/* Cards */
+.card, [class*="card"], .stat-card, .panel {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+    border: 1px solid rgba(0,0,0,0.04) !important;
+    transition: all 0.3s ease !important;
+}
+
+.card:hover, [class*="card"]:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Buttons */
+button, .btn, [class*="btn"], input[type="submit"] {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+button.primary, .btn-primary, [class*="primary"] {
+    background: linear-gradient(135deg, #2EA8FF, #1a8fd4) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 2px 12px rgba(46,168,255,0.3) !important;
+}
+
+button.primary:hover, .btn-primary:hover, [class*="primary"]:hover {
+    box-shadow: 0 4px 20px rgba(46,168,255,0.5) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Inputs */
+input, select, textarea {
+    border-radius: 8px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    padding: 10px 14px !important;
+    font-family: 'Inter', sans-serif !important;
+    transition: all 0.2s ease !important;
+    background: white !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #2EA8FF !important;
+    box-shadow: 0 0 0 3px rgba(46,168,255,0.15) !important;
+    outline: none !important;
+}
+
+/* Tables */
+table {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+th {
+    background: #0B1F3B !important;
+    color: white !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+}
+
+td {
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+tr:hover td {
+    background: #f8fafc !important;
+}
+
+/* Tabs */
+.tab, [class*="tab"] {
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    border-radius: 6px !important;
+}
+
+.tab.active, [class*="tab"].active, .tab-active {
+    background: #2EA8FF !important;
+    color: white !important;
+}
+
+/* Stat numbers */
+.stat-number, .big-number, [class*="stat"] h2, [class*="stat"] h3 {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-weight: 700 !important;
+    color: #0B1F3B !important;
+}
+
+/* Dashboard area */
+.dashboard, [class*="dashboard"] {
+    background: var(--off-white) !important;
+}
+
+/* Modal/Dialog */
+.modal, [class*="modal"], .dialog {
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+/* Toggle/Switch */
+[class*="toggle"], .switch {
+    border-radius: 20px !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+
+/* Charts area */
+[class*="chart"] {
+    border-radius: 12px !important;
+}
+
+/* Links */
+a {
+    color: #2EA8FF !important;
+    transition: color 0.2s ease !important;
+}
+a:hover {
+    color: #1a8fd4 !important;
+}
+
+/* Subtle animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card, [class*="card"] {
+    animation: fadeIn 0.4s ease forwards;
+}
+</style>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical Case Log Pro — For Medical, PA & NP Students</title>
