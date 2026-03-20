@@ -1148,7 +1148,7 @@
                     <div class="counter-label">Cases Logged</div>
                 </div>
                 <div class="counter-item">
-                    <div class="counter-number" data-target="98">0</div>
+                    <div class="counter-number" data-target="98" data-suffix="%">0</div>
                     <div class="counter-label">Satisfaction</div>
                 </div>
             </div>
@@ -1366,19 +1366,16 @@
                     if (current >= target) {
                         current = target;
                         clearInterval(timer);
-                        // Add the + symbol after animation completes
+                        // Add suffix after animation completes
                         setTimeout(() => {
-                            if (!isPercent && !counter.textContent.includes('+')) {
-                                counter.textContent = target.toLocaleString() + '+';
+                            const suffix = counter.getAttribute('data-suffix') || '+';
+                            if (!counter.textContent.includes(suffix)) {
+                                counter.textContent = target.toLocaleString() + suffix;
                             }
                         }, 200);
                     }
                     
-                    if (isPercent) {
-                        counter.textContent = Math.floor(current) + '%';
-                    } else {
-                        counter.textContent = Math.floor(current).toLocaleString();
-                    }
+                    counter.textContent = Math.floor(current).toLocaleString();
                 }, 30);
             });
         }
