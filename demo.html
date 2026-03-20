@@ -1,183 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style id="redesign-override">
-/* ============================================
-   CLINICAL CASE LOG PRO — PREMIUM REDESIGN
-   CSS Override — preserves all JS functionality
-   ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-/* Global overrides */
-* { font-family: 'Inter', -apple-system, sans-serif !important; }
-code, pre, .mono, [class*="code"], [class*="cpt"], [class*="icd"] { font-family: 'JetBrains Mono', monospace !important; }
-
-/* Color system */
-:root {
-    --navy: #0B1F3B !important;
-    --surgical-blue: #2EA8FF !important;
-    --teal: #3FE0C5 !important;
-    --off-white: #F7F9FB !important;
-    --card-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
-}
-
-body {
-    background: var(--off-white) !important;
-    color: #1a1a2e !important;
-    font-family: 'Inter', sans-serif !important;
-    -webkit-font-smoothing: antialiased !important;
-}
-
-/* Header/Nav */
-.header, header, [class*="header"] {
-    background: rgba(11, 31, 59, 0.95) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.1) !important;
-}
-
-.header h1, header h1 {
-    font-weight: 800 !important;
-    letter-spacing: -0.03em !important;
-}
-
-/* Cards */
-.card, [class*="card"], .stat-card, .panel {
-    background: white !important;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
-    border: 1px solid rgba(0,0,0,0.04) !important;
-    transition: all 0.3s ease !important;
-}
-
-.card:hover, [class*="card"]:hover {
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
-    transform: translateY(-2px) !important;
-}
-
-/* Buttons */
-button, .btn, [class*="btn"], input[type="submit"] {
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    font-family: 'Inter', sans-serif !important;
-}
-
-button.primary, .btn-primary, [class*="primary"] {
-    background: linear-gradient(135deg, #2EA8FF, #1a8fd4) !important;
-    border: none !important;
-    color: white !important;
-    box-shadow: 0 2px 12px rgba(46,168,255,0.3) !important;
-}
-
-button.primary:hover, .btn-primary:hover, [class*="primary"]:hover {
-    box-shadow: 0 4px 20px rgba(46,168,255,0.5) !important;
-    transform: translateY(-1px) !important;
-}
-
-/* Inputs */
-input, select, textarea {
-    border-radius: 8px !important;
-    border: 1.5px solid #e2e8f0 !important;
-    padding: 10px 14px !important;
-    font-family: 'Inter', sans-serif !important;
-    transition: all 0.2s ease !important;
-    background: white !important;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: #2EA8FF !important;
-    box-shadow: 0 0 0 3px rgba(46,168,255,0.15) !important;
-    outline: none !important;
-}
-
-/* Tables */
-table {
-    border-radius: 8px !important;
-    overflow: hidden !important;
-}
-
-th {
-    background: #0B1F3B !important;
-    color: white !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.02em !important;
-}
-
-td {
-    border-bottom: 1px solid #f0f0f0 !important;
-}
-
-tr:hover td {
-    background: #f8fafc !important;
-}
-
-/* Tabs */
-.tab, [class*="tab"] {
-    font-weight: 500 !important;
-    transition: all 0.2s ease !important;
-    border-radius: 6px !important;
-}
-
-.tab.active, [class*="tab"].active, .tab-active {
-    background: #2EA8FF !important;
-    color: white !important;
-}
-
-/* Stat numbers */
-.stat-number, .big-number, [class*="stat"] h2, [class*="stat"] h3 {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-weight: 700 !important;
-    color: #0B1F3B !important;
-}
-
-/* Dashboard area */
-.dashboard, [class*="dashboard"] {
-    background: var(--off-white) !important;
-}
-
-/* Modal/Dialog */
-.modal, [class*="modal"], .dialog {
-    border-radius: 16px !important;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
-}
-
-/* Toggle/Switch */
-[class*="toggle"], .switch {
-    border-radius: 20px !important;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
-
-/* Charts area */
-[class*="chart"] {
-    border-radius: 12px !important;
-}
-
-/* Links */
-a {
-    color: #2EA8FF !important;
-    transition: color 0.2s ease !important;
-}
-a:hover {
-    color: #1a8fd4 !important;
-}
-
-/* Subtle animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.card, [class*="card"] {
-    animation: fadeIn 0.4s ease forwards;
-}
-</style>
+<script>
+(function() {
+    var MAX_VISITS = 3;
+    var MAX_LOOKUPS = 5;
+    var visits = parseInt(localStorage.getItem('demo_visits') || '0');
+    visits++;
+    localStorage.setItem('demo_visits', visits.toString());
+    window._demoLookupCount = 0;
+    window._maxLookups = MAX_LOOKUPS;
+    
+    if (visits > MAX_VISITS) {
+        document.addEventListener('DOMContentLoaded', function() {
+            var overlay = document.createElement('div');
+            overlay.id = 'demo-paywall';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(11,31,59,0.97);z-index:99999;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;';
+            overlay.innerHTML = '<div style="max-width:480px;color:white;font-family:Inter,Arial,sans-serif;">' +
+                '<div style="font-size:48px;margin-bottom:20px;">&#x1f512;</div>' +
+                '<h2 style="font-size:28px;margin-bottom:12px;font-weight:800;">Demo Limit Reached</h2>' +
+                '<p style="font-size:16px;color:rgba(255,255,255,0.7);margin-bottom:8px;">You have used all ' + MAX_VISITS + ' free demo sessions.</p>' +
+                '<p style="font-size:16px;color:rgba(255,255,255,0.7);margin-bottom:32px;">Subscribe to Clinical Case Log Pro for unlimited access.</p>' +
+                '<a href="https://davincibot.gumroad.com/l/clinical-case-log" style="display:inline-block;background:linear-gradient(135deg,#2EA8FF,#1a8fd4);color:white;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 15px rgba(46,168,255,0.4);">Subscribe - $49.99/year</a>' +
+                '<br><a href="/" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:14px;margin-top:16px;display:inline-block;">Back to Homepage</a>' +
+                '</div>';
+            document.body.appendChild(overlay);
+        });
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            var remaining = MAX_VISITS - visits;
+            var counter = document.createElement('div');
+            counter.style.cssText = 'position:fixed;bottom:20px;right:20px;background:rgba(11,31,59,0.9);color:white;padding:10px 16px;border-radius:8px;font-family:Inter,Arial,sans-serif;font-size:12px;z-index:9998;backdrop-filter:blur(8px);';
+            counter.innerHTML = 'Demo session ' + visits + ' of ' + MAX_VISITS;
+            if (remaining === 0) counter.innerHTML += ' <span style="color:#FF6B6B;">(last session)</span>';
+            document.body.appendChild(counter);
+        });
+    }
+})();
+</script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -729,104 +589,9 @@ a:hover {
             cursor: pointer;
             width: 100%;
         }
-    
-/* Fix: Make selected values dark and readable */
-select, input[type="date"], input[type="text"], input[type="number"] {
-    color: #1a1a2e !important;
-    font-weight: 500 !important;
-}
-select option {
-    color: #1a1a2e !important;
-}
-input::placeholder {
-    color: #9ca3af !important;
-    font-weight: 400 !important;
-}
-</style>
-
+    </style>
 </head>
 <body>
-<script>
-// ==========================================
-// DEMO LIMITER - 3 visits, 5 CPT lookups per session
-// ==========================================
-(function() {
-    var MAX_VISITS = 3;
-    var MAX_LOOKUPS = 5;
-    
-    // Track visits
-    var visits = parseInt(localStorage.getItem('demo_visits') || '0');
-    visits++;
-    localStorage.setItem('demo_visits', visits.toString());
-    
-    // Track CPT lookups per session
-    window._demoLookupCount = 0;
-    window._maxLookups = MAX_LOOKUPS;
-    
-    if (visits > MAX_VISITS) {
-        // Show paywall
-        document.addEventListener('DOMContentLoaded', function() {
-            var overlay = document.createElement('div');
-            overlay.id = 'demo-paywall';
-            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(11,31,59,0.97);z-index:99999;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;';
-            overlay.innerHTML = '<div style="max-width:480px;color:white;font-family:Inter,sans-serif;">' +
-                '<div style="font-size:48px;margin-bottom:20px;">&#x1f512;</div>' +
-                '<h2 style="font-size:28px;margin-bottom:12px;font-weight:800;letter-spacing:-0.03em;">Demo Limit Reached</h2>' +
-                '<p style="font-size:16px;color:rgba(255,255,255,0.7);margin-bottom:8px;">You have used all ' + MAX_VISITS + ' free demo sessions.</p>' +
-                '<p style="font-size:16px;color:rgba(255,255,255,0.7);margin-bottom:32px;">Subscribe to Clinical Case Log Pro for unlimited access to all features.</p>' +
-                '<div style="display:flex;flex-direction:column;gap:12px;align-items:center;">' +
-                '<a href="https://davincibot.gumroad.com/l/clinical-case-log" style="display:inline-block;background:linear-gradient(135deg,#2EA8FF,#1a8fd4);color:white;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 15px rgba(46,168,255,0.4);">Subscribe — $49.99/year</a>' +
-                '<a href="/" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:14px;margin-top:8px;">Back to Homepage</a>' +
-                '</div>' +
-                '<p style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:24px;">Includes CPT/ICD-10 auto-fill, ACGME tracking, Excel/PDF export, and more.</p>' +
-                '</div>';
-            document.body.appendChild(overlay);
-        });
-    }
-    
-    // Intercept CPT/ICD-10 lookups (patch the search functions)
-    var _origAddEventListener = EventTarget.prototype.addEventListener;
-    document.addEventListener('DOMContentLoaded', function() {
-        // Find CPT/ICD search inputs and limit them
-        var searchInputs = document.querySelectorAll('input[type="text"]');
-        searchInputs.forEach(function(input) {
-            var placeholder = (input.placeholder || '').toLowerCase();
-            if (placeholder.indexOf('cpt') >= 0 || placeholder.indexOf('icd') >= 0 || placeholder.indexOf('code') >= 0 || placeholder.indexOf('search') >= 0) {
-                input.addEventListener('input', function() {
-                    if (this.value.length >= 3) {
-                        window._demoLookupCount++;
-                        if (window._demoLookupCount > window._maxLookups) {
-                            // Show lookup limit message
-                            var existingMsg = document.getElementById('lookup-limit-msg');
-                            if (!existingMsg) {
-                                var msg = document.createElement('div');
-                                msg.id = 'lookup-limit-msg';
-                                msg.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0B1F3B,#1a3a5c);color:white;padding:16px 24px;border-radius:12px;z-index:9999;font-family:Inter,sans-serif;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:400px;';
-                                msg.innerHTML = '<strong style="font-size:15px;">Code Lookup Limit Reached</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.7);">Subscribe for unlimited CPT/ICD-10 lookups.</span><br><a href="https://davincibot.gumroad.com/l/clinical-case-log" style="display:inline-block;margin-top:10px;background:#2EA8FF;color:white;padding:8px 20px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;">Subscribe — $49.99/year</a>';
-                                document.body.appendChild(msg);
-                                setTimeout(function() { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 8000);
-                            }
-                        }
-                    }
-                });
-            }
-        });
-        
-        // Show remaining visits counter
-        if (visits <= MAX_VISITS) {
-            var remaining = MAX_VISITS - visits;
-            var counter = document.createElement('div');
-            counter.style.cssText = 'position:fixed;bottom:20px;right:20px;background:rgba(11,31,59,0.9);color:white;padding:10px 16px;border-radius:8px;font-family:Inter,sans-serif;font-size:12px;z-index:9998;backdrop-filter:blur(8px);';
-            counter.innerHTML = 'Demo session ' + visits + ' of ' + MAX_VISITS;
-            if (remaining === 0) {
-                counter.innerHTML += ' <span style="color:#FF6B6B;">(last session)</span>';
-            }
-            document.body.appendChild(counter);
-        }
-    });
-})();
-</script>
-
 
 <!-- LANDING PAGE - shown when not logged in -->
 <div id="landingPage" style="display:none; min-height:100vh; background:linear-gradient(135deg, #0f1729, #1B2A4A);">
@@ -2900,14 +2665,6 @@ function exportPDF() {
     <div class="footer">
         Generated by Clinical Case Log Pro | clinicalcaselog.com | ${today}
     </div>
-
-<script>
-fetch('/api/track', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({page: window.location.pathname, referrer: document.referrer || ''})
-}).catch(function(){});
-</script>
 </body>
 </html>`);
     printWindow.document.close();
@@ -3349,14 +3106,6 @@ function dismissInstall() {
     document.getElementById('installBanner').style.display = 'none';
     localStorage.setItem('installDismissed', 'true');
 }
-</script>
-
-<script>
-fetch('/api/track', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({page: window.location.pathname, referrer: document.referrer || ''})
-}).catch(function(){});
 </script>
 </body>
 </html>
