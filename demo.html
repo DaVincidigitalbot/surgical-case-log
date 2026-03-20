@@ -729,7 +729,21 @@ a:hover {
             cursor: pointer;
             width: 100%;
         }
-    </style>
+    
+/* Fix: Make selected values dark and readable */
+select, input[type="date"], input[type="text"], input[type="number"] {
+    color: #1a1a2e !important;
+    font-weight: 500 !important;
+}
+select option {
+    color: #1a1a2e !important;
+}
+input::placeholder {
+    color: #9ca3af !important;
+    font-weight: 400 !important;
+}
+</style>
+
 </head>
 <body>
 
