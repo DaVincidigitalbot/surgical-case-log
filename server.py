@@ -1175,6 +1175,75 @@ def preview_login():
     conn.close()
     return jsonify({'token': token, 'name': 'Admin Preview', 'email': email, 'plan': 'subscription'})
 
+
+
+# ==========================================
+# ANALYTICS - Page Visit Tracking
+# ==========================================
+
+def init_analytics():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS page_visits (
+                id SERIAL PRIMARY KEY,
+                page TEXT NOT NULL,
+                referrer TEXT,
+                user_agent TEXT,
+                ip_address TEXT,
+                visited_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Analytics init error: {e}")
+
+@app.route('/api/track', methods=['POST'])
+def track_visit():
+    try:
+        data = request.get_json() or {}
+        page = data.get('page', 'unknown')
+        referrer = data.get('referrer', request.referrer or '')
+        user_agent = request.headers.get('User-Agent', '')[:500]
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr or '')
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute('INSERT INTO page_visits (page, referrer, user_agent, ip_address) VALUES (%s, %s, %s, %s)',
+            (page, referrer[:500], user_agent, ip[:100]))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/analytics')
+def get_analytics():
+    key = request.args.get('key', '')
+    if key != 'stallard2026admin':
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT page, COUNT(*) as visits, COUNT(DISTINCT ip_address) as unique_visitors, MAX(visited_at) as last_visit FROM page_visits GROUP BY page ORDER BY visits DESC")
+        by_page = cur.fetchall()
+        cur.execute("SELECT page, COUNT(*) as visits FROM page_visits WHERE visited_at >= CURRENT_DATE GROUP BY page")
+        today = cur.fetchall()
+        cur.execute("SELECT DATE(visited_at) as date, page, COUNT(*) as visits FROM page_visits WHERE visited_at >= CURRENT_DATE - INTERVAL '30 days' GROUP BY DATE(visited_at), page ORDER BY date DESC")
+        by_day = cur.fetchall()
+        cur.execute("SELECT referrer, COUNT(*) as visits FROM page_visits WHERE referrer != '' AND referrer IS NOT NULL GROUP BY referrer ORDER BY visits DESC LIMIT 20")
+        referrers = cur.fetchall()
+        cur.close()
+        conn.close()
+        return jsonify({'by_page': by_page, 'today': today, 'by_day': by_day, 'referrers': referrers})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+init_analytics()
+
 if __name__ == '__main__':
     print(f"🚀 Server starting on port 8080...")
     app.run(host='0.0.0.0', port=8080, debug=False)
