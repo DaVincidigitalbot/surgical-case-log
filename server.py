@@ -1251,3 +1251,54 @@ init_analytics()
 if __name__ == '__main__':
     print(f"🚀 Server starting on port 8080...")
     app.run(host='0.0.0.0', port=8080, debug=False)
+
+
+# ============ STRIPE PAYMENTS ============
+import stripe as stripe_lib
+stripe_lib.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+
+@app.route('/api/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    try:
+        data = request.get_json() or {}
+        user_email = data.get('email', '')
+        
+        session = stripe_lib.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': os.environ.get('STRIPE_PRICE_ID', 'price_1TDsP2C0LC9x3wbewDKfgfXh'),
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url='https://clinicalcaselog.com/demo?subscription=success',
+            cancel_url='https://clinicalcaselog.com/demo?subscription=cancelled',
+            customer_email=user_email if user_email else None,
+            metadata={
+                'source': 'clinical-case-log'
+            }
+        )
+        return jsonify({'url': session.url})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stripe-webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.get_data(as_text=True)
+    
+    try:
+        event = stripe_lib.Event.construct_from(
+            json.loads(payload), stripe_lib.api_key
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    
+    if event.type == 'checkout.session.completed':
+        session_obj = event.data.object
+        customer_email = session_obj.get('customer_email') or session_obj.get('customer_details', {}).get('email')
+        if customer_email:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("UPDATE users SET plan = 'pro' WHERE email = %s", (customer_email,))
+            conn.commit()
+    
+    return jsonify({'status': 'ok'})
