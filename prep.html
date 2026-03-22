@@ -1048,7 +1048,24 @@
             
             // Check if user is subscribed
             const isSubscribed = localStorage.getItem('userSubscription') === 'active';
-            const displayProcedures = isSubscribed ? filteredProcedures : filteredProcedures.slice(0, 4);
+            
+            // For free users: limit to 4 procedures per category
+            let displayProcedures;
+            if (isSubscribed) {
+                displayProcedures = filteredProcedures;
+            } else {
+                // Group by category and limit each to 4
+                const proceduresByCategory = {};
+                filteredProcedures.forEach(proc => {
+                    if (!proceduresByCategory[proc.category]) {
+                        proceduresByCategory[proc.category] = [];
+                    }
+                    if (proceduresByCategory[proc.category].length < 4) {
+                        proceduresByCategory[proc.category].push(proc);
+                    }
+                });
+                displayProcedures = Object.values(proceduresByCategory).flat();
+            }
             
             let procedureCards = displayProcedures.map(procedure => `
                 <div class="procedure-card fade-in" data-id="${procedure.id}" tabindex="0" role="button" aria-label="View details for ${procedure.name}">
@@ -1063,12 +1080,13 @@
             `);
             
             // Add upgrade card for free users if more procedures exist
-            if (!isSubscribed && filteredProcedures.length > 4) {
+            if (!isSubscribed && filteredProcedures.length > displayProcedures.length) {
+                const hiddenCount = filteredProcedures.length - displayProcedures.length;
                 procedureCards.push(`
                     <div class="upgrade-card">
                         <div class="upgrade-content">
                             <h3>🔒 Upgrade to View All</h3>
-                            <p>Access all ${filteredProcedures.length} procedures + pimping questions</p>
+                            <p>Access ${hiddenCount} more procedures + pimping questions</p>
                             <a href="#" class="upgrade-btn" onclick="window.location.href='/#pricing'">Upgrade - $49.99/year</a>
                         </div>
                     </div>
