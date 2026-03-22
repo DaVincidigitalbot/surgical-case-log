@@ -1151,6 +1151,10 @@ def preview():
 def demo():
     return send_from_directory('.', 'demo.html')
 
+@app.route('/prep')
+def prep():
+    return send_from_directory('.', 'prep.html')
+
 @app.route('/legal')
 def legal():
     return send_from_directory('.', 'legal.html')

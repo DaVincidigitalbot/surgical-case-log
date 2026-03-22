@@ -75,9 +75,9 @@ a { color: #2EA8FF !important; }
         }
 
         body {
-            background: #0f1729;
-            color: #e2e8f0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F7F9FB;
+            color: #1a1a2e;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             padding: 20px;
             line-height: 1.6;
         }
@@ -86,14 +86,15 @@ a { color: #2EA8FF !important; }
             text-align: center;
             margin-bottom: 40px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #2E8B8B;
+            border-bottom: 2px solid #2EA8FF;
         }
 
         .header h1 {
-            color: #2E8B8B;
+            color: #0B1F3B;
             font-size: 2.5em;
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 10px;
+            letter-spacing: -0.03em;
         }
 
         .header p {
@@ -125,7 +126,7 @@ a { color: #2EA8FF !important; }
         .card-number {
             font-size: 2.5em;
             font-weight: 700;
-            color: #2E8B8B;
+            color: #2EA8FF;
             margin-bottom: 8px;
         }
 
@@ -145,7 +146,7 @@ a { color: #2EA8FF !important; }
         }
 
         .section h2 {
-            color: #2E8B8B;
+            color: #2EA8FF;
             font-size: 1.5em;
             margin-bottom: 20px;
             display: flex;
@@ -178,7 +179,7 @@ a { color: #2EA8FF !important; }
 
         .user-search:focus {
             outline: none;
-            border-color: #2E8B8B;
+            border-color: #2EA8FF;
         }
 
         .user-search::placeholder {
@@ -200,7 +201,7 @@ a { color: #2EA8FF !important; }
         }
 
         .user-table th {
-            background: #2E8B8B;
+            background: #2EA8FF;
             color: white;
             font-weight: 600;
             position: sticky;
@@ -255,7 +256,7 @@ a { color: #2EA8FF !important; }
         }
 
         .top-users h3 {
-            color: #2E8B8B;
+            color: #2EA8FF;
             margin-bottom: 20px;
         }
 
@@ -285,7 +286,7 @@ a { color: #2EA8FF !important; }
         }
 
         .user-cases {
-            color: #D4A843;
+            color: #3FE0C5;
             font-weight: 700;
             font-size: 1.1em;
         }
@@ -321,27 +322,23 @@ a { color: #2EA8FF !important; }
                 padding: 8px 4px;
             }
         }
-    
-/* Fix admin table readability */
-table td, table th {
-    color: #1a1a2e !important;
-}
-.user-management, [class*="management"] {
-    background: #F7F9FB !important;
-}
-table {
-    background: white !important;
-}
-td {
-    color: #333 !important;
-    font-weight: 500 !important;
-}
-th {
-    color: white !important;
-}
-</style>
+    </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav style="background: rgba(11, 31, 59, 0.95); backdrop-filter: blur(12px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <a href="/" style="color: white; text-decoration: none; font-size: 18px; font-weight: 800;">
+            ⚕️ Clinical <span style="color: #2EA8FF;">Case Log</span>
+        </a>
+        <div style="display: flex; gap: 24px; align-items: center;">
+            <a href="/#features" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">Features</a>
+            <a href="/#how-it-works" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">How It Works</a>
+            <a href="/#pricing" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">Pricing</a>
+            <a href="/prep" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">Case Prep</a>
+            <a href="/#testimonial" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">About</a>
+            <a href="/demo" style="background: linear-gradient(135deg, #2EA8FF, #1a8fd4); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">Demo</a>
+        </div>
+    </nav>
     <div class="header">
         <h1>Clinical Case Log</h1>
         <p>Admin Dashboard - Real-time analytics and user management</p>
@@ -505,7 +502,7 @@ th {
                 tooltip: {
                     trigger: 'axis',
                     backgroundColor: '#1e293b',
-                    borderColor: '#2E8B8B',
+                    borderColor: '#2EA8FF',
                     textStyle: { color: '#e2e8f0' }
                 },
                 xAxis: {
@@ -523,8 +520,8 @@ th {
                 series: [{
                     data: last30Days.map(d => d.count),
                     type: 'bar',
-                    itemStyle: { color: '#2E8B8B' },
-                    emphasis: { itemStyle: { color: '#D4A843' } }
+                    itemStyle: { color: '#2EA8FF' },
+                    emphasis: { itemStyle: { color: '#3FE0C5' } }
                 }]
             };
 
@@ -559,7 +556,7 @@ th {
                 tooltip: {
                     trigger: 'axis',
                     backgroundColor: '#1e293b',
-                    borderColor: '#2E8B8B',
+                    borderColor: '#2EA8FF',
                     textStyle: { color: '#e2e8f0' }
                 },
                 legend: {
@@ -583,15 +580,15 @@ th {
                         name: 'Medical Cases',
                         type: 'line',
                         data: last30Days.map(d => d.medical),
-                        itemStyle: { color: '#2E8B8B' },
-                        lineStyle: { color: '#2E8B8B' }
+                        itemStyle: { color: '#2EA8FF' },
+                        lineStyle: { color: '#2EA8FF' }
                     },
                     {
                         name: 'RNFA Cases',
                         type: 'line',
                         data: last30Days.map(d => d.rnfa),
-                        itemStyle: { color: '#D4A843' },
-                        lineStyle: { color: '#D4A843' }
+                        itemStyle: { color: '#3FE0C5' },
+                        lineStyle: { color: '#3FE0C5' }
                     }
                 ]
             };
@@ -614,7 +611,7 @@ th {
                 tooltip: {
                     trigger: 'item',
                     backgroundColor: '#1e293b',
-                    borderColor: '#2E8B8B',
+                    borderColor: '#2EA8FF',
                     textStyle: { color: '#e2e8f0' }
                 },
                 series: [{
@@ -623,7 +620,7 @@ th {
                     data: data,
                     itemStyle: {
                         color: function(params) {
-                            const colors = ['#2E8B8B', '#D4A843', '#60a5fa', '#f87171', '#34d399'];
+                            const colors = ['#2EA8FF', '#3FE0C5', '#60a5fa', '#f87171', '#34d399'];
                             return colors[params.dataIndex % colors.length];
                         }
                     },
@@ -651,7 +648,7 @@ th {
                 tooltip: {
                     trigger: 'item',
                     backgroundColor: '#1e293b',
-                    borderColor: '#2E8B8B',
+                    borderColor: '#2EA8FF',
                     textStyle: { color: '#e2e8f0' }
                 },
                 series: [{
@@ -660,7 +657,7 @@ th {
                     data: data,
                     itemStyle: {
                         color: function(params) {
-                            return params.dataIndex === 0 ? '#2E8B8B' : '#D4A843';
+                            return params.dataIndex === 0 ? '#2EA8FF' : '#3FE0C5';
                         }
                     },
                     label: {

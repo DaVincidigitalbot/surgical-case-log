@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Prep — Clinical Case Log Pro</title>
+    
+    <!-- SEO -->
+    <meta name="description" content="Prepare for your next surgical case. Quick reference for 100+ procedures with key anatomy, critical steps, and high-yield pearls. Built by a practicing surgeon.">
+    <meta name="keywords" content="surgical case prep, surgery preparation, operative notes, surgical anatomy, medical education, surgical training">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Case Prep — Clinical Case Log Pro">
+    <meta property="og:description" content="Prepare for your next surgical case with quick reference guides for 100+ procedures.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://clinicalcaselog.com/prep">
+    
+    <!-- Schema.org Medical Education -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "EducationalResource",
+        "name": "Surgical Case Preparation Guide",
+        "description": "Comprehensive surgical preparation reference for medical students, residents, and surgical staff",
+        "educationalLevel": "Medical Education",
+        "audience": {
+            "@type": "EducationalAudience",
+            "educationalRole": ["Medical Student", "Resident", "Surgeon", "PA Student", "NP Student"]
+        },
+        "provider": {
+            "@type": "Organization",
+            "name": "Clinical Case Log Pro"
+        }
+    }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0B1F3B;
+            --accent: #2EA8FF;
+            --highlight: #3FE0C5;
+            --purple: #8B5CF6;
+            --background: #F7F9FB;
+            --card-bg: #FFFFFF;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --section-bg-alt: #FFFFFF;
+            --feature-icon-bg: #F0F7FF;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            background: var(--background);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(11, 31, 59, 0.1);
+            z-index: 100;
+            padding: 16px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .logo .highlight {
+            color: var(--accent);
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a.active {
+            color: var(--accent);
+        }
+        
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, var(--accent), #1e90e8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(46, 168, 255, 0.25);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(46, 168, 255, 0.4), 0 0 20px rgba(46, 168, 255, 0.2);
+        }
+        
+        /* Mobile hamburger */
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        .nav-toggle span {
+            width: 20px;
+            height: 2px;
+            background: var(--primary);
+            margin: 2px 0;
+            transition: 0.3s;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(46, 168, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(63, 224, 197, 0.02) 0%, transparent 50%),
+                linear-gradient(135deg, #F7F9FB 0%, #e8f2ff 100%);
+            padding: 140px 0 80px;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(247, 249, 251, 0.3) 70%);
+            pointer-events: none;
+        }
+        
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            color: var(--primary);
+            letter-spacing: -0.03em;
+        }
+        
+        .hero .highlight {
+            background: linear-gradient(135deg, var(--accent), var(--highlight));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Search Section */
+        .search-section {
+            background: white;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .search-bar {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 52px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(46, 168, 255, 0.1);
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .search-dropdown.active {
+            display: block;
+        }
+
+        .search-dropdown-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s ease;
+        }
+
+        .search-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-dropdown-item:hover,
+        .search-dropdown-item.highlighted {
+            background: #f0f7ff;
+        }
+
+        .search-dropdown-item .match-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .search-dropdown-item .match-name .hl {
+            color: var(--accent);
+            background: rgba(46, 168, 255, 0.1);
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        .search-dropdown-item .match-cat {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: #f1f5f9;
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+        
+        /* Category Filters */
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .category-pill {
+            padding: 8px 16px;
+            background: var(--background);
+            border: 2px solid var(--border-light);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .category-pill:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .category-pill.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .clear-filters {
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px;
+        }
+        
+        .clear-filters:hover {
+            text-decoration: underline;
+        }
+        
+        /* Results Section */
+        .results-section {
+            padding: 60px 0 100px;
+        }
+        
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .results-count {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .sort-options {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .sort-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .sort-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            background: white;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Procedure Grid */
+        .procedures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        
+        .procedure-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        
+        .procedure-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            border-left-color: var(--accent);
+        }
+        
+        .procedure-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .procedure-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .procedure-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--feature-icon-bg);
+            color: var(--accent);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .procedure-overview {
+            padding: 16px 24px 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* Procedure Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .modal-category {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent);
+            color: white;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--background);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            background: var(--border-light);
+            color: var(--primary);
+        }
+        
+        .modal-content {
+            padding: 24px;
+        }
+        
+        .detail-section {
+            margin-bottom: 32px;
+        }
+        
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--background);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .section-header:hover {
+            background: var(--border-light);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .section-icon {
+            font-size: 14px;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+        
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .section-content.active {
+            max-height: 1000px;
+        }
+        
+        .section-content .content-inner {
+            padding: 16px 20px 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+        
+        .content-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .content-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .content-list li {
+            position: relative;
+            padding: 6px 0 6px 20px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .content-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        
+        .related-procedures {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .related-pill {
+            padding: 6px 12px;
+            background: var(--feature-icon-bg);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .related-pill:hover {
+            background: var(--accent);
+            color: white;
+        }
+        
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(46, 168, 255, 0.3);
+        }
+        
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .no-results h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .nav-toggle {
+                display: flex;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .search-container {
+                padding: 0 16px;
+            }
+            
+            .category-filters {
+                gap: 8px;
+            }
+            
+            .category-pill {
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+            
+            .procedures-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .modal {
+                width: 95vw;
+                margin: 20px;
+                max-height: 85vh;
+            }
+            
+            .modal-header {
+                padding: 16px 16px 12px;
+            }
+            
+            .modal-content {
+                padding: 16px;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .sort-options {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        
+        /* Search Highlighting */
+        .highlight {
+            background: linear-gradient(135deg, var(--accent), var(--highlight));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+        
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Focus States */
+        .procedure-card:focus,
+        .category-pill:focus,
+        .search-input:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        
+        .section-header:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: -2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                ⚕️ Clinical <span class="highlight">Case Log</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/#features">Features</a></li>
+                <li><a href="/#how-it-works">How It Works</a></li>
+                <li><a href="/#pricing">Pricing</a></li>
+                <li><a href="/prep" class="active">Case Prep</a></li>
+                <li><a href="/#testimonial">About</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <a href="/demo" class="cta-button">Start Free Trial</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1><span class="highlight">Case Prep</span></h1>
+            <p>Quick reference guides for 128 surgical procedures with classic <strong>pimping questions</strong>. Key anatomy, critical steps, and high-yield pearls — plus the questions attendings actually ask residents to prep for your next case in under 2 minutes.</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-container">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Search procedures... (e.g., cholecystectomy, appendectomy, hernia)"
+                    id="searchInput"
+                    aria-label="Search surgical procedures"
+                    autocomplete="off"
+                >
+                <div class="search-dropdown" id="searchDropdown"></div>
+            </div>
+            
+            <div class="category-filters" id="categoryFilters">
+                <div class="category-pill active" data-category="all">All Procedures</div>
+                <div class="category-pill" data-category="General Surgery">General Surgery</div>
+                <div class="category-pill" data-category="Colorectal">Colorectal</div>
+                <div class="category-pill" data-category="Upper GI">Upper GI</div>
+                <div class="category-pill" data-category="Hepatopancreatobiliary">HPB</div>
+                <div class="category-pill" data-category="Endoscopy">Endoscopy</div>
+                <div class="category-pill" data-category="Esophageal">Esophageal</div>
+                <div class="category-pill" data-category="Breast">Breast</div>
+                <div class="category-pill" data-category="Endocrine">Endocrine</div>
+                <div class="category-pill" data-category="Urology">Urology</div>
+                <div class="category-pill" data-category="Gynecology">Gynecology</div>
+                <div class="category-pill" data-category="Anorectal">Anorectal</div>
+                <div class="category-pill" data-category="Trauma">Trauma</div>
+                <div class="category-pill" data-category="Hernia">Hernia</div>
+                <div class="category-pill" data-category="Oncology">Oncology</div>
+                <div class="category-pill" data-category="Vascular">Vascular</div>
+                <div class="category-pill" data-category="Thoracic">Thoracic</div>
+                <div class="category-pill" data-category="Critical Care">Critical Care</div>
+                <div class="category-pill" data-category="Bariatric">Bariatric</div>
+                <div class="category-pill" data-category="Skin/Soft Tissue">Skin/Soft Tissue</div>
+                <div class="clear-filters" id="clearFilters">Clear All</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section">
+        <div class="results-container">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">Loading procedures...</div>
+                <div class="sort-options">
+                    <label class="sort-label" for="sortSelect">Sort by:</label>
+                    <select class="sort-select" id="sortSelect">
+                        <option value="name">Procedure Name</option>
+                        <option value="category">Category</option>
+                        <option value="complexity">Complexity</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="procedures-grid" id="proceduresGrid">
+                <div class="loading">Loading surgical procedures...</div>
+            </div>
+            
+            <div class="no-results" id="noResults" style="display: none;">
+                <h3>No procedures found</h3>
+                <p>Try adjusting your search terms or clearing the category filters.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Procedure Detail Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="procedureModal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Procedure Name</h2>
+                <div class="modal-category" id="modalCategory">Category</div>
+                <button class="close-modal" id="closeModal" aria-label="Close procedure details">&times;</button>
+            </div>
+            
+            <div class="modal-content" id="modalContent">
+                <!-- Dynamic content loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+    <!-- JavaScript -->
+    <script>
+        let procedures = [];
+        let filteredProcedures = [];
+        let currentCategory = 'all';
+        let currentSort = 'name';
+        
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilters = document.getElementById('categoryFilters');
+        const proceduresGrid = document.getElementById('proceduresGrid');
+        const resultsCount = document.getElementById('resultsCount');
+        const sortSelect = document.getElementById('sortSelect');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const procedureModal = document.getElementById('procedureModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCategory = document.getElementById('modalCategory');
+        const modalContent = document.getElementById('modalContent');
+        const closeModal = document.getElementById('closeModal');
+        const clearFilters = document.getElementById('clearFilters');
+        const backToTop = document.getElementById('backToTop');
+        const noResults = document.getElementById('noResults');
+        
+        // Load procedures from JSON
+        async function loadProcedures() {
+            try {
+                const response = await fetch('/procedures.json');
+                procedures = await response.json();
+                filteredProcedures = [...procedures];
+                renderProcedures();
+                updateResultsCount();
+            } catch (error) {
+                console.error('Error loading procedures:', error);
+                proceduresGrid.innerHTML = '<div class="loading">Error loading procedures. Please try again later.</div>';
+            }
+        }
+        
+        // Render procedures grid
+        function renderProcedures() {
+            if (filteredProcedures.length === 0) {
+                proceduresGrid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            proceduresGrid.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            proceduresGrid.innerHTML = filteredProcedures.map(procedure => `
+                <div class="procedure-card fade-in" data-id="${procedure.id}" tabindex="0" role="button" aria-label="View details for ${procedure.name}">
+                    <div class="procedure-header">
+                        <h3 class="procedure-name">${highlightSearchTerm(procedure.name)}</h3>
+                        <span class="procedure-category">${procedure.category}</span>
+                    </div>
+                    <div class="procedure-overview">
+                        ${highlightSearchTerm(procedure.overview)}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add click handlers to procedure cards
+            document.querySelectorAll('.procedure-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const procedureId = card.dataset.id;
+                    openProcedureModal(procedureId);
+                });
+                
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const procedureId = card.dataset.id;
+                        openProcedureModal(procedureId);
+                    }
+                });
+            });
+        }
+        
+        // Highlight search terms
+        function highlightSearchTerm(text) {
+            const searchTerm = searchInput.value.trim();
+            if (!searchTerm) return text;
+            
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+        
+        // Filter procedures
+        function filterProcedures() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            filteredProcedures = procedures.filter(procedure => {
+                const matchesCategory = currentCategory === 'all' || procedure.category === currentCategory;
+                const matchesSearch = !searchTerm || 
+                    procedure.name.toLowerCase().includes(searchTerm) ||
+                    procedure.overview.toLowerCase().includes(searchTerm) ||
+                    procedure.category.toLowerCase().includes(searchTerm) ||
+                    procedure.indications.some(indication => indication.toLowerCase().includes(searchTerm)) ||
+                    procedure.keyAnatomy.some(anatomy => anatomy.toLowerCase().includes(searchTerm));
+                
+                return matchesCategory && matchesSearch;
+            });
+            
+            sortProcedures();
+            renderProcedures();
+            updateResultsCount();
+        }
+        
+        // Sort procedures
+        function sortProcedures() {
+            filteredProcedures.sort((a, b) => {
+                switch (currentSort) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'category':
+                        return a.category.localeCompare(b.category) || a.name.localeCompare(b.name);
+                    case 'complexity':
+                        // Sort by approximate complexity (number of critical steps)
+                        return b.criticalSteps.length - a.criticalSteps.length;
+                    default:
+                        return 0;
+                }
+            });
+        }
+        
+        // Update results count
+        function updateResultsCount() {
+            const count = filteredProcedures.length;
+            const total = procedures.length;
+            resultsCount.textContent = `Showing ${count} of ${total} procedures`;
+        }
+        
+        // Open procedure detail modal
+        function openProcedureModal(procedureId) {
+            const procedure = procedures.find(p => p.id === procedureId);
+            if (!procedure) return;
+            
+            modalTitle.textContent = procedure.name;
+            modalCategory.textContent = procedure.category;
+            
+            modalContent.innerHTML = `
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Overview</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content active">
+                        <div class="content-inner">
+                            <p class="content-text">${procedure.overview}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Indications</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.indications.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Key Anatomy</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.keyAnatomy.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Pre-op Considerations</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.preOpConsiderations.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Positioning</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <p class="content-text">${procedure.positioning}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Port Placement / Incision</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.portPlacementOrIncision.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Critical Steps</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.criticalSteps.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Common Pitfalls</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.commonPitfalls.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Major Complications</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.majorComplications.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Pearls & High-Yield Facts</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.pearlsHighYield.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Post-op Priorities</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <ul class="content-list">
+                                ${procedure.postOpPriorities.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                ${procedure.relatedProcedures.length > 0 ? `
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">Related Procedures</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <div class="related-procedures">
+                                ${procedure.relatedProcedures.map(relatedId => {
+                                    const relatedProcedure = procedures.find(p => p.id === relatedId);
+                                    return relatedProcedure ? `<span class="related-pill" onclick="openRelatedProcedure('${relatedId}')">${relatedProcedure.name}</span>` : '';
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Toggle accordion sections
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.section-icon');
+            
+            content.classList.toggle('active');
+            icon.textContent = content.classList.contains('active') ? '▲' : '▼';
+        }
+        
+        // Open related procedure
+        function openRelatedProcedure(procedureId) {
+            openProcedureModal(procedureId);
+        }
+        
+        // Close modal
+        function closeProcedureModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Autopopulate dropdown
+        const searchDropdown = document.getElementById('searchDropdown');
+        let dropdownIndex = -1;
+
+        function showDropdown() {
+            const term = searchInput.value.toLowerCase().trim();
+            if (!term || term.length < 1) {
+                searchDropdown.classList.remove('active');
+                searchDropdown.innerHTML = '';
+                dropdownIndex = -1;
+                return;
+            }
+
+            const matches = procedures.filter(p => 
+                p.name.toLowerCase().includes(term) ||
+                p.category.toLowerCase().includes(term) ||
+                p.overview.toLowerCase().includes(term)
+            ).slice(0, 8);
+
+            if (matches.length === 0) {
+                searchDropdown.classList.remove('active');
+                searchDropdown.innerHTML = '';
+                dropdownIndex = -1;
+                return;
+            }
+
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+
+            searchDropdown.innerHTML = matches.map((p, i) => `
+                <div class="search-dropdown-item${i === dropdownIndex ? ' highlighted' : ''}" data-id="${p.id}" data-index="${i}">
+                    <span class="match-name">${p.name.replace(regex, '<span class="hl">$1</span>')}</span>
+                    <span class="match-cat">${p.category}</span>
+                </div>
+            `).join('');
+
+            searchDropdown.classList.add('active');
+
+            searchDropdown.querySelectorAll('.search-dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const pid = item.dataset.id;
+                    searchDropdown.classList.remove('active');
+                    searchInput.value = procedures.find(p => p.id === pid).name;
+                    filterProcedures();
+                    openProcedureModal(pid);
+                });
+                item.addEventListener('mouseenter', () => {
+                    searchDropdown.querySelectorAll('.search-dropdown-item').forEach(el => el.classList.remove('highlighted'));
+                    item.classList.add('highlighted');
+                    dropdownIndex = parseInt(item.dataset.index);
+                });
+            });
+        }
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = searchDropdown.querySelectorAll('.search-dropdown-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                dropdownIndex = Math.min(dropdownIndex + 1, items.length - 1);
+                items.forEach(el => el.classList.remove('highlighted'));
+                items[dropdownIndex].classList.add('highlighted');
+                items[dropdownIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                dropdownIndex = Math.max(dropdownIndex - 1, 0);
+                items.forEach(el => el.classList.remove('highlighted'));
+                items[dropdownIndex].classList.add('highlighted');
+                items[dropdownIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter' && dropdownIndex >= 0) {
+                e.preventDefault();
+                items[dropdownIndex].click();
+            }
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-bar')) {
+                searchDropdown.classList.remove('active');
+                dropdownIndex = -1;
+            }
+        });
+
+        // Event Listeners
+        searchInput.addEventListener('input', () => {
+            filterProcedures();
+            showDropdown();
+            dropdownIndex = -1;
+        });
+        
+        categoryFilters.addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-pill')) {
+                // Remove active from all pills
+                categoryFilters.querySelectorAll('.category-pill').forEach(pill => {
+                    pill.classList.remove('active');
+                });
+                
+                // Add active to clicked pill
+                e.target.classList.add('active');
+                currentCategory = e.target.dataset.category;
+                filterProcedures();
+            }
+        });
+        
+        clearFilters.addEventListener('click', () => {
+            searchInput.value = '';
+            currentCategory = 'all';
+            
+            categoryFilters.querySelectorAll('.category-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            categoryFilters.querySelector('[data-category="all"]').classList.add('active');
+            
+            filterProcedures();
+        });
+        
+        sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            sortProcedures();
+            renderProcedures();
+        });
+        
+        closeModal.addEventListener('click', closeProcedureModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeProcedureModal();
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                closeProcedureModal();
+            }
+            
+            if (e.key === '/' && !modalOverlay.classList.contains('active')) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+        
+        // Back to top functionality
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Mobile navigation
+        const navToggle = document.querySelector('.nav-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        
+        if (navToggle) {
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+        
+        // Initialize
+        loadProcedures();
+        
+        // Make functions global for onclick handlers
+        window.toggleSection = toggleSection;
+        window.openRelatedProcedure = openRelatedProcedure;
+    </script>
+</body>
+</html>
