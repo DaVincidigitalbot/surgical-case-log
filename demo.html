@@ -331,6 +331,16 @@ a:hover {
             box-shadow: 0 0 0 2px rgba(46,168,255,0.2);
         }
         .form-group select { appearance: auto; }
+        
+        /* Fix dropdown option visibility */
+        .form-group select option, select option {
+            background: #0f1729 !important;
+            color: #ffffff !important;
+        }
+        .form-group select option:hover, select option:hover {
+            background: #2EA8FF !important;
+            color: #ffffff !important;
+        }
         .multi-chip {
             display: inline-flex;
             align-items: center;
