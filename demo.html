@@ -819,7 +819,7 @@ a:hover {
                 <input type="text" id="landingName" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="email" id="landingRegEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="password" id="landingRegPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
-                <p style="color:#888; font-size:12px;">Use the same email you purchased with on Gumroad</p>
+                <p style="color:#888; font-size:12px;">Use the same email you'll subscribe with</p>
                 <button class="btn btn-gold" style="padding:14px;font-size:16px;" onclick="doLandingRegister()">Create Account</button>
             </div>
         </div>
@@ -832,9 +832,9 @@ a:hover {
                 <p style="color:#666; font-size:12px; margin-top:5px;">365 days · All features · RNFA + Medical/PA modes</p>
             </div>
             <div style="margin-top:15px;">
-                <a href="https://davincibot.gumroad.com/l/clinical-case-log" target="_blank" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:16px; font-weight:700;">🚀 Get Clinical Case Log — $49.99/year</a>
+                <a href="#" onclick="startSubscription(); return false;" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:16px; font-weight:700; cursor:pointer;">🚀 Get Clinical Case Log — $49.99/year</a>
             </div>
-            <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">After purchase, register below with the same email</p>
+            <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">After subscribing, register below with the same email</p>
         </div>
 
         <div style="color:#666; font-size:13px; margin-top:20px;">
@@ -2051,6 +2051,19 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCPT();
         renderMilestones();
     }
+    
+    // Handle Stripe checkout return
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('subscription') === 'success') {
+        // Clean URL
+        window.history.replaceState({}, '', '/demo');
+        // Show success message
+        setTimeout(() => {
+            alert('✅ Payment successful! Please log in or register with the email you used to subscribe.');
+        }, 500);
+    } else if (urlParams.get('subscription') === 'cancelled') {
+        window.history.replaceState({}, '', '/demo');
+    }
 });
 
 // Toggle add case form
@@ -3219,7 +3232,7 @@ async function doLandingRegister() {
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         
-        // Auto-verify purchase by email
+        // Auto-verify subscription by email (Stripe first, Gumroad fallback)
         try {
             const activation = await api('/activate', 'POST', {});
             if (activation.success) {
@@ -3232,12 +3245,15 @@ async function doLandingRegister() {
                 syncLocalToServer();
                 loadUserAttendings();
             } else {
-                alert('No purchase found for ' + email + '. Please purchase at davincibot.gumroad.com first, then register with the same email.');
-                // Logout since they can't access
+                if (confirm('No active subscription found for ' + email + '. Would you like to subscribe now? ($49.99/year)')) {
+                    startSubscription(email);
+                }
                 logout();
             }
         } catch(e) {
-            alert('No purchase found for ' + email + '. Please purchase at davincibot.gumroad.com first, then register with the same email.');
+            if (confirm('No active subscription found for ' + email + '. Would you like to subscribe now? ($49.99/year)')) {
+                startSubscription(email);
+            }
             logout();
         }
     } catch(e) { alert('Registration failed. Try a different email.'); }
@@ -3270,7 +3286,9 @@ async function doLandingLogin() {
             // Check if plan already active from before
             const planCheck = await api('/plan');
             if (!planCheck.active) {
-                alert('Your subscription has expired. Please renew at davincibot.gumroad.com');
+                if (confirm('Your subscription has expired. Would you like to renew now? ($49.99/year)')) {
+                    startSubscription(email);
+                }
                 logout();
                 return;
             }
@@ -3283,6 +3301,29 @@ async function doLandingLogin() {
         loadFromServer();
         loadUserAttendings();
     } catch(e) { alert('Login failed. Check your email and password.'); }
+}
+
+async function startSubscription(emailHint) {
+    try {
+        const email = emailHint || prompt('Enter your email to subscribe:');
+        if (!email) return;
+        
+        const resp = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email})
+        });
+        const data = await resp.json();
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            alert('Could not start checkout. Please try again or email support.');
+            console.error('Checkout error:', data.error);
+        }
+    } catch(e) {
+        alert('Could not connect to payment system. Please try again.');
+        console.error(e);
+    }
 }
 </script>
 

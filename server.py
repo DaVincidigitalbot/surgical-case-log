@@ -384,6 +384,28 @@ def check_token():
 def activate_by_email():
     import requests as req
     user_email = request.user['email']
+
+    # 1) Check Stripe first
+    try:
+        customers = stripe_lib.Customer.list(email=user_email, limit=5)
+        for customer in customers.auto_paging_iter():
+            subs = stripe_lib.Subscription.list(customer=customer.id, status='active', limit=1)
+            if not subs.data:
+                subs = stripe_lib.Subscription.list(customer=customer.id, status='trialing', limit=1)
+            if subs.data:
+                conn = get_db()
+                cur = conn.cursor()
+                sub = subs.data[0]
+                expires = datetime.utcfromtimestamp(sub.current_period_end).strftime('%Y-%m-%d %H:%M:%S')
+                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s WHERE id = %s',
+                           ('subscription', expires, request.user['id']))
+                conn.commit()
+                conn.close()
+                return jsonify({'success': True, 'plan': 'subscription', 'plan_expires_at': expires})
+    except Exception as e:
+        print(f"Stripe activation check error: {e}")
+
+    # 2) Fallback to Gumroad for legacy purchases
     GUMROAD_TOKEN = "X_X3q6Cw7bJuRkvmwKRGIwhN9Comr3wkjKkMXrv-ZFE"
     
     try:
@@ -392,7 +414,7 @@ def activate_by_email():
             result = r.json()
             sales = result.get('sales', [])
             if not sales:
-                return jsonify({'error': 'No purchase found for this email.', 'needs_purchase': True}), 404
+                return jsonify({'error': 'No active subscription found.', 'needs_purchase': True}), 404
             
             conn = get_db()
             cur = conn.cursor()
@@ -1266,14 +1288,46 @@ def get_analytics():
 
 init_analytics()
 
-if __name__ == '__main__':
-    print(f"🚀 Server starting on port 8080...")
-    app.run(host='0.0.0.0', port=8080, debug=False)
-
-
 # ============ STRIPE PAYMENTS ============
 import stripe as stripe_lib
 stripe_lib.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+
+@app.route('/api/check-subscription', methods=['POST'])
+def check_subscription():
+    """Check if an email has an active subscription via Stripe (primary) or Gumroad (fallback)."""
+    data = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
+    if not email:
+        return jsonify({'active': False, 'source': None, 'error': 'Email required'}), 400
+
+    # 1) Check Stripe first
+    try:
+        customers = stripe_lib.Customer.list(email=email, limit=5)
+        for customer in customers.auto_paging_iter():
+            subs = stripe_lib.Subscription.list(customer=customer.id, status='active', limit=1)
+            if subs.data:
+                return jsonify({'active': True, 'source': 'stripe', 'plan': 'subscription'})
+            subs_trial = stripe_lib.Subscription.list(customer=customer.id, status='trialing', limit=1)
+            if subs_trial.data:
+                return jsonify({'active': True, 'source': 'stripe', 'plan': 'subscription'})
+    except Exception as e:
+        print(f"Stripe check error: {e}")
+
+    # 2) Fallback to Gumroad for legacy purchases
+    import requests as req
+    GUMROAD_TOKEN = "X_X3q6Cw7bJuRkvmwKRGIwhN9Comr3wkjKkMXrv-ZFE"
+    try:
+        r = req.get(f'https://api.gumroad.com/v2/sales?access_token={GUMROAD_TOKEN}&email={email}', timeout=15)
+        if r.status_code == 200:
+            sales = r.json().get('sales', [])
+            for sale in sales:
+                if sale.get('refunded') or sale.get('disputed'):
+                    continue
+                return jsonify({'active': True, 'source': 'gumroad', 'plan': 'annual'})
+    except Exception as e:
+        print(f"Gumroad check error: {e}")
+
+    return jsonify({'active': False, 'source': None})
 
 @app.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
@@ -1314,9 +1368,26 @@ def stripe_webhook():
         session_obj = event.data.object
         customer_email = session_obj.get('customer_email') or session_obj.get('customer_details', {}).get('email')
         if customer_email:
-            conn = get_db()
-            cur = conn.cursor()
-            cur.execute("UPDATE users SET plan = 'pro' WHERE email = %s", (customer_email,))
-            conn.commit()
+            try:
+                conn = get_db()
+                cur = conn.cursor()
+                sub_id = session_obj.get('subscription')
+                expires = None
+                if sub_id:
+                    try:
+                        sub = stripe_lib.Subscription.retrieve(sub_id)
+                        expires = datetime.utcfromtimestamp(sub.current_period_end).strftime('%Y-%m-%d %H:%M:%S')
+                    except:
+                        pass
+                cur.execute("UPDATE users SET plan = 'subscription', plan_expires_at = %s WHERE email = %s", (expires, customer_email))
+                conn.commit()
+                conn.close()
+                print(f"✅ Stripe webhook: Activated subscription for {customer_email}")
+            except Exception as e:
+                print(f"❌ Stripe webhook DB error: {e}")
     
     return jsonify({'status': 'ok'})
+
+if __name__ == '__main__':
+    print(f"🚀 Server starting on port 8080...")
+    app.run(host='0.0.0.0', port=8080, debug=False)

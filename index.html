@@ -1223,7 +1223,7 @@
                     <li>Cloud sync & backup</li>
                     <li>Email support</li>
                 </ul>
-                <a href="https://davincibot.gumroad.com/l/clinical-case-log" class="cta-primary" style="display: block; text-align: center; text-decoration: none;">Start Your Trial</a>
+                <a href="#" onclick="startCheckout()" class="cta-primary" style="display: block; text-align: center; text-decoration: none; cursor: pointer;">Start Your Trial</a>
             </div>
         </div>
     </section>
@@ -1438,6 +1438,32 @@
                 this.style.boxShadow = this.style.boxShadow + ', 0 0 30px rgba(46, 168, 255, 0.15)';
             });
         });
+    </script>
+
+    <script>
+    async function startCheckout() {
+        try {
+            // Prompt for email to pre-fill Stripe checkout
+            const email = prompt('Enter your email to get started:');
+            if (!email) return;
+            
+            const resp = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email})
+            });
+            const data = await resp.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert('Something went wrong. Please try again or contact support.');
+                console.error('Checkout error:', data.error);
+            }
+        } catch(e) {
+            alert('Could not connect to payment system. Please try again.');
+            console.error(e);
+        }
+    }
     </script>
 </body>
 </html>
