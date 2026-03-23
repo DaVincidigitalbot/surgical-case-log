@@ -482,6 +482,36 @@ def get_cases():
             c['updated_at'] = c['updated_at'].isoformat()
     return jsonify(cases)
 
+@app.route('/api/cases/mark-exported', methods=['POST'])
+@auth_required
+def mark_cases_exported():
+    data = request.get_json() or {}
+    case_ids = data.get('caseIds', [])
+    if not case_ids:
+        return jsonify({'error': 'No case IDs provided'}), 400
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        # Add acgme_exported column if it doesn't exist
+        try:
+            cur.execute("ALTER TABLE cases ADD COLUMN IF NOT EXISTS acgme_exported BOOLEAN DEFAULT FALSE")
+            cur.execute("ALTER TABLE cases ADD COLUMN IF NOT EXISTS acgme_exported_at TIMESTAMP")
+            conn.commit()
+        except:
+            conn.rollback()
+        
+        placeholders = ','.join(['%s'] * len(case_ids))
+        cur.execute(
+            f"UPDATE cases SET acgme_exported = TRUE, acgme_exported_at = NOW() WHERE id IN ({placeholders}) AND user_id = %s",
+            (*case_ids, request.user['id'])
+        )
+        updated = cur.rowcount
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/cases', methods=['POST'])
 @auth_required
 def add_case():
