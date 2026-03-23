@@ -129,6 +129,27 @@
             background: #2E8B8B;
             color: #ffffff;
         }
+        
+        /* Role Toggle Buttons */
+        .role-toggle {
+            background: #0f1729;
+            border: 1px solid #2a3a5c;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .role-toggle:hover {
+            border-color: #2E8B8B;
+            background: #1a2744;
+        }
+        .role-toggle.active {
+            background: #2E8B8B;
+            border-color: #2E8B8B;
+            color: #ffffff;
+        }
         .form-full { grid-column: 1 / -1; }
 
         .btn {
@@ -321,6 +342,16 @@
     <!-- ADD CASE -->
     <div id="add" class="section">
         <div class="form-card">
+            <div style="margin-bottom: 20px; padding: 12px; background: #141e33; border-radius: 8px; border: 1px solid #2a3a5c;">
+                <label style="color: #888; font-size: 12px; margin-bottom: 8px; display: block;">USER TYPE</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="role-toggle active" data-role="resident">👨‍⚕️ Resident</button>
+                    <button type="button" class="role-toggle" data-role="medical">🎓 Medical Student</button>
+                    <button type="button" class="role-toggle" data-role="pa">🩺 PA Student</button>
+                    <button type="button" class="role-toggle" data-role="np">👩‍⚕️ NP Student</button>
+                    <button type="button" class="role-toggle" data-role="rnfa">🔧 RNFA</button>
+                </div>
+            </div>
             <h2>➕ Log New Case</h2>
             <form id="caseForm" onsubmit="addCase(event)">
                 <div class="form-grid">
@@ -557,6 +588,38 @@ function showSection(id) {
     });
     if (id === 'cases') renderCases();
 }
+
+// Role toggle functionality
+let currentRole = 'resident';
+
+function initRoleToggles() {
+    document.querySelectorAll('.role-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Remove active from all
+            document.querySelectorAll('.role-toggle').forEach(b => b.classList.remove('active'));
+            // Add active to clicked
+            e.target.classList.add('active');
+            // Update current role
+            currentRole = e.target.dataset.role;
+            // Update form fields based on role
+            updateFormForRole(currentRole);
+        });
+    });
+}
+
+function updateFormForRole(role) {
+    const acgmeSyncBtn = document.getElementById('acgme-sync-btn');
+    if (role === 'resident') {
+        // Show ACGME sync for residents
+        if (acgmeSyncBtn) acgmeSyncBtn.style.display = 'inline-block';
+    } else {
+        // Hide ACGME sync for non-residents
+        if (acgmeSyncBtn) acgmeSyncBtn.style.display = 'none';
+    }
+}
+
+// Initialize role toggles when page loads
+document.addEventListener('DOMContentLoaded', initRoleToggles);
 
 // Add case
 function addCase(e) {
