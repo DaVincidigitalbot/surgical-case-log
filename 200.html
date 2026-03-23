@@ -314,6 +314,10 @@
             <h2>➕ Log New Case</h2>
             <form id="caseForm" onsubmit="addCase(event)">
                 <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Case ID <span style="color:#2E8B8B; font-size:10px;">(ACGME Required)</span></label>
+                        <input type="text" id="caseId" placeholder="Auto-generated" readonly style="font-weight:600; color:#2E8B8B; letter-spacing:1px; background:#0a0f1d; cursor:default;">
+                    </div>
                     <div class="form-group">
                         <label>Date</label>
                         <input type="date" id="caseDate" required>
@@ -507,9 +511,21 @@ const MILESTONES = [
 let cases = JSON.parse(localStorage.getItem('surgicalCases') || '[]');
 let milestoneOverrides = JSON.parse(localStorage.getItem('milestoneOverrides') || '{}');
 
+// Generate next Case ID: CCL-YYYY-NNNN
+function generateCaseId() {
+    const year = new Date().getFullYear();
+    const prefix = `CCL-${year}-`;
+    const existingIds = cases
+        .filter(c => c.caseId && c.caseId.startsWith(prefix))
+        .map(c => parseInt(c.caseId.replace(prefix, '')) || 0);
+    const nextNum = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+    return `${prefix}${String(nextNum).padStart(4, '0')}`;
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('caseDate').valueAsDate = new Date();
+    document.getElementById('caseId').value = generateCaseId();
     updateDashboard();
     renderCases();
     renderCPT();
@@ -537,6 +553,7 @@ function addCase(e) {
     e.preventDefault();
     const newCase = {
         id: Date.now(),
+        caseId: document.getElementById('caseId').value,
         date: document.getElementById('caseDate').value,
         age: document.getElementById('patientAge').value,
         sex: document.getElementById('patientSex').value,
@@ -555,6 +572,7 @@ function addCase(e) {
     saveCases();
     document.getElementById('caseForm').reset();
     document.getElementById('caseDate').valueAsDate = new Date();
+    document.getElementById('caseId').value = generateCaseId();
     updateDashboard();
     showSection('cases');
 }
@@ -563,6 +581,7 @@ function deleteCase(id) {
     if (confirm('Delete this case?')) {
         cases = cases.filter(c => c.id !== id);
         saveCases();
+        document.getElementById('caseId').value = generateCaseId();
         updateDashboard();
         renderCases();
     }
@@ -620,8 +639,8 @@ function updateDashboard() {
     if (recent.length === 0) {
         recentDiv.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No cases yet. Log your first case!</p><button class="btn btn-primary" onclick="showSection(\'add\')">+ Log Case</button></div>';
     } else {
-        recentDiv.innerHTML = '<table class="case-table"><tr><th>Date</th><th>Procedure</th><th>Role</th><th>Rotation</th></tr>' +
-            recent.map(c => `<tr><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
+        recentDiv.innerHTML = '<table class="case-table"><tr><th>Case ID</th><th>Date</th><th>Procedure</th><th>Role</th><th>Rotation</th></tr>' +
+            recent.map(c => `<tr><td style="font-weight:600;color:#2E8B8B;font-size:12px;">${c.caseId || '-'}</td><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
     }
 
     // Update rotation filter
@@ -641,7 +660,7 @@ function renderCases() {
     let filtered = cases.filter(c => {
         const matchSearch = !search || c.procedure.toLowerCase().includes(search) || 
             c.rotation.toLowerCase().includes(search) || c.attending?.toLowerCase().includes(search) ||
-            c.cpt?.includes(search);
+            c.cpt?.includes(search) || (c.caseId && c.caseId.toLowerCase().includes(search));
         const matchRot = !rotFilter || c.rotation === rotFilter;
         return matchSearch && matchRot;
     });
@@ -653,9 +672,9 @@ function renderCases() {
     }
 
     div.innerHTML = `<table class="case-table">
-        <tr><th>#</th><th>Date</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
+        <tr><th>Case ID</th><th>Date</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
         ${filtered.map((c,i) => `<tr>
-            <td>${filtered.length - i}</td>
+            <td style="font-weight:600;color:#2E8B8B;font-size:12px;white-space:nowrap;">${c.caseId || ('CCL-' + (c.date||'').substring(0,4) + '-' + String(filtered.length - i).padStart(4,'0'))}</td>
             <td>${c.date}</td>
             <td>${c.procedure}</td>
             <td>${c.cpt || '-'}</td>
@@ -731,8 +750,8 @@ function updateMilestone(idx, val) {
 // Export CSV
 function exportCSV() {
     if (cases.length === 0) { alert('No cases to export'); return; }
-    const headers = ['Date','Age','Sex','Rotation','Procedure','CPT','Role','Approach','Attending','Complications','EBL','OR Time','Notes'];
-    const rows = cases.map(c => [c.date,c.age,c.sex,c.rotation,c.procedure,c.cpt,c.role,c.approach,c.attending,c.complications,c.ebl,c.orTime,c.notes].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+    const headers = ['Case ID','Date','Age','Sex','Rotation','Procedure','CPT','Role','Approach','Attending','Complications','EBL','OR Time','Notes'];
+    const rows = cases.map(c => [c.caseId,c.date,c.age,c.sex,c.rotation,c.procedure,c.cpt,c.role,c.approach,c.attending,c.complications,c.ebl,c.orTime,c.notes].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], {type:'text/csv'});
     const a = document.createElement('a');

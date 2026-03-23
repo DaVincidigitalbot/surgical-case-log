@@ -97,6 +97,14 @@ def init_db():
             EXCEPTION WHEN duplicate_column THEN NULL;
             END $$
         ''')
+        # Add case_id column (ACGME-required unique case identifier)
+        cur.execute('''
+            DO $$ BEGIN
+                ALTER TABLE cases ADD COLUMN case_id TEXT;
+            EXCEPTION WHEN duplicate_column THEN NULL;
+            END $$
+        ''')
+        cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_case_id ON cases(user_id, case_id)')
         # RNFA cases table
         cur.execute('''
             CREATE TABLE IF NOT EXISTS rnfa_cases (
@@ -458,10 +466,19 @@ def add_case():
     data = request.json
     conn = get_db()
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    # Auto-generate case_id if not provided: CCL-YYYY-NNNN
+    case_id = data.get('caseId') or data.get('case_id')
+    if not case_id:
+        from datetime import datetime
+        year = datetime.now().year
+        cur.execute("SELECT COUNT(*) FROM cases WHERE user_id = %s AND case_id LIKE %s",
+                     (request.user['id'], f'CCL-{year}-%'))
+        count = cur.fetchone()['count']
+        case_id = f'CCL-{year}-{count + 1:04d}'
     cur.execute('''
         INSERT INTO cases (user_id, date, age, sex, rotation, procedure_name, cpt_code, 
-                          role, approach, attending, complications, ebl, or_time, notes)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                          role, approach, attending, complications, ebl, or_time, notes, case_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING *
     ''', (
         request.user['id'],
@@ -469,7 +486,7 @@ def add_case():
         data.get('rotation'), data.get('procedure'), data.get('cpt'),
         data.get('role'), data.get('approach'), data.get('attending'),
         data.get('complications', 'None'), data.get('ebl') or None, data.get('orTime') or None,
-        data.get('notes')
+        data.get('notes'), case_id
     ))
     case = cur.fetchone()
     conn.commit()
@@ -495,14 +512,15 @@ def update_case(case_id):
     cur.execute('''
         UPDATE cases SET date=%s, age=%s, sex=%s, rotation=%s, procedure_name=%s, cpt_code=%s,
         role=%s, approach=%s, attending=%s, complications=%s, ebl=%s, or_time=%s, notes=%s,
-        updated_at=NOW()
+        case_id=%s, updated_at=NOW()
         WHERE id = %s AND user_id = %s RETURNING *
     ''', (
         data.get('date'), data.get('age') or None, data.get('sex'),
         data.get('rotation'), data.get('procedure'), data.get('cpt'),
         data.get('role'), data.get('approach'), data.get('attending'),
         data.get('complications', 'None'), data.get('ebl') or None, data.get('orTime') or None,
-        data.get('notes'), case_id, request.user['id']
+        data.get('notes'), data.get('caseId') or data.get('case_id') or case['case_id'],
+        case_id, request.user['id']
     ))
     updated = cur.fetchone()
     conn.commit()

@@ -940,6 +940,10 @@ a:hover {
             </div>
             <form id="caseForm" onsubmit="addCase(event)">
                 <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Case ID <span style="color:#2EA8FF; font-size:10px; font-weight:400;">(ACGME Required — Auto-generated)</span></label>
+                        <input type="text" id="caseId" placeholder="Auto-generated" readonly style="font-weight:600; color:#2EA8FF; letter-spacing:1px; background:#0a0f1d; cursor:default; border:1px solid #2EA8FF30;">
+                    </div>
                     <div class="form-group">
                         <label>Date</label>
                         <input type="date" id="caseDate" required>
@@ -1963,10 +1967,22 @@ const MILESTONES = [
 let cases = JSON.parse(localStorage.getItem('surgicalCases') || '[]');
 let milestoneOverrides = JSON.parse(localStorage.getItem('milestoneOverrides') || '{}');
 
+// Generate next Case ID: CCL-YYYY-NNNN (ACGME-compliant unique identifier)
+function generateCaseId() {
+    const year = new Date().getFullYear();
+    const prefix = `CCL-${year}-`;
+    const existingIds = cases
+        .filter(c => c.caseId && c.caseId.startsWith(prefix))
+        .map(c => parseInt(c.caseId.replace(prefix, '')) || 0);
+    const nextNum = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+    return `${prefix}${String(nextNum).padStart(4, '0')}`;
+}
+
 // Initialize
 // isDemoMode already set to true at top of script
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('caseDate').valueAsDate = new Date();
+    document.getElementById('caseId').value = generateCaseId();
     if (!isDemoMode) {
         updateDashboard();
         renderCases();
@@ -2043,6 +2059,7 @@ function addCase(e) {
     
     const newCase = {
         id: Date.now(),
+        caseId: document.getElementById('caseId').value,
         date: document.getElementById('caseDate').value,
         age: document.getElementById('patientAge').value,
         sex: document.getElementById('patientSex').value,
@@ -2070,6 +2087,7 @@ function addCase(e) {
     document.getElementById('caseForm').reset();
     clearDiagnosisChips();
     document.getElementById('caseDate').valueAsDate = new Date();
+    document.getElementById('caseId').value = generateCaseId();
     updateDashboard();
     
     // Collapse the form and show the updated cases list
@@ -2144,8 +2162,8 @@ function updateDashboard() {
     if (recent.length === 0) {
         recentDiv.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No cases yet. Log your first case!</p><button class="btn btn-primary" onclick="showSection(\'cases\'); setTimeout(() => toggleAddCaseForm(), 200);">+ Log Case</button></div>';
     } else {
-        recentDiv.innerHTML = '<table class="case-table"><tr><th>Date</th><th>Procedure</th><th>Role</th><th>Rotation</th></tr>' +
-            recent.map(c => `<tr><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
+        recentDiv.innerHTML = '<table class="case-table"><tr><th>Case ID</th><th>Date</th><th>Procedure</th><th>Role</th><th>Rotation</th></tr>' +
+            recent.map(c => `<tr><td style="font-weight:600;color:#2EA8FF;font-size:11px;">${c.caseId || '-'}</td><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
     }
 
     // Update rotation filter
@@ -2166,7 +2184,8 @@ function renderCases() {
         const matchSearch = !search || c.procedure.toLowerCase().includes(search) || 
             c.rotation.toLowerCase().includes(search) || c.attending?.toLowerCase().includes(search) ||
             c.cpt?.includes(search) || (c.diagnosis && c.diagnosis.toLowerCase().includes(search)) ||
-            (c.icd10 && c.icd10.toLowerCase().includes(search));
+            (c.icd10 && c.icd10.toLowerCase().includes(search)) ||
+            (c.caseId && c.caseId.toLowerCase().includes(search));
         const matchRot = !rotFilter || c.rotation === rotFilter;
         return matchSearch && matchRot;
     });
@@ -2178,9 +2197,9 @@ function renderCases() {
     }
 
     div.innerHTML = `<table class="case-table">
-        <tr><th>#</th><th>Date</th><th>Diagnosis</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
+        <tr><th>Case ID</th><th>Date</th><th>Diagnosis</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
         ${filtered.map((c,i) => `<tr>
-            <td>${filtered.length - i}</td>
+            <td style="font-weight:600;color:#2EA8FF;font-size:11px;white-space:nowrap;">${c.caseId || ('CCL-' + (c.date||'').substring(0,4) + '-' + String(filtered.length - i).padStart(4,'0'))}</td>
             <td>${c.date}</td>
             <td style="max-width:180px;white-space:normal;font-size:12px;">${c.diagnosis || '-'}</td>
             <td>${c.procedure}</td>
@@ -2436,7 +2455,7 @@ async function loadFromServer() {
         const serverCases = await api('/cases');
         if (!serverCases || serverCases.error) return;
         cases = serverCases.map(c => ({
-            id: c.id, serverId: c.id,
+            id: c.id, serverId: c.id, caseId: c.case_id,
             date: c.date, age: c.age, sex: c.sex,
             rotation: c.rotation, procedure: c.procedure_name,
             cpt: c.cpt_code, role: c.role, approach: c.approach,
@@ -2452,7 +2471,10 @@ async function loadFromServer() {
 async function serverAddCase(caseData) {
     if (!authToken) return;
     try {
-        const result = await api('/cases', 'POST', caseData);
+        // Include caseId for ACGME compliance
+        const payload = {...caseData};
+        if (payload.caseId) payload.caseId = payload.caseId;
+        const result = await api('/cases', 'POST', payload);
         if (result && result.id) return result.id;
     } catch(e) {}
     return null;
@@ -2537,7 +2559,7 @@ const DEMO_RNFA_CASES = [
 
 const DEMO_MEDICAL_CASES = [
     {
-        id: 8001, serverId: 8001, date: '2026-03-10', age: 58, sex: 'F',
+        id: 8001, serverId: 8001, caseId: 'CCL-2026-0001', date: '2026-03-10', age: 58, sex: 'F',
         rotation: 'General Surgery', procedure: 'Laparoscopic Cholecystectomy',
         cpt: '47562', role: 'Assisted', approach: 'Laparoscopic',
         attending: 'Dr. Sarah Chen', complications: 'None', ebl: '25', orTime: '95',
@@ -2545,7 +2567,7 @@ const DEMO_MEDICAL_CASES = [
         notes: 'Uneventful case. Maintained critical view of safety.'
     },
     {
-        id: 8002, serverId: 8002, date: '2026-03-12', age: 72, sex: 'M',
+        id: 8002, serverId: 8002, caseId: 'CCL-2026-0002', date: '2026-03-12', age: 72, sex: 'M',
         rotation: 'Internal Medicine', procedure: 'Inpatient Management',
         cpt: '', role: 'Primary', approach: '',
         attending: 'Dr. Lisa Park', complications: 'None', ebl: '', orTime: '',
@@ -2553,7 +2575,7 @@ const DEMO_MEDICAL_CASES = [
         notes: 'Managed insulin regimen, titrated antihypertensives.'
     },
     {
-        id: 8003, serverId: 8003, date: '2026-03-15', age: 34, sex: 'M',
+        id: 8003, serverId: 8003, caseId: 'CCL-2026-0003', date: '2026-03-15', age: 34, sex: 'M',
         rotation: 'Orthopedic Surgery', procedure: 'Closed Reduction Distal Radius Fracture',
         cpt: '25600', role: 'Observed', approach: '',
         attending: 'Dr. Michael Torres', complications: 'None', ebl: '', orTime: '',
@@ -2685,9 +2707,10 @@ if (isDemoUrl) {
 // Export as Excel (.xlsx via CSV with Excel-compatible format)
 function exportExcel() {
     if (cases.length === 0) { alert('No cases to export'); return; }
-    const headers = ['Case #','Date','Age','Sex','Rotation','Diagnosis','ICD-10','Procedure','CPT Code','Role','Approach','Attending','Complications','EBL (mL)','OR Time (min)','Notes'];
+    const headers = ['Case ID','Date','Age','Sex','Rotation','Diagnosis','ICD-10','Procedure','CPT Code','Role','Approach','Attending','Complications','EBL (mL)','OR Time (min)','Notes'];
     const rows = cases.map((c, i) => [
-        cases.length - i, c.date, c.age, c.sex, c.rotation, c.diagnosis, c.icd10, c.procedure, c.cpt, 
+        c.caseId || ('CCL-' + (c.date||'').substring(0,4) + '-' + String(cases.length - i).padStart(4,'0')),
+        c.date, c.age, c.sex, c.rotation, c.diagnosis, c.icd10, c.procedure, c.cpt, 
         c.role, c.approach, c.attending, c.complications, c.ebl, c.orTime, c.notes
     ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
     
