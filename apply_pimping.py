@@ -15,6 +15,7 @@ m1 = load_module('q1', 'pimping_questions.py')
 m2 = load_module('q2', 'pimping_q2.py')
 m3 = load_module('q3', 'pimping_q3.py')
 m4 = load_module('q4', 'pimping_q4.py')
+m5 = load_module('q5', 'pimping_q5_fixes.py')
 
 # Merge all questions (later files override earlier for duplicates)
 ALL_Q = {}
@@ -22,6 +23,7 @@ ALL_Q.update(m1.QUESTIONS)
 ALL_Q.update(m2.QUESTIONS2)
 ALL_Q.update(m3.Q3)
 ALL_Q.update(m4.Q4)
+ALL_Q.update(m5.Q5)  # Q5 overrides with fixed unique questions
 
 print(f"Total question sets loaded: {len(ALL_Q)}")
 
