@@ -120,14 +120,30 @@
         }
         .form-group select { appearance: auto; }
         
-        /* Fix dropdown option visibility */
+        /* Fix dropdown option visibility - Enhanced for mobile */
         .form-group select option {
-            background: #0f1729;
-            color: #ffffff;
+            background: #0f1729 !important;
+            color: #ffffff !important;
+            font-size: 16px !important;
         }
-        .form-group select option:hover {
-            background: #2E8B8B;
-            color: #ffffff;
+        .form-group select option:hover, .form-group select option:focus {
+            background: #2E8B8B !important;
+            color: #ffffff !important;
+        }
+        
+        /* Mobile-specific dropdown fixes */
+        @media (max-width: 768px) {
+            .form-group select {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                background-color: #0f1729 !important;
+                color: #ffffff !important;
+            }
+            .form-group select option {
+                background-color: #0f1729 !important;
+                color: #ffffff !important;
+                padding: 12px !important;
+            }
         }
         
         /* Role Toggle Buttons */

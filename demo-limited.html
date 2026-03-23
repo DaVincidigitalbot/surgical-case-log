@@ -332,14 +332,30 @@ a:hover {
         }
         .form-group select { appearance: auto; }
         
-        /* Fix dropdown option visibility */
+        /* Fix dropdown option visibility - Enhanced for mobile */
         .form-group select option, select option {
             background: #0f1729 !important;
             color: #ffffff !important;
+            font-size: 16px !important;
         }
-        .form-group select option:hover, select option:hover {
+        .form-group select option:hover, select option:hover, .form-group select option:focus, select option:focus {
             background: #2EA8FF !important;
             color: #ffffff !important;
+        }
+        
+        /* Mobile-specific dropdown fixes */
+        @media (max-width: 768px) {
+            .form-group select, select {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                background-color: #0f1729 !important;
+                color: #ffffff !important;
+            }
+            .form-group select option, select option {
+                background-color: #0f1729 !important;
+                color: #ffffff !important;
+                padding: 12px !important;
+            }
         }
         .multi-chip {
             display: inline-flex;
