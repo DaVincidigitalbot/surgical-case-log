@@ -874,6 +874,31 @@
             box-shadow: 0 4px 12px rgba(46, 168, 255, 0.3);
         }
         
+        /* Pimping Questions */
+        .pimping-questions {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .pimp-question {
+            background: linear-gradient(135deg, #fff8f0, #fef7ed);
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 1.2rem;
+        }
+        
+        .pimp-question .question {
+            margin-bottom: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .pimp-question .answer {
+            color: #374151;
+            line-height: 1.6;
+        }
+        
         .section-header:focus {
             outline: 2px solid var(--accent);
             outline-offset: -2px;
@@ -1310,6 +1335,31 @@
                         </div>
                     </div>
                 </div>
+                
+                ${procedure.pimpingQuestions ? `
+                <div class="detail-section">
+                    <div class="section-header" onclick="toggleSection(this)">
+                        <h3 class="section-title">🔥 Pimping Questions</h3>
+                        <span class="section-icon">▼</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-inner">
+                            <div class="pimping-questions">
+                                ${procedure.pimpingQuestions.map((q, idx) => `
+                                    <div class="pimp-question">
+                                        <div class="question">
+                                            <strong>Q${idx + 1}:</strong> ${q.question}
+                                        </div>
+                                        <div class="answer">
+                                            <strong>A:</strong> ${q.answer}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
                 
                 <div class="detail-section">
                     <div class="section-header" onclick="toggleSection(this)">
