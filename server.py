@@ -1209,6 +1209,10 @@ def admin_activity():
 
 # ============ STATIC FILES ============
 
+@app.route('/googlef8c23c2804f8d2c1.html')
+def google_verify():
+    return send_from_directory('.', 'googlef8c23c2804f8d2c1.html')
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
