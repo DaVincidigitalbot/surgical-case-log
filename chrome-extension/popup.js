@@ -140,22 +140,26 @@ async function exportSelected() {
   const settings = await chrome.storage.local.get(['defaultSite']);
   const defaultSite = settings.defaultSite || '';
 
-  const casesToExport = allCases
-    .filter(c => selectedIds.has(c.id))
-    .map(c => ({
-      dateOfProcedure: c.date,
-      cptCode: c.cptCode,
-      role: ROLE_MAP[c.role] || ROLE_MAP[c.role.toLowerCase()] || 'SC',
-      attending: c.attending,
-      site: c.site || defaultSite,
-      caseId: c.caseId,
-      patientType: c.patientType || '',
-    }));
+  // Run ALL cases through the ACGME filter — strips non-ACGME fields
+  const selectedCases = allCases.filter(c => selectedIds.has(c.id));
+  const casesToExport = selectedCases.map(c => {
+    // Map to ACGME-safe format — ONLY these fields pass through
+    return {
+      dateOfProcedure: c.date || null,
+      cptCode: c.cptCode || null,
+      role: ROLE_MAP[c.role] || ROLE_MAP[(c.role||'').toLowerCase()] || 'SC',
+      attending: c.attending || null,
+      site: c.site || defaultSite || null,
+      caseId: c.caseId || null,
+      patientType: c.patientType || null,
+    };
+    // BLOCKED: age, sex, rotation, diagnosis, icd10, approach, ebl, orTime, complications, notes
+  });
 
-  // Validate required fields
+  // Validate required ACGME fields
   const invalid = casesToExport.filter(c => !c.dateOfProcedure || !c.cptCode || !c.role || !c.attending);
   if (invalid.length > 0) {
-    showMsg('error', `${invalid.length} case(s) missing required fields (date, CPT, role, or attending). Please complete them in Clinical Case Log first.`);
+    showMsg('error', `${invalid.length} case(s) missing required ACGME fields (Date, CPT Code, Role, or Attending). Complete them in Clinical Case Log first.`);
     return;
   }
 

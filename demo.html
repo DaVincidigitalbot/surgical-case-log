@@ -901,6 +901,7 @@ a:hover {
         <button class="primary" onclick="handleLogCase()">+ Log Case</button>
         <button onclick="handleExportExcel()">📥 Excel</button>
         <button id="pdfExportBtn" onclick="exportPDF()">📄 PDF</button>
+        <button onclick="exportACGME()" style="background:#3FE0C5;color:#0B1F3B;">🎯 ACGME</button>
         <button id="exxatExportBtn" onclick="exportForExxat()">🔄 Exxat</button>
         <button id="userBtn" onclick="showAuth()">🔑 Sign In</button>
     </div>
@@ -2807,6 +2808,71 @@ function exportExcel() {
     a.href = URL.createObjectURL(blob);
     a.download = 'Surgical_Case_Log.xlsx';
     a.click();
+}
+
+// ============ ACGME-FILTERED EXPORT ============
+// Exports ONLY ACGME-required fields. Strips all non-ACGME data.
+function exportACGME() {
+    if (cases.length === 0) { alert('No cases to export'); return; }
+    
+    // ACGME role mapping
+    const roleMap = {
+        'Primary Surgeon': 'SC',  // Default to Surgeon Chief — residents can edit
+        'First Assist': 'FA',
+        'Teaching': 'TA',
+    };
+    
+    // ACGME-ONLY headers — these are the ONLY fields ACGME accepts
+    const headers = ['Date of Procedure','CPT Code','Role','Attending','Site/Institution','Case ID','Patient Type'];
+    
+    // Map and filter each case — strip EVERYTHING that isn't ACGME
+    const rows = cases.map((c, i) => {
+        const caseId = c.caseId || ('CCL-' + (c.date||'').substring(0,4) + '-' + String(cases.length - i).padStart(4,'0'));
+        const role = roleMap[c.role] || roleMap[c.role] || 'SC';
+        const site = c.site || c.institution || '';  // May be blank — resident fills in
+        
+        return [
+            c.date || '',                    // Date of Procedure (required)
+            c.cpt || '',                     // CPT Code (required)
+            role,                            // Role: SC/SJ/TA/FA (required)
+            c.attending || '',               // Attending (required)
+            site,                            // Site/Institution (required)
+            caseId,                          // Case ID (recommended)
+            c.patientType || '',             // Patient Type (optional)
+        ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+    });
+    
+    // Validate: warn about missing required fields
+    let missingCount = 0;
+    cases.forEach(c => {
+        if (!c.date || !c.cpt || !c.role || !c.attending) missingCount++;
+    });
+    
+    if (missingCount > 0) {
+        const proceed = confirm(
+            `⚠️ ${missingCount} case(s) are missing required ACGME fields (Date, CPT, Role, or Attending).\n\n` +
+            `These cases will export with blank fields that you'll need to fill in on the ACGME site.\n\n` +
+            `Continue export?`
+        );
+        if (!proceed) return;
+    }
+    
+    const bom = '\uFEFF';
+    const csv = bom + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ACGME_Case_Log_Export.csv';
+    a.click();
+    
+    // Show confirmation
+    const stripped = ['Age','Sex','Rotation','Diagnosis','ICD-10','Approach','EBL','OR Time','Complications','Notes'];
+    alert(
+        `✅ ACGME Export Complete\n\n` +
+        `${cases.length} cases exported with ACGME-only fields.\n\n` +
+        `Stripped non-ACGME fields:\n${stripped.join(', ')}\n\n` +
+        `Upload this CSV to the ACGME Case Log System (ADS).`
+    );
 }
 
 // Export for Exxat (CSV format matching Exxat's expected columns)

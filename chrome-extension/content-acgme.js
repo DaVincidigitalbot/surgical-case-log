@@ -9,7 +9,21 @@
   
   if (!response || !response.cases || response.cases.length === 0) return;
   
-  const cases = response.cases;
+  // Run through ACGME filter — strip any non-ACGME fields that may have leaked through
+  const cases = response.cases.map(c => {
+    // ONLY pass ACGME-accepted fields — everything else is dropped
+    return {
+      dateOfProcedure: c.dateOfProcedure || null,
+      cptCode: c.cptCode || null,
+      role: c.role || null,
+      attending: c.attending || null,
+      site: c.site || null,
+      caseId: c.caseId || null,
+      patientType: c.patientType || null,
+      equipment: c.equipment || null,
+      rrcCodes: c.rrcCodes || null,
+    };
+  });
   
   // Create floating helper panel
   const panel = document.createElement('div');
