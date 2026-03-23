@@ -108,11 +108,16 @@
         .form-group input, .form-group select, .form-group textarea {
             background: #0f1729;
             border: 1px solid #2a3a5c;
-            color: #e0e0e0;
+            color: #ffffff !important;
             padding: 10px 12px;
             border-radius: 8px;
             font-size: 14px;
             outline: none;
+        }
+        
+        /* Force selected value to be white */
+        .form-group select {
+            color: #ffffff !important;
         }
         .form-group input:focus, .form-group select:focus {
             border-color: #2E8B8B;

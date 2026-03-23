@@ -318,13 +318,18 @@ a:hover {
         .form-group input, .form-group select, .form-group textarea, .search-dropdown {
             background: #0f1729;
             border: 1px solid #2a3a5c;
-            color: #e0e0e0;
+            color: #ffffff !important;
             padding: 10px 12px;
             border-radius: 8px;
             font-size: 16px;
             outline: none;
             max-width: 100%;
             box-sizing: border-box;
+        }
+        
+        /* Force selected value to be white */
+        .form-group select, select {
+            color: #ffffff !important;
         }
         .form-group input:focus, .form-group select:focus {
             border-color: #2EA8FF;
