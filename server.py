@@ -1233,6 +1233,10 @@ def prep():
 def legal():
     return send_from_directory('.', 'legal.html')
 
+@app.route('/privacy')
+def privacy():
+    return send_from_directory('.', 'privacy.html')
+
 @app.route('/api/preview-login', methods=['POST'])
 def preview_login():
     conn = get_db()
