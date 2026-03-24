@@ -1223,12 +1223,16 @@
                     <li>Cloud sync & backup</li>
                     <li>Email support</li>
                 </ul>
-                <a href="#" onclick="startCheckout()" class="cta-primary" style="display: block; text-align: center; text-decoration: none; cursor: pointer;">Start Your Trial</a>
+                <div style="margin-top: 16px;">
+                    <input type="email" id="checkoutEmail" placeholder="Enter your email" style="width: 100%; padding: 14px 16px; border: 2px solid rgba(46,168,255,0.3); border-radius: 8px; font-size: 16px; background: rgba(255,255,255,0.05); color: var(--text-primary); margin-bottom: 12px; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(46,168,255,0.3)'">
+                    <a href="#" onclick="startCheckout()" class="cta-primary" style="display: block; text-align: center; text-decoration: none; cursor: pointer; padding: 16px;">Start Your Trial →</a>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px; text-align: center;">30-day money-back guarantee · Cancel anytime</p>
             </div>
         </div>
     </section>
 
-    <!-- Testimonial -->
+    <!-- Testimonials -->
     <section class="testimonial" id="testimonial">
         <div class="testimonial-container fade-in-up">
             <h2>Built by a <span class="highlight">practicing surgeon</span></h2>
@@ -1238,6 +1242,18 @@
                 <div class="author-info">
                     <h4>Graydon Stallard, DO, FACOS, FACS</h4>
                     <p>General, Trauma & Critical Care Surgeon</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-container fade-in-up" style="margin-top: 40px; background: rgba(46, 168, 255, 0.03); border: 1px solid rgba(46, 168, 255, 0.1); border-radius: 16px; padding: 40px;">
+            <h2 style="font-size: 24px;">What users are saying</h2>
+            <p>"The streamlined logging is exactly what I needed. I can document my first-assisting cases in seconds between procedures. This is how case logging should work — fast, intuitive, and built for people who are actually in the OR."</p>
+            <div class="author">
+                <div class="author-avatar" style="background: linear-gradient(135deg, var(--highlight), var(--accent));">MC</div>
+                <div class="author-info">
+                    <h4>Marissa Casbohm</h4>
+                    <p>RNFA Student</p>
                 </div>
             </div>
         </div>
@@ -1450,9 +1466,16 @@
 
     async function startCheckout() {
         try {
-            // Prompt for email to pre-fill Stripe checkout
-            const email = prompt('Enter your email to get started:');
-            if (!email) return;
+            const emailInput = document.getElementById('checkoutEmail');
+            const email = emailInput ? emailInput.value.trim() : '';
+            if (!email || !email.includes('@')) {
+                if (emailInput) {
+                    emailInput.style.borderColor = '#FF4D4D';
+                    emailInput.focus();
+                    emailInput.placeholder = 'Please enter a valid email';
+                }
+                return;
+            }
             
             const resp = await fetch('/api/create-checkout-session', {
                 method: 'POST',
