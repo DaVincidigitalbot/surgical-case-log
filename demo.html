@@ -1052,7 +1052,7 @@ a:hover {
                         <label>Diagnosis (select multiple)</label>
                         <div style="position:relative;">
                             <div id="diagnosisChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;"></div>
-                            <input type="text" id="diagnosisInput" placeholder="Type to search and add diagnoses..." autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
+                            <input type="text" id="diagnosisInput" placeholder="⚠ Select Specialty/Rotation First" disabled autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;opacity:0.5;">
                             <input type="hidden" id="diagnosis">
                             <div id="diagnosisDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2EA8FF;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
@@ -1060,7 +1060,7 @@ a:hover {
                     <div class="form-group" style="grid-column: span 2;">
                         <label>Procedure / Encounter</label>
                         <div style="position:relative;">
-                            <input type="text" id="procedureInput" placeholder="Type or scroll to select..." autocomplete="off" oninput="filterDropdown('procedure')" onfocus="showDropdown('procedure')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
+                            <input type="text" id="procedureInput" placeholder="⚠ Select Specialty/Rotation First" disabled autocomplete="off" oninput="filterDropdown('procedure')" onfocus="showDropdown('procedure')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;opacity:0.5;">
                             <input type="hidden" id="procedure">
                             <div id="procedureDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2EA8FF;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
@@ -1823,8 +1823,26 @@ function updateDiagnosesAndProcedures() {
         currentProcedures = data.procedures || [];
     }
     
-    document.getElementById('diagnosisInput').placeholder = currentDiagnoses.length > 0 ? 'Type to search or tap to browse...' : 'Select specialty first...';
-    document.getElementById('procedureInput').placeholder = currentProcedures.length > 0 ? 'Type to search or tap to browse...' : 'Select specialty first...';
+    const diagInput = document.getElementById('diagnosisInput');
+    const procInput = document.getElementById('procedureInput');
+    
+    if (specialty && SPECIALTIES[specialty]) {
+        // Enable dropdowns
+        diagInput.disabled = false;
+        diagInput.style.opacity = '1';
+        diagInput.placeholder = 'Type to search or tap to browse...';
+        procInput.disabled = false;
+        procInput.style.opacity = '1';
+        procInput.placeholder = 'Type to search or tap to browse...';
+    } else {
+        // Disable dropdowns — prompt user to select specialty first
+        diagInput.disabled = true;
+        diagInput.style.opacity = '0.5';
+        diagInput.placeholder = '\u26A0 Select Specialty/Rotation First';
+        procInput.disabled = true;
+        procInput.style.opacity = '0.5';
+        procInput.placeholder = '\u26A0 Select Specialty/Rotation First';
+    }
 }
 
 function showDropdown(type) {
