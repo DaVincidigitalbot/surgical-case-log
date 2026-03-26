@@ -992,12 +992,12 @@ a:hover {
         <div id="addCaseForm" class="form-card" style="display:none; overflow:hidden; transition:all 0.3s ease-in-out; margin-bottom:20px;">
             <div style="margin-bottom: 20px; padding: 12px; background: #141e33; border-radius: 8px; border: 1px solid #2a3a5c;">
                 <label style="color: #888; font-size: 12px; margin-bottom: 8px; display: block;">USER TYPE</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" class="role-toggle active" data-role="resident">👨‍⚕️ Resident</button>
-                    <button type="button" class="role-toggle" data-role="medical">🎓 Medical Student</button>
-                    <button type="button" class="role-toggle" data-role="pa">🩺 PA Student</button>
-                    <button type="button" class="role-toggle" data-role="np">👩‍⚕️ NP Student</button>
-                    <button type="button" class="role-toggle" data-role="rnfa">🔧 RNFA</button>
+                <div id="userTypeToggles" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="role-toggle active" data-role="resident" onclick="switchUserType('resident')">👨‍⚕️ Resident</button>
+                    <button type="button" class="role-toggle" data-role="medical" onclick="switchUserType('medical')">🎓 Medical Student</button>
+                    <button type="button" class="role-toggle" data-role="pa" onclick="switchUserType('pa')">🩺 PA Student</button>
+                    <button type="button" class="role-toggle" data-role="np" onclick="switchUserType('np')">👩‍⚕️ NP Student</button>
+                    <button type="button" class="role-toggle" data-role="rnfa" onclick="switchUserType('rnfa')">🔧 RNFA</button>
                 </div>
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
@@ -1800,6 +1800,41 @@ document.addEventListener('click', function(e) {
 // Dynamic specialty dropdowns with search
 let currentDiagnoses = [];
 let currentProcedures = [];
+
+// User type switching within case form
+var currentUserType = 'resident';
+
+function switchUserType(type) {
+    currentUserType = type;
+    
+    // Update toggle button active state
+    document.querySelectorAll('#userTypeToggles .role-toggle').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-role') === type);
+    });
+    
+    // Update Level of Participation options based on user type
+    const roleSelect = document.getElementById('role');
+    roleSelect.innerHTML = '';
+    roleSelect.add(new Option('Select...', ''));
+    
+    const roleOptions = {
+        'resident': ['Primary Surgeon', 'First Assist', 'Teaching Assistant', 'Observed', 'Managed/Treated', 'Evaluated/Assessed', 'Counseled/Educated'],
+        'medical': ['Observed', 'Assisted', 'Performed Under Supervision', 'Evaluated/Assessed', 'Counseled/Educated'],
+        'pa': ['Observed', 'Assisted', 'Performed', 'First Assist', 'Managed/Treated', 'Evaluated/Assessed', 'Counseled/Educated'],
+        'np': ['Observed', 'Assisted', 'Performed', 'Managed/Treated', 'Evaluated/Assessed', 'Counseled/Educated', 'Prescribed/Ordered'],
+        'rnfa': ['First Assist', 'Observed', 'Performed Under Supervision'],
+    };
+    
+    const options = roleOptions[type] || roleOptions['resident'];
+    options.forEach(opt => roleSelect.add(new Option(opt, opt)));
+    
+    // Show/hide RNFA-specific fields if needed
+    if (type === 'rnfa') {
+        switchProgram('rnfa');
+    } else if (programType === 'rnfa') {
+        switchProgram('medical');
+    }
+}
 
 function updateDiagnosesAndProcedures() {
     const specialty = document.getElementById('rotation').value;
