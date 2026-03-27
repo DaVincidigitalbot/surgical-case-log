@@ -584,10 +584,20 @@ async function submitReset() {
         }).catch(() => {});
     }
 
-    // Check URL params for tab
+    // Check URL params for tab and payment status
     const params = new URLSearchParams(window.location.search);
     if (params.get('tab') === 'register' || window.location.pathname === '/register') {
         showTab('register');
+    }
+    if (params.get('paid') === 'true') {
+        showTab('register');
+        showSuccess('✅ Payment successful! Create your account below using the same email you subscribed with.');
+        // Clean URL
+        window.history.replaceState({}, '', '/login?tab=register');
+    }
+    if (params.get('cancelled') === 'true') {
+        showError('Payment was cancelled. You can try again when you\'re ready.');
+        window.history.replaceState({}, '', '/login');
     }
 
     // Handle Enter key

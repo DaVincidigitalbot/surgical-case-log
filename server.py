@@ -1386,8 +1386,8 @@ def create_checkout_session():
                 'quantity': 1,
             }],
             mode='subscription',
-            success_url='https://clinicalcaselog.com/demo?subscription=success',
-            cancel_url='https://clinicalcaselog.com/demo?subscription=cancelled',
+            success_url='https://clinicalcaselog.com/login?paid=true&tab=register',
+            cancel_url='https://clinicalcaselog.com/login?cancelled=true',
             customer_email=user_email if user_email else None,
             metadata={
                 'source': 'clinical-case-log'
