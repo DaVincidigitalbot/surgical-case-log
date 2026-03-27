@@ -1225,6 +1225,12 @@ def preview():
 def demo():
     return send_from_directory('.', 'demo.html')
 
+@app.route('/login')
+@app.route('/signin')
+@app.route('/register')
+def login_page():
+    return send_from_directory('.', 'login.html')
+
 @app.route('/prep')
 def prep():
     return send_from_directory('.', 'prep.html')
