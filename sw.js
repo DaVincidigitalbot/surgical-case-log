@@ -1,5 +1,5 @@
 // Service Worker for Clinical Case Log Pro PWA
-const CACHE_NAME = 'caselog-v3';
+const CACHE_NAME = 'caselog-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -32,8 +32,9 @@ self.addEventListener('activate', event => {
 
 // Fetch - network first, fallback to cache
 self.addEventListener('fetch', event => {
-  // Skip API calls and demo page - always go to network
-  if (event.request.url.includes('/api/') || event.request.url.includes('/demo')) {
+  // Skip API calls, app pages, and auth pages - always go to network
+  const url = event.request.url;
+  if (url.includes('/api/') || url.includes('/demo') || url.includes('/login') || url.includes('/signin') || url.includes('/register') || url.includes('/admin') || url.includes('/prep')) {
     return event.respondWith(fetch(event.request));
   }
   
