@@ -714,7 +714,7 @@ def get_stats():
 def update_program_type():
     data = request.json
     program_type = data.get('program_type', 'medical')
-    if program_type not in ('medical', 'rnfa'):
+    if program_type not in ('medical', 'rnfa', 'pa', 'np', 'resident'):
         return jsonify({'error': 'Invalid program type'}), 400
     conn = get_db()
     cur = conn.cursor()
