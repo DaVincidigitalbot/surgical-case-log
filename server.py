@@ -250,10 +250,10 @@ def send_reset_email(email, code):
     """Send password reset email via SMTP"""
     try:
         smtp_email = "Graydon.F.Stallard@gmail.com"
-        smtp_password = "zjcyxpsbybkkyjum"
+        smtp_password = "dlrypwmlbmualsxv"
         
         msg = MIMEMultipart()
-        msg['From'] = "support@clinicalcaselog.com"
+        msg['From'] = "Clinical Case Log <Graydon.F.Stallard@gmail.com>"
         msg['To'] = email
         msg['Subject'] = "Clinical Case Log — Password Reset Code"
         
