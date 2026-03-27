@@ -2796,22 +2796,8 @@ function closeDemoModal() {
 function exitDemoMode() {
     // Close any open modal
     closeDemoModal();
-    // Clear demo state
-    isDemoMode = false;
-    cases = [];
-    rnfaCases = [];
-    rnfaStats = {};
-    programType = 'medical';
-    // Hide demo banner
-    document.getElementById('demoBanner').style.display = 'none';
-    // Show landing page with registration
-    document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('landingPage').style.display = 'block';
-    // Scroll to registration section
-    setTimeout(() => {
-        const regSection = document.getElementById('landingRegEmail');
-        if (regSection) regSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 200);
+    // Redirect to payment - user wants to buy!
+    startSubscription();
 }
 
 // Check for demo mode FIRST — before auth check
