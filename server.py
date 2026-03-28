@@ -400,19 +400,41 @@ def login():
 
 # ============ PASSWORD RESET ============
 
-def send_reset_email(email, code):
-    """Send password reset email via SMTP"""
+RESEND_API_KEY = 're_QW5ZoLQY_6xFtAnUngaE8iokAszSiR8Ne'
+RESEND_FROM = 'Clinical Case Log <support@clinicalcaselog.com>'
+
+def send_via_resend(to_email, subject, body_text):
+    """Send email via Resend API from support@clinicalcaselog.com"""
     try:
-        smtp_email = "Graydon.F.Stallard@gmail.com"
-        smtp_password = "dlrypwmlbmualsxv"
-        
-        msg = MIMEMultipart()
-        msg['From'] = "Clinical Case Log <Graydon.F.Stallard@gmail.com>"
-        msg['To'] = email
-        msg['Subject'] = "Clinical Case Log — Password Reset Code"
-        
-        body = f"""
-Hi there,
+        import requests as req
+        resp = req.post('https://api.resend.com/emails',
+            headers={
+                'Authorization': f'Bearer {RESEND_API_KEY}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'from': RESEND_FROM,
+                'to': [to_email],
+                'subject': subject,
+                'text': body_text,
+                'reply_to': 'support@clinicalcaselog.com'
+            },
+            timeout=10
+        )
+        if resp.status_code in (200, 201):
+            print(f"[RESEND] Sent to {to_email}: {subject}", flush=True)
+            return True
+        else:
+            print(f"[RESEND] Error {resp.status_code}: {resp.text}", flush=True)
+            return False
+    except Exception as e:
+        print(f"[RESEND] Exception: {e}", flush=True)
+        return False
+
+
+def send_reset_email(email, code):
+    """Send password reset email via Resend API"""
+    body = f"""Hi there,
 
 You requested a password reset for your Clinical Case Log account.
 
@@ -424,21 +446,9 @@ If you didn't request this reset, you can safely ignore this email.
 
 Best regards,
 Clinical Case Log Support Team
-support@clinicalcaselog.com
-        """
-        
-        msg.attach(MIMEText(body, 'plain'))
-        
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(smtp_email, smtp_password)
-        server.send_message(msg)
-        server.quit()
-        
-        return True
-    except Exception as e:
-        print(f"Email send error: {e}", flush=True)
-        return False
+support@clinicalcaselog.com"""
+    
+    return send_via_resend(email, "Clinical Case Log — Password Reset Code", body)
 
 
 # ============ TRIAL CONVERSION EMAIL SYSTEM ============
@@ -591,25 +601,9 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id, trial
     subject = template['subject'].format(name=name, cases_used=cases_used, upgrade_url=upgrade_url)
     body = template['body'].format(name=name, cases_used=cases_used, upgrade_url=upgrade_url)
     
-    try:
-        smtp_email = "Graydon.F.Stallard@gmail.com"
-        smtp_password = "dlrypwmlbmualsxv"
-        
-        msg = MIMEMultipart()
-        msg['From'] = "Clinical Case Log <Graydon.F.Stallard@gmail.com>"
-        msg['To'] = user_email
-        msg['Subject'] = subject
-        msg['Reply-To'] = "support@clinicalcaselog.com"
-        msg['List-Unsubscribe'] = '<mailto:support@clinicalcaselog.com?subject=unsubscribe>'
-        
-        msg.attach(MIMEText(body, 'plain'))
-        
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(smtp_email, smtp_password)
-        server.send_message(msg)
-        server.quit()
-        
+    success = send_via_resend(user_email, subject, body)
+    
+    if success:
         # Log the email
         try:
             conn = get_db()
@@ -623,12 +617,8 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id, trial
             conn.close()
         except Exception as e:
             print(f"[EMAIL] Log error: {e}", flush=True)
-        
-        print(f"[EMAIL] Sent conversion email #{sequence_number} ({trial_end_reason}) to {user_email}", flush=True)
-        return True
-    except Exception as e:
-        print(f"[EMAIL] Send error for {user_email}: {e}", flush=True)
-        return False
+    
+    return success
 
 
 @app.route('/api/internal/process-trial-emails', methods=['POST'])
