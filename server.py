@@ -47,9 +47,28 @@ def init_db():
                 plan TEXT DEFAULT 'trial',
                 license_key TEXT,
                 plan_expires_at TEXT,
+                program_type TEXT DEFAULT 'medical',
+                trial_started_at TIMESTAMP,
+                trial_ends_at TIMESTAMP,
+                trial_case_limit INTEGER DEFAULT 25,
+                trial_status TEXT DEFAULT 'active',
+                trial_end_reason TEXT,
                 created_at TIMESTAMP DEFAULT NOW()
             )
         ''')
+        # Add trial columns to existing tables (safe to run repeatedly)
+        for col, coltype, default in [
+            ('trial_started_at', 'TIMESTAMP', None),
+            ('trial_ends_at', 'TIMESTAMP', None),
+            ('trial_case_limit', 'INTEGER', '25'),
+            ('trial_status', 'TEXT', "'active'"),
+            ('trial_end_reason', 'TEXT', None),
+        ]:
+            try:
+                default_clause = f" DEFAULT {default}" if default else ""
+                cur.execute(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col} {coltype}{default_clause}")
+            except:
+                conn.rollback()
         cur.execute('''
             CREATE TABLE IF NOT EXISTS cases (
                 id SERIAL PRIMARY KEY,
@@ -162,6 +181,117 @@ def verify_password(stored, provided):
     h = hashlib.pbkdf2_hmac('sha256', provided.encode(), salt.encode(), 100000)
     return h.hex() == stored_hash
 
+def check_trial_status(user):
+    """Check if a trial user can still log cases. Returns (can_log, info_dict).
+    Paid users always return True. Trial users checked against 25 cases / 7 days."""
+    plan = user.get('plan', 'trial')
+    
+    # Paid users — no restrictions
+    if plan in ('subscription', 'monthly', 'annual', '90day', 'pro'):
+        return True, {'plan': plan, 'active': True}
+    
+    # Demo account — no restrictions
+    if plan == 'demo':
+        return True, {'plan': 'demo', 'active': True}
+    
+    # Expired plans
+    if plan == 'expired':
+        return False, {'plan': 'expired', 'active': False, 'reason': 'subscription_expired'}
+    
+    # Trial users — enforce limits
+    trial_status = user.get('trial_status', 'active')
+    
+    # Already marked expired
+    if trial_status in ('expired', 'converted'):
+        return trial_status == 'converted', {
+            'plan': 'trial',
+            'trial_status': trial_status,
+            'active': trial_status == 'converted',
+            'reason': user.get('trial_end_reason', 'unknown')
+        }
+    
+    # Check time limit
+    trial_ends_at = user.get('trial_ends_at')
+    trial_started_at = user.get('trial_started_at')
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    
+    # Backfill: if trial user has no trial_ends_at, set from created_at
+    if not trial_ends_at and plan == 'trial':
+        created = user.get('created_at')
+        if created:
+            if isinstance(created, str):
+                created = datetime.fromisoformat(created.replace('Z', '+00:00'))
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            trial_ends_at = created + timedelta(days=7)
+            trial_started_at = created
+            # Persist the backfill
+            conn2 = get_db()
+            cur2 = conn2.cursor()
+            cur2.execute('UPDATE users SET trial_started_at = %s, trial_ends_at = %s WHERE id = %s AND trial_ends_at IS NULL',
+                        (trial_started_at, trial_ends_at, user['id']))
+            conn2.commit()
+            conn2.close()
+    time_expired = False
+    days_remaining = 7
+    
+    if trial_ends_at:
+        if isinstance(trial_ends_at, str):
+            trial_ends_at = datetime.fromisoformat(trial_ends_at.replace('Z', '+00:00'))
+        if trial_ends_at.tzinfo is None:
+            trial_ends_at = trial_ends_at.replace(tzinfo=timezone.utc)
+        time_expired = now >= trial_ends_at
+        days_remaining = max(0, (trial_ends_at - now).days)
+    
+    # Count cases (both medical + RNFA)
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT COUNT(*) as cnt FROM cases WHERE user_id = %s', (user['id'],))
+    medical_count = cur.fetchone()['cnt']
+    cur.execute('SELECT COUNT(*) as cnt FROM rnfa_cases WHERE user_id = %s', (user['id'],))
+    rnfa_count = cur.fetchone()['cnt']
+    total_cases = medical_count + rnfa_count
+    
+    case_limit = user.get('trial_case_limit') or 25
+    case_limit_hit = total_cases >= case_limit
+    
+    # Determine if trial should expire
+    if case_limit_hit or time_expired:
+        # Expire the trial
+        reason = 'case_limit' if case_limit_hit else 'time_limit'
+        # If both hit simultaneously, prioritize case_limit
+        if case_limit_hit and time_expired:
+            reason = 'case_limit'
+        
+        cur.execute('''UPDATE users SET trial_status = 'expired', trial_end_reason = %s 
+                      WHERE id = %s AND trial_status = 'active' ''', (reason, user['id']))
+        conn.commit()
+        conn.close()
+        
+        return False, {
+            'plan': 'trial',
+            'trial_status': 'expired',
+            'active': False,
+            'reason': reason,
+            'cases_used': total_cases,
+            'case_limit': case_limit,
+            'days_remaining': 0
+        }
+    
+    conn.close()
+    
+    return True, {
+        'plan': 'trial',
+        'trial_status': 'active',
+        'active': True,
+        'cases_used': total_cases,
+        'case_limit': case_limit,
+        'cases_remaining': case_limit - total_cases,
+        'days_remaining': days_remaining
+    }
+
+
 def get_user_from_token(token):
     if not token:
         return None
@@ -212,12 +342,14 @@ def register():
     token = secrets.token_urlsafe(32)
     pw_hash = hash_password(password)
     
-    cur.execute('INSERT INTO users (email, password_hash, name, token) VALUES (%s, %s, %s, %s)',
+    cur.execute('''INSERT INTO users (email, password_hash, name, token, plan, trial_started_at, trial_ends_at, trial_case_limit, trial_status) 
+                 VALUES (%s, %s, %s, %s, 'trial', NOW(), NOW() + INTERVAL '7 days', 25, 'active')''',
                  (email, pw_hash, name, token))
     conn.commit()
     conn.close()
     
-    return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'plan_expires_at': None, 'program_type': 'medical'})
+    return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'plan_expires_at': None, 'program_type': 'medical',
+                    'trial_status': 'active', 'trial_case_limit': 25, 'trial_cases_used': 0, 'trial_days_remaining': 7})
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -397,8 +529,8 @@ def activate_by_email():
                 cur = conn.cursor()
                 sub = subs.data[0]
                 expires = datetime.utcfromtimestamp(sub.current_period_end).strftime('%Y-%m-%d %H:%M:%S')
-                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s WHERE id = %s',
-                           ('subscription', expires, request.user['id']))
+                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s, trial_status = %s WHERE id = %s',
+                           ('subscription', expires, 'converted', request.user['id']))
                 conn.commit()
                 conn.close()
                 return jsonify({'success': True, 'plan': 'subscription', 'plan_expires_at': expires})
@@ -441,8 +573,8 @@ def activate_by_email():
                     except:
                         expires = (datetime.utcnow() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
                 
-                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s WHERE id = %s',
-                           (plan, expires, request.user['id']))
+                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s, trial_status = %s WHERE id = %s',
+                           (plan, expires, 'converted', request.user['id']))
                 conn.commit()
                 conn.close()
                 return jsonify({'success': True, 'plan': plan, 'plan_expires_at': expires})
@@ -462,7 +594,30 @@ def get_plan():
     if plan in ('annual', '90day') and expires:
         if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
             plan = 'expired'
-    return jsonify({'plan': plan, 'plan_expires_at': expires, 'active': plan in ('monthly', 'annual', '90day', 'subscription', 'trial')})
+    
+    # Include trial info for trial users
+    if plan == 'trial':
+        can_log, trial_info = check_trial_status(request.user)
+        return jsonify({
+            'plan': 'trial',
+            'plan_expires_at': expires,
+            'active': can_log,
+            'trial_status': trial_info.get('trial_status', 'active'),
+            'cases_used': trial_info.get('cases_used', 0),
+            'case_limit': trial_info.get('case_limit', 25),
+            'cases_remaining': trial_info.get('cases_remaining', 25),
+            'days_remaining': trial_info.get('days_remaining', 7),
+            'reason': trial_info.get('reason')
+        })
+    
+    return jsonify({'plan': plan, 'plan_expires_at': expires, 'active': plan in ('monthly', 'annual', '90day', 'subscription', 'pro')})
+
+@app.route('/api/trial-status', methods=['GET'])
+@auth_required
+def trial_status():
+    """Return detailed trial status for frontend display."""
+    can_log, info = check_trial_status(request.user)
+    return jsonify(info)
 
 # ============ CASES ============
 
@@ -515,6 +670,18 @@ def mark_cases_exported():
 @app.route('/api/cases', methods=['POST'])
 @auth_required
 def add_case():
+    # TRIAL ENFORCEMENT — check before allowing case creation
+    can_log, trial_info = check_trial_status(request.user)
+    if not can_log:
+        return jsonify({
+            'error': 'Trial limit reached. Upgrade to continue logging cases.',
+            'trial_expired': True,
+            'reason': trial_info.get('reason', 'unknown'),
+            'cases_used': trial_info.get('cases_used', 0),
+            'case_limit': trial_info.get('case_limit', 25),
+            'upgrade_url': '/login?tab=register'
+        }), 403
+    
     data = request.json
     conn = get_db()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -741,6 +908,18 @@ def get_rnfa_cases():
 @app.route('/api/rnfa-cases', methods=['POST'])
 @auth_required
 def add_rnfa_case():
+    # TRIAL ENFORCEMENT — check before allowing case creation
+    can_log, trial_info = check_trial_status(request.user)
+    if not can_log:
+        return jsonify({
+            'error': 'Trial limit reached. Upgrade to continue logging cases.',
+            'trial_expired': True,
+            'reason': trial_info.get('reason', 'unknown'),
+            'cases_used': trial_info.get('cases_used', 0),
+            'case_limit': trial_info.get('case_limit', 25),
+            'upgrade_url': '/login?tab=register'
+        }), 403
+    
     data = request.json
     conn = get_db()
     cur = conn.cursor(cursor_factory=RealDictCursor)

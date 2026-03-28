@@ -913,6 +913,25 @@ a:hover {
     <button class="demo-cta-btn" onclick="exitDemoMode()">Create Account</button>
 </div>
 
+<!-- Trial Status Banner (shown for authenticated trial users) -->
+<div id="trialBanner" style="display:none; background:linear-gradient(135deg, #1a2744, #243656); color:#e0e0e0; padding:10px 20px; text-align:center; font-size:14px; border-bottom:1px solid #2a3a5c; position:sticky; top:0; z-index:100;">
+    <span id="trialBannerText">Free Trial: <strong id="trialCasesUsed">0</strong> / <strong id="trialCaseLimit">25</strong> cases used &bull; <strong id="trialDaysLeft">7</strong> days remaining</span>
+    <a href="#" onclick="startSubscription(); return false;" style="color:#D4A843; font-weight:700; margin-left:12px; text-decoration:none;">Upgrade →</a>
+</div>
+
+<!-- Trial Expired Overlay -->
+<div id="trialExpiredOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,15,28,0.95); z-index:9999; display:none; justify-content:center; align-items:center;">
+    <div style="background:#1a2744; border-radius:16px; padding:40px; max-width:480px; width:90%; text-align:center; border:2px solid #D4A843;">
+        <h2 style="color:#D4A843; font-size:24px; margin-bottom:16px;">🔒 Trial Complete</h2>
+        <p id="trialExpiredMessage" style="color:#e0e0e0; font-size:16px; line-height:1.6; margin-bottom:24px;">
+            Your free trial has reached its 25-case limit. Upgrade now to continue logging cases and unlock full ongoing access.
+        </p>
+        <p style="color:#888; font-size:14px; margin-bottom:24px;">Your existing cases are safe — you can still view them after upgrading.</p>
+        <button onclick="startSubscription()" style="background:linear-gradient(135deg, #D4A843, #B8902E); color:#fff; border:none; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:700; cursor:pointer; width:100%; margin-bottom:12px;">Upgrade — $49.99/year</button>
+        <p style="color:#666; font-size:12px; margin-top:8px;">Full access &bull; Unlimited cases &bull; All features</p>
+    </div>
+</div>
+
 <!-- Demo Mode Save Modal -->
 <div id="demoModal" class="demo-modal-overlay">
     <div class="demo-modal">
@@ -2132,6 +2151,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Toggle add case form
 function toggleAddCaseForm() {
+    // TRIAL ENFORCEMENT — block if trial expired
+    if (!trialActive && !isDemoMode) {
+        document.getElementById('trialExpiredOverlay').style.display = 'flex';
+        return;
+    }
+    
     const form = document.getElementById('addCaseForm');
     const btn = document.getElementById('newCaseBtn');
     
@@ -2624,7 +2649,88 @@ async function serverDeleteCase(serverId) {
     try { await api('/cases/' + serverId, 'DELETE'); } catch(e) {}
 }
 
+// ============ TRIAL ENFORCEMENT ============
+let trialActive = true;
+let trialInfo = {};
+
+async function checkTrialStatus() {
+    if (!authToken || isDemoMode) return;
+    try {
+        const resp = await fetch('/api/trial-status', {
+            headers: {'Authorization': 'Bearer ' + authToken}
+        });
+        trialInfo = await resp.json();
+        
+        const plan = trialInfo.plan;
+        
+        // Paid users — hide trial UI
+        if (plan !== 'trial') {
+            document.getElementById('trialBanner').style.display = 'none';
+            document.getElementById('trialExpiredOverlay').style.display = 'none';
+            trialActive = true;
+            return;
+        }
+        
+        const status = trialInfo.trial_status;
+        const casesUsed = trialInfo.cases_used || 0;
+        const caseLimit = trialInfo.case_limit || 25;
+        const daysLeft = trialInfo.days_remaining || 0;
+        const casesRemaining = trialInfo.cases_remaining || (caseLimit - casesUsed);
+        
+        // Update banner
+        const banner = document.getElementById('trialBanner');
+        document.getElementById('trialCasesUsed').textContent = casesUsed;
+        document.getElementById('trialCaseLimit').textContent = caseLimit;
+        document.getElementById('trialDaysLeft').textContent = daysLeft;
+        
+        if (status === 'expired' || !trialInfo.active) {
+            // Trial expired — show overlay, block case creation
+            trialActive = false;
+            banner.style.display = 'none';
+            const overlay = document.getElementById('trialExpiredOverlay');
+            overlay.style.display = 'flex';
+            
+            // Customize message based on reason
+            const msgEl = document.getElementById('trialExpiredMessage');
+            if (trialInfo.reason === 'case_limit') {
+                msgEl.textContent = `Your free trial has reached its ${caseLimit}-case limit. Upgrade now to continue logging cases and unlock full ongoing access.`;
+            } else if (trialInfo.reason === 'time_limit') {
+                msgEl.textContent = 'Your 7-day free trial has expired. Upgrade now to continue logging cases and unlock full ongoing access.';
+            } else {
+                msgEl.textContent = 'Your free trial has ended. Upgrade to continue logging cases.';
+            }
+            
+            // Disable add case buttons
+            const newCaseBtn = document.getElementById('newCaseBtn');
+            if (newCaseBtn) { newCaseBtn.disabled = true; newCaseBtn.style.opacity = '0.5'; }
+            const newRnfaBtn = document.getElementById('newRnfaCaseBtn');
+            if (newRnfaBtn) { newRnfaBtn.disabled = true; newRnfaBtn.style.opacity = '0.5'; }
+            
+        } else {
+            // Trial active — show banner with remaining
+            trialActive = true;
+            banner.style.display = 'flex';
+            
+            // Warning colors when near limit
+            if (casesUsed >= 20 || daysLeft <= 2) {
+                banner.style.background = 'linear-gradient(135deg, #442211, #553322)';
+                banner.style.borderBottomColor = '#D4A843';
+            }
+        }
+    } catch(e) {
+        console.error('Trial status check failed:', e);
+    }
+}
+
+// Override add case to check trial first
+const originalToggleAddCaseForm = typeof toggleAddCaseForm === 'function' ? toggleAddCaseForm : null;
+
 function initProgramMode() {
+    // Check trial status after auth
+    if (authToken && !isDemoMode) {
+        checkTrialStatus();
+    }
+    
     // Show toggle if logged in or in demo mode
     if (authToken || isDemoMode) {
         document.getElementById('programToggle').style.display = 'flex';
@@ -3105,6 +3211,12 @@ function handleExportExcel() {
 }
 
 function toggleRnfaCaseForm() {
+    // TRIAL ENFORCEMENT — block if trial expired
+    if (!trialActive && !isDemoMode) {
+        document.getElementById('trialExpiredOverlay').style.display = 'flex';
+        return;
+    }
+    
     const form = document.getElementById('rnfaCaseForm');
     const btn = document.getElementById('newRnfaCaseBtn');
     if (form.style.display === 'none' || form.style.display === '') {
