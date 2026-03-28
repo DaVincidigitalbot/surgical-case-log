@@ -63,12 +63,33 @@ def init_db():
             ('trial_case_limit', 'INTEGER', '25'),
             ('trial_status', 'TEXT', "'active'"),
             ('trial_end_reason', 'TEXT', None),
+            ('trial_completed_at', 'TIMESTAMP', None),
+            ('email_sequence_status', 'TEXT', "'pending'"),
+            ('last_email_sent_at', 'TIMESTAMP', None),
+            ('emails_sent_count', 'INTEGER', '0'),
         ]:
             try:
                 default_clause = f" DEFAULT {default}" if default else ""
                 cur.execute(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col} {coltype}{default_clause}")
             except:
                 conn.rollback()
+        
+        # Email log table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS email_log (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                email_type TEXT NOT NULL,
+                sequence_number INTEGER,
+                subject TEXT,
+                sent_at TIMESTAMP DEFAULT NOW(),
+                status TEXT DEFAULT 'sent'
+            )
+        ''')
+        try:
+            cur.execute('CREATE INDEX IF NOT EXISTS idx_email_log_user ON email_log(user_id)')
+        except:
+            conn.rollback()
         cur.execute('''
             CREATE TABLE IF NOT EXISTS cases (
                 id SERIAL PRIMARY KEY,
@@ -264,7 +285,8 @@ def check_trial_status(user):
         if case_limit_hit and time_expired:
             reason = 'case_limit'
         
-        cur.execute('''UPDATE users SET trial_status = 'expired', trial_end_reason = %s 
+        cur.execute('''UPDATE users SET trial_status = 'expired', trial_end_reason = %s,
+                      trial_completed_at = NOW(), email_sequence_status = 'active'
                       WHERE id = %s AND trial_status = 'active' ''', (reason, user['id']))
         conn.commit()
         conn.close()
@@ -418,6 +440,222 @@ support@clinicalcaselog.com
         print(f"Email send error: {e}", flush=True)
         return False
 
+
+# ============ TRIAL CONVERSION EMAIL SYSTEM ============
+
+TRIAL_EMAIL_SEQUENCE = [
+    {
+        'number': 1,
+        'delay_hours': 0,
+        'subject': 'Your cases are saved — continue where you left off',
+        'body': """Hi {name},
+
+You've logged 25 cases in Clinical Case Log Pro — that's real progress toward organized surgical training documentation.
+
+Your trial has reached its limit, but every case you logged is saved and waiting for you.
+
+Upgrade now to continue logging cases, track ACGME milestones, and export your complete case log to Excel or PDF anytime.
+
+Upgrade for $49.99/year: {upgrade_url}
+
+Your data isn't going anywhere. Pick up right where you left off.
+
+--
+Clinical Case Log Pro
+Built by a practicing surgeon
+clinicalcaselog.com"""
+    },
+    {
+        'number': 2,
+        'delay_hours': 24,
+        'subject': "Don't lose momentum on your case log",
+        'body': """Hi {name},
+
+You were building something valuable — 25 documented surgical cases with CPT codes, attendings, and procedure details all in one place.
+
+Most residents and students spend hours reconstructing their case logs before evaluations. You were doing it in 30 seconds per case.
+
+That efficiency is still here. Upgrade and keep logging.
+
+Continue logging cases: {upgrade_url}
+
+$49.99/year. Unlimited cases. Full ACGME tracking. Excel + PDF export.
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    },
+    {
+        'number': 3,
+        'delay_hours': 72,
+        'subject': 'Quick note about your case log',
+        'body': """Hi {name},
+
+Just checking in. Your 25 logged cases are still saved in Clinical Case Log Pro.
+
+The students and residents who stay on top of their case documentation consistently have smoother evaluations and stronger applications. The ones who fall behind spend entire weekends trying to reconstruct months of cases from memory.
+
+You've already built the habit. Don't let it lapse.
+
+Upgrade now: {upgrade_url}
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    },
+    {
+        'number': 4,
+        'delay_hours': 168,
+        'subject': 'Your case log is still here',
+        'body': """Hi {name},
+
+This is the last note from us — your 25 cases in Clinical Case Log Pro are still saved and accessible.
+
+If you're ready to continue logging, your account is waiting:
+
+Upgrade for $49.99/year: {upgrade_url}
+
+If the timing isn't right, no worries. Your data will be here whenever you're ready.
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    }
+]
+
+
+def send_conversion_email(user_email, user_name, sequence_number, user_id):
+    """Send a specific email from the trial conversion sequence."""
+    if sequence_number < 1 or sequence_number > len(TRIAL_EMAIL_SEQUENCE):
+        return False
+    
+    template = TRIAL_EMAIL_SEQUENCE[sequence_number - 1]
+    upgrade_url = 'https://clinicalcaselog.com/login?tab=register&upgrade=true'
+    
+    name = user_name or 'there'
+    subject = template['subject']
+    body = template['body'].format(name=name, upgrade_url=upgrade_url)
+    
+    try:
+        smtp_email = "Graydon.F.Stallard@gmail.com"
+        smtp_password = "dlrypwmlbmualsxv"
+        
+        msg = MIMEMultipart()
+        msg['From'] = "Clinical Case Log <Graydon.F.Stallard@gmail.com>"
+        msg['To'] = user_email
+        msg['Subject'] = subject
+        msg['Reply-To'] = "support@clinicalcaselog.com"
+        msg['List-Unsubscribe'] = '<mailto:support@clinicalcaselog.com?subject=unsubscribe>'
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(smtp_email, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        # Log the email
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute('''INSERT INTO email_log (user_id, email_type, sequence_number, subject)
+                          VALUES (%s, %s, %s, %s)''',
+                       (user_id, 'trial_conversion', sequence_number, subject))
+            cur.execute('''UPDATE users SET last_email_sent_at = NOW(), emails_sent_count = COALESCE(emails_sent_count, 0) + 1
+                          WHERE id = %s''', (user_id,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"[EMAIL] Log error: {e}", flush=True)
+        
+        print(f"[EMAIL] Sent conversion email #{sequence_number} to {user_email}", flush=True)
+        return True
+    except Exception as e:
+        print(f"[EMAIL] Send error for {user_email}: {e}", flush=True)
+        return False
+
+
+@app.route('/api/internal/process-trial-emails', methods=['POST'])
+def process_trial_emails():
+    """Process trial conversion email queue. Called by external cron hourly."""
+    auth_key = request.headers.get('X-Internal-Key', '')
+    if auth_key != 'stallard2026internal':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    from datetime import timezone
+    now = datetime.now(timezone.utc)
+    
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # Find users with expired trials who need emails
+    cur.execute('''
+        SELECT id, email, name, trial_completed_at, emails_sent_count, last_email_sent_at,
+               email_sequence_status, trial_end_reason
+        FROM users 
+        WHERE trial_status = 'expired' 
+          AND email_sequence_status = 'active'
+          AND COALESCE(emails_sent_count, 0) < 4
+    ''')
+    users = cur.fetchall()
+    
+    sent_count = 0
+    skipped_count = 0
+    
+    for user in users:
+        user_id = user['id']
+        emails_sent = user.get('emails_sent_count') or 0
+        trial_completed = user.get('trial_completed_at')
+        
+        if not trial_completed:
+            continue
+        
+        if isinstance(trial_completed, str):
+            trial_completed = datetime.fromisoformat(trial_completed.replace('Z', '+00:00'))
+        if trial_completed.tzinfo is None:
+            trial_completed = trial_completed.replace(tzinfo=timezone.utc)
+        
+        next_email_num = emails_sent + 1
+        if next_email_num > 4:
+            cur.execute("UPDATE users SET email_sequence_status = 'completed' WHERE id = %s", (user_id,))
+            continue
+        
+        # Check timing
+        template = TRIAL_EMAIL_SEQUENCE[next_email_num - 1]
+        send_after = trial_completed + timedelta(hours=template['delay_hours'])
+        
+        if now < send_after:
+            skipped_count += 1
+            continue
+        
+        # Prevent duplicates
+        cur.execute('''SELECT id FROM email_log 
+                      WHERE user_id = %s AND email_type = 'trial_conversion' AND sequence_number = %s''',
+                   (user_id, next_email_num))
+        if cur.fetchone():
+            skipped_count += 1
+            continue
+        
+        # Send
+        success = send_conversion_email(user['email'], user['name'], next_email_num, user_id)
+        if success:
+            sent_count += 1
+        
+        if next_email_num >= 4:
+            cur.execute("UPDATE users SET email_sequence_status = 'completed' WHERE id = %s", (user_id,))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        'processed': len(users),
+        'sent': sent_count,
+        'skipped': skipped_count,
+        'timestamp': now.isoformat()
+    })
+
+
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.json
@@ -529,8 +767,9 @@ def activate_by_email():
                 cur = conn.cursor()
                 sub = subs.data[0]
                 expires = datetime.utcfromtimestamp(sub.current_period_end).strftime('%Y-%m-%d %H:%M:%S')
-                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s, trial_status = %s WHERE id = %s',
-                           ('subscription', expires, 'converted', request.user['id']))
+                cur.execute('''UPDATE users SET plan = %s, plan_expires_at = %s, trial_status = 'converted',
+                           email_sequence_status = 'stopped_upgrade' WHERE id = %s''',
+                           ('subscription', expires, request.user['id']))
                 conn.commit()
                 conn.close()
                 return jsonify({'success': True, 'plan': 'subscription', 'plan_expires_at': expires})
@@ -573,8 +812,9 @@ def activate_by_email():
                     except:
                         expires = (datetime.utcnow() + timedelta(days=365)).strftime('%Y-%m-%d %H:%M:%S')
                 
-                cur.execute('UPDATE users SET plan = %s, plan_expires_at = %s, trial_status = %s WHERE id = %s',
-                           (plan, expires, 'converted', request.user['id']))
+                cur.execute('''UPDATE users SET plan = %s, plan_expires_at = %s, trial_status = 'converted',
+                           email_sequence_status = 'stopped_upgrade' WHERE id = %s''',
+                           (plan, expires, request.user['id']))
                 conn.commit()
                 conn.close()
                 return jsonify({'success': True, 'plan': plan, 'plan_expires_at': expires})
