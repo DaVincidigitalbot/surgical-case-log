@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In — Clinical Case Log Pro</title>
+    <meta name="description" content="Sign in to Clinical Case Log Pro. Log surgical cases and clinical patient encounters from your phone. Built for medical, PA, NP, and RNFA students.">
+    <meta property="og:title" content="Sign In — Clinical Case Log Pro">
+    <meta property="og:description" content="Access your case log dashboard. Track ACGME milestones, log procedures, export to Excel/PDF.">
+    <meta property="og:url" content="https://clinicalcaselog.com/login">
+    <meta property="og:type" content="website">
+    <meta name="robots" content="noindex">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -309,7 +315,7 @@
             <h2>Enter Reset Code</h2>
             <p class="text-muted" style="margin-bottom:16px;">Check your email for the 6-digit code.</p>
             <div class="form-group">
-                <input type="text" id="resetCode" placeholder="6-digit code" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:8px;">
+                <input type="text" id="resetCode" placeholder="6-digit code" maxlength="6" aria-label="6-digit reset code" inputmode="numeric" pattern="[0-9]*" style="text-align:center;font-size:24px;letter-spacing:8px;">
             </div>
             <div class="form-group">
                 <label>New Password</label>
