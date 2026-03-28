@@ -443,59 +443,48 @@ support@clinicalcaselog.com
 
 # ============ TRIAL CONVERSION EMAIL SYSTEM ============
 
-TRIAL_EMAIL_SEQUENCE = [
+# Dual-track email templates: case_limit vs time_limit
+TRIAL_EMAILS_CASE_LIMIT = [
     {
-        'number': 1,
-        'delay_hours': 0,
-        'subject': 'Your cases are saved — continue where you left off',
+        'number': 1, 'delay_hours': 0,
+        'subject': 'You logged {cases_used} cases — your system is working',
         'body': """Hi {name},
 
-You've logged 25 cases in Clinical Case Log Pro — that's real progress toward organized surgical training documentation.
+You logged {cases_used} cases in Clinical Case Log Pro. That's {cases_used} procedures documented with CPT codes, attendings, and details — organized and exportable.
 
-Your trial has reached its limit, but every case you logged is saved and waiting for you.
+Your trial has reached its case limit, but everything you built is saved and waiting.
 
-Upgrade now to continue logging cases, track ACGME milestones, and export your complete case log to Excel or PDF anytime.
+Upgrade to continue logging: {upgrade_url}
 
-Upgrade for $49.99/year: {upgrade_url}
-
-Your data isn't going anywhere. Pick up right where you left off.
-
---
-Clinical Case Log Pro
-Built by a practicing surgeon
-clinicalcaselog.com"""
-    },
-    {
-        'number': 2,
-        'delay_hours': 24,
-        'subject': "Don't lose momentum on your case log",
-        'body': """Hi {name},
-
-You were building something valuable — 25 documented surgical cases with CPT codes, attendings, and procedure details all in one place.
-
-Most residents and students spend hours reconstructing their case logs before evaluations. You were doing it in 30 seconds per case.
-
-That efficiency is still here. Upgrade and keep logging.
-
-Continue logging cases: {upgrade_url}
-
-$49.99/year. Unlimited cases. Full ACGME tracking. Excel + PDF export.
+$49.99/year. Unlimited cases. Pick up exactly where you left off.
 
 --
 Clinical Case Log Pro
 clinicalcaselog.com"""
     },
     {
-        'number': 3,
-        'delay_hours': 72,
-        'subject': 'Quick note about your case log',
+        'number': 2, 'delay_hours': 24,
+        'subject': "Don't lose the momentum you built",
         'body': """Hi {name},
 
-Just checking in. Your 25 logged cases are still saved in Clinical Case Log Pro.
+Most residents and students spend hours before evaluations trying to reconstruct their case logs from memory. You were logging each case in 30 seconds.
 
-The students and residents who stay on top of their case documentation consistently have smoother evaluations and stronger applications. The ones who fall behind spend entire weekends trying to reconstruct months of cases from memory.
+You have {cases_used} documented cases. That's a head start most of your peers don't have.
 
-You've already built the habit. Don't let it lapse.
+Keep it going: {upgrade_url}
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    },
+    {
+        'number': 3, 'delay_hours': 72,
+        'subject': 'Your {cases_used} cases are still here',
+        'body': """Hi {name},
+
+Quick note — your {cases_used} logged cases in Clinical Case Log Pro are saved and accessible.
+
+Students who stay on top of their documentation have smoother evaluations and stronger applications. You already built that habit. One click to keep it.
 
 Upgrade now: {upgrade_url}
 
@@ -504,18 +493,76 @@ Clinical Case Log Pro
 clinicalcaselog.com"""
     },
     {
-        'number': 4,
-        'delay_hours': 168,
-        'subject': 'Your case log is still here',
+        'number': 4, 'delay_hours': 168,
+        'subject': 'Last note — your case log is waiting',
         'body': """Hi {name},
 
-This is the last note from us — your 25 cases in Clinical Case Log Pro are still saved and accessible.
+This is the last note from us. Your {cases_used} cases are still saved in Clinical Case Log Pro.
 
-If you're ready to continue logging, your account is waiting:
+When you're ready to continue: {upgrade_url}
 
-Upgrade for $49.99/year: {upgrade_url}
+If the timing isn't right, no pressure. Your data will be here.
 
-If the timing isn't right, no worries. Your data will be here whenever you're ready.
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    }
+]
+
+TRIAL_EMAILS_TIME_LIMIT = [
+    {
+        'number': 1, 'delay_hours': 0,
+        'subject': 'Your 7-day trial ended — your cases are saved',
+        'body': """Hi {name},
+
+Your free trial of Clinical Case Log Pro has ended. Any cases you logged during the trial are saved and waiting for you.
+
+Upgrade to continue logging cases and access your full case history: {upgrade_url}
+
+$49.99/year. Unlimited cases. ACGME tracking. Excel + PDF export.
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    },
+    {
+        'number': 2, 'delay_hours': 24,
+        'subject': 'Continue building your surgical record',
+        'body': """Hi {name},
+
+During your trial you had access to 30-second case entry, CPT auto-fill, and ACGME milestone tracking. That efficiency is still one click away.
+
+Residents and students who document consistently perform better on evaluations and have stronger applications. The tool is ready when you are.
+
+Continue logging: {upgrade_url}
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    },
+    {
+        'number': 3, 'delay_hours': 72,
+        'subject': 'Quick note about your account',
+        'body': """Hi {name},
+
+Just checking in. Your Clinical Case Log Pro account is still active — you can log in and view any cases you entered during your trial.
+
+To start logging new cases again, upgrade here: {upgrade_url}
+
+--
+Clinical Case Log Pro
+clinicalcaselog.com"""
+    },
+    {
+        'number': 4, 'delay_hours': 168,
+        'subject': 'Your account is still here',
+        'body': """Hi {name},
+
+This is the last note from us. Your Clinical Case Log Pro account and any saved cases are still accessible.
+
+When you're ready to continue logging: {upgrade_url}
+
+No pressure. Your data will be here.
 
 --
 Clinical Case Log Pro
@@ -524,17 +571,25 @@ clinicalcaselog.com"""
 ]
 
 
-def send_conversion_email(user_email, user_name, sequence_number, user_id):
-    """Send a specific email from the trial conversion sequence."""
-    if sequence_number < 1 or sequence_number > len(TRIAL_EMAIL_SEQUENCE):
+def get_email_template(sequence_number, trial_end_reason):
+    """Get the correct email template based on why the trial ended."""
+    templates = TRIAL_EMAILS_CASE_LIMIT if trial_end_reason == 'case_limit' else TRIAL_EMAILS_TIME_LIMIT
+    if sequence_number < 1 or sequence_number > len(templates):
+        return None
+    return templates[sequence_number - 1]
+
+
+def send_conversion_email(user_email, user_name, sequence_number, user_id, trial_end_reason='case_limit', cases_used=25):
+    """Send a specific email from the trial conversion sequence, adapted to end reason."""
+    template = get_email_template(sequence_number, trial_end_reason)
+    if not template:
         return False
     
-    template = TRIAL_EMAIL_SEQUENCE[sequence_number - 1]
     upgrade_url = 'https://clinicalcaselog.com/login?tab=register&upgrade=true'
-    
     name = user_name or 'there'
-    subject = template['subject']
-    body = template['body'].format(name=name, upgrade_url=upgrade_url)
+    
+    subject = template['subject'].format(name=name, cases_used=cases_used, upgrade_url=upgrade_url)
+    body = template['body'].format(name=name, cases_used=cases_used, upgrade_url=upgrade_url)
     
     try:
         smtp_email = "Graydon.F.Stallard@gmail.com"
@@ -569,7 +624,7 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id):
         except Exception as e:
             print(f"[EMAIL] Log error: {e}", flush=True)
         
-        print(f"[EMAIL] Sent conversion email #{sequence_number} to {user_email}", flush=True)
+        print(f"[EMAIL] Sent conversion email #{sequence_number} ({trial_end_reason}) to {user_email}", flush=True)
         return True
     except Exception as e:
         print(f"[EMAIL] Send error for {user_email}: {e}", flush=True)
@@ -578,7 +633,8 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id):
 
 @app.route('/api/internal/process-trial-emails', methods=['POST'])
 def process_trial_emails():
-    """Process trial conversion email queue. Called by external cron hourly."""
+    """Process trial conversion email queue. Called by external cron hourly.
+    Sends dual-track emails based on trial_end_reason (case_limit vs time_limit)."""
     auth_key = request.headers.get('X-Internal-Key', '')
     if auth_key != 'stallard2026internal':
         return jsonify({'error': 'Unauthorized'}), 401
@@ -591,22 +647,27 @@ def process_trial_emails():
     
     # Find users with expired trials who need emails
     cur.execute('''
-        SELECT id, email, name, trial_completed_at, emails_sent_count, last_email_sent_at,
-               email_sequence_status, trial_end_reason
-        FROM users 
-        WHERE trial_status = 'expired' 
-          AND email_sequence_status = 'active'
-          AND COALESCE(emails_sent_count, 0) < 4
+        SELECT u.id, u.email, u.name, u.trial_completed_at, u.emails_sent_count, 
+               u.last_email_sent_at, u.email_sequence_status, u.trial_end_reason,
+               (SELECT COUNT(*) FROM cases WHERE user_id = u.id) + 
+               (SELECT COUNT(*) FROM rnfa_cases WHERE user_id = u.id) as total_cases
+        FROM users u
+        WHERE u.trial_status = 'expired' 
+          AND u.email_sequence_status = 'active'
+          AND COALESCE(u.emails_sent_count, 0) < 4
     ''')
     users = cur.fetchall()
     
     sent_count = 0
     skipped_count = 0
+    errors = []
     
     for user in users:
         user_id = user['id']
         emails_sent = user.get('emails_sent_count') or 0
         trial_completed = user.get('trial_completed_at')
+        trial_end_reason = user.get('trial_end_reason') or 'case_limit'
+        cases_used = user.get('total_cases') or 0
         
         if not trial_completed:
             continue
@@ -621,8 +682,10 @@ def process_trial_emails():
             cur.execute("UPDATE users SET email_sequence_status = 'completed' WHERE id = %s", (user_id,))
             continue
         
-        # Check timing
-        template = TRIAL_EMAIL_SEQUENCE[next_email_num - 1]
+        # Check timing — use the correct template track for delay
+        template = get_email_template(next_email_num, trial_end_reason)
+        if not template:
+            continue
         send_after = trial_completed + timedelta(hours=template['delay_hours'])
         
         if now < send_after:
@@ -637,10 +700,15 @@ def process_trial_emails():
             skipped_count += 1
             continue
         
-        # Send
-        success = send_conversion_email(user['email'], user['name'], next_email_num, user_id)
+        # Send with correct track
+        success = send_conversion_email(
+            user['email'], user['name'], next_email_num, user_id,
+            trial_end_reason=trial_end_reason, cases_used=cases_used
+        )
         if success:
             sent_count += 1
+        else:
+            errors.append(user['email'])
         
         if next_email_num >= 4:
             cur.execute("UPDATE users SET email_sequence_status = 'completed' WHERE id = %s", (user_id,))
@@ -652,6 +720,7 @@ def process_trial_emails():
         'processed': len(users),
         'sent': sent_count,
         'skipped': skipped_count,
+        'errors': len(errors),
         'timestamp': now.isoformat()
     })
 
