@@ -1691,6 +1691,28 @@ def admin_activity():
 def google_verify():
     return send_from_directory('.', 'googlef8c23c2804f8d2c1.html')
 
+@app.route('/sitemap.xml')
+def sitemap():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://clinicalcaselog.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://clinicalcaselog.com/demo</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://clinicalcaselog.com/login</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://clinicalcaselog.com/prep</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://clinicalcaselog.com/legal</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://clinicalcaselog.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>"""
+    return xml, 200, {'Content-Type': 'application/xml'}
+
+@app.route('/robots.txt')
+def robots():
+    txt = """User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Sitemap: https://clinicalcaselog.com/sitemap.xml"""
+    return txt, 200, {'Content-Type': 'text/plain'}
+
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
