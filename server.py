@@ -1699,6 +1699,7 @@ def sitemap():
   <url><loc>https://clinicalcaselog.com/demo</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://clinicalcaselog.com/login</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://clinicalcaselog.com/prep</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://clinicalcaselog.com/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://clinicalcaselog.com/legal</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://clinicalcaselog.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>"""
@@ -1734,6 +1735,10 @@ def login_page():
 @app.route('/prep')
 def prep():
     return send_from_directory('.', 'prep.html')
+
+@app.route('/blog')
+def blog():
+    return send_from_directory('.', 'blog.html')
 
 @app.route('/legal')
 def legal():
