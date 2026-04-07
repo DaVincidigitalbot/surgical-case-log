@@ -3,7 +3,7 @@
 Clinical Case Log — Backend API
 PostgreSQL database for persistent storage with user accounts.
 """
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, request, jsonify, send_from_directory, Response, redirect
 from flask_cors import CORS
 import os
 import hashlib
@@ -45,6 +45,7 @@ def init_db():
                 name TEXT,
                 token TEXT UNIQUE,
                 plan TEXT DEFAULT 'trial',
+                role TEXT DEFAULT 'user',
                 license_key TEXT,
                 plan_expires_at TEXT,
                 program_type TEXT DEFAULT 'medical',
@@ -56,6 +57,11 @@ def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         ''')
+        try:
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'")
+        except:
+            conn.rollback()
+
         # Add trial columns to existing tables (safe to run repeatedly)
         for col, coltype, default in [
             ('trial_started_at', 'TIMESTAMP', None),
@@ -339,6 +345,20 @@ def auth_required(f):
         return f(*args, **kwargs)
     return decorated
 
+
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    @auth_required
+    def decorated(*args, **kwargs):
+        role = (request.user.get('role') or 'user').lower()
+        if role != 'admin':
+            if request.path == '/admin':
+                return redirect('/login?next=/admin&denied=1')
+            return jsonify({'error': 'Forbidden'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
 # ============ AUTH ============
 
 @app.route('/api/register', methods=['POST'])
@@ -370,7 +390,7 @@ def register():
     conn.commit()
     conn.close()
     
-    return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'plan_expires_at': None, 'program_type': 'medical',
+    return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'role': 'user', 'plan_expires_at': None, 'program_type': 'medical',
                     'trial_status': 'active', 'trial_case_limit': 25, 'trial_cases_used': 0, 'trial_days_remaining': 7})
 
 @app.route('/api/login', methods=['POST'])
@@ -396,7 +416,7 @@ def login():
         conn.commit()
     conn.close()
     
-    return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'plan_expires_at': user['plan_expires_at'], 'program_type': user.get('program_type', 'medical') or 'medical'})
+    return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'role': user.get('role', 'user') or 'user', 'plan_expires_at': user['plan_expires_at'], 'program_type': user.get('program_type', 'medical') or 'medical'})
 
 # ============ PASSWORD RESET ============
 
@@ -804,7 +824,7 @@ def check_token():
     user = get_user_from_token(token)
     if not user:
         return jsonify({'error': 'Invalid token'}), 401
-    return jsonify({'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'program_type': user.get('program_type', 'medical') or 'medical'})
+    return jsonify({'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'role': user.get('role', 'user') or 'user', 'program_type': user.get('program_type', 'medical') or 'medical'})
 
 # ============ LICENSE VERIFICATION ============
 
@@ -1483,21 +1503,14 @@ def get_rnfa_stats():
 
 # ============ ADMIN PANEL ============
 
-ADMIN_SECRET = 'stallard2026admin'
-
 @app.route('/admin')
+@admin_required
 def admin_panel():
-    key = request.args.get('key', '')
-    if key != ADMIN_SECRET:
-        return '<h1>Access Denied</h1>', 403
     return send_from_directory('.', 'admin.html')
 
 @app.route('/api/admin/stats', methods=['GET'])
+@admin_required
 def admin_stats():
-    key = request.args.get('key', '')
-    if key != ADMIN_SECRET:
-        return jsonify({'error': 'Access denied'}), 403
-    
     try:
         conn = get_db()
         cur = conn.cursor()
@@ -1567,11 +1580,8 @@ def admin_stats():
         return jsonify({'error': str(e)})
 
 @app.route('/api/admin/users', methods=['GET'])
+@admin_required
 def admin_users():
-    key = request.args.get('key', '')
-    if key != ADMIN_SECRET:
-        return jsonify({'error': 'Access denied'}), 403
-    
     try:
         conn = get_db()
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1609,11 +1619,8 @@ def admin_users():
         return jsonify({'error': str(e)})
 
 @app.route('/api/admin/activity', methods=['GET'])
+@admin_required
 def admin_activity():
-    key = request.args.get('key', '')
-    if key != ADMIN_SECRET:
-        return jsonify({'error': 'Access denied'}), 403
-    
     try:
         conn = get_db()
         cur = conn.cursor()
@@ -1814,10 +1821,8 @@ def track_visit():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/analytics')
+@admin_required
 def get_analytics():
-    key = request.args.get('key', '')
-    if key != 'stallard2026admin':
-        return jsonify({'error': 'Unauthorized'}), 401
     try:
         conn = get_db()
         cur = conn.cursor(cursor_factory=RealDictCursor)
