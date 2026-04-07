@@ -1,5 +1,5 @@
 // ============================================================
-// Clinical Case Log → ACGME Export — Background Service Worker
+// AVENYX | ClinicalCaseLog → ACGME Export — Background Service Worker
 // ============================================================
 
 // Listen for messages from content script

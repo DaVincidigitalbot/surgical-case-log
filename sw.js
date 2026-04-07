@@ -1,4 +1,4 @@
-// Service Worker for Clinical Case Log Pro PWA
+// Service Worker for AVENYX | ClinicalCaseLog PWA
 const CACHE_NAME = 'caselog-v4';
 const ASSETS_TO_CACHE = [
   '/',

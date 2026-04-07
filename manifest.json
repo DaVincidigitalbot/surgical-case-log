@@ -1,7 +1,7 @@
 {
-  "name": "Clinical Case Log Pro",
-  "short_name": "Case Log",
-  "description": "Log surgical cases from your phone. Built by a practicing surgeon.",
+  "name": "AVENYX | ClinicalCaseLog",
+  "short_name": "ClinicalCaseLog",
+  "description": "ClinicalCaseLog by AVENYX helps trainees log surgical cases fast with CPT and ICD-10 workflow support.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1729",

@@ -1,5 +1,5 @@
 /**
- * ACGME Field Filtering System for Clinical Case Log Pro
+ * ACGME Field Filtering System for ClinicalCaseLog
  * 
  * This module ensures ONLY ACGME-required fields are exported/synced.
  * Non-ACGME fields are stripped to prevent data corruption in the
