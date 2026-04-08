@@ -1829,21 +1829,24 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
         const navToggle = document.querySelector('.nav-toggle');
         const navLinks = document.querySelector('.nav-links');
 
-        navToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
 
-        // Close mobile nav when clicking on a link
-        navLinks.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A') {
-                navLinks.classList.remove('active');
-            }
-        });
+            // Close mobile nav when clicking on a link
+            navLinks.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                    navLinks.classList.remove('active');
+                }
+            });
+        }
     </script>
 <script>
 (function(){
   document.querySelectorAll('.cyr-dropdown').forEach(function(drop){
     var btn = drop.querySelector('.cyr-dropdown-toggle');
+    if (!btn) return;
     btn.addEventListener('click', function(e){
       e.stopPropagation();
       var open = drop.classList.toggle('open');
