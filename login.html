@@ -602,8 +602,8 @@ async function doLogin() {
             email: data.email
         }));
 
-        // Redirect to app
-        window.location.href = '/demo';
+        // Redirect to home. Authenticated users can enter the app without being forced through the demo route.
+        window.location.href = '/';
 
     } catch(e) {
         showError('Connection error. Please try again.');
@@ -657,8 +657,8 @@ async function doRegister() {
             });
             const actData = await actResp.json();
             if (actData.success) {
-                // Has active subscription - go to app
-                window.location.href = '/demo';
+                // Has active subscription - go to home/app shell
+                window.location.href = '/';
                 return;
             }
         } catch(e) {}
@@ -786,8 +786,8 @@ async function submitReset() {
             headers: {'Authorization': 'Bearer ' + token}
         }).then(r => r.json()).then(data => {
             if (data.email) {
-                // Already logged in - redirect to app
-                window.location.href = '/demo';
+                // Already logged in - redirect to home/app shell
+                window.location.href = '/';
             }
         }).catch(() => {});
     }
