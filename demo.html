@@ -1173,6 +1173,15 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 <div class="content">
     <!-- DASHBOARD -->
     <div id="dashboard" class="section active">
+        <div class="form-card" id="dashboardPrimaryCta" style="margin-bottom:20px; border:1px solid #1D8BFF; background:linear-gradient(135deg, rgba(29,139,255,0.10), rgba(29,139,255,0.03));">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                <div>
+                    <h2 style="margin:0 0 6px 0;">Start Logging a Case</h2>
+                    <p style="margin:0; color:#94a3b8;">Jump straight into the case form without hunting through tabs or hidden sections.</p>
+                </div>
+                <button id="dashboardLogCaseBtn" class="btn btn-primary" style="min-width:220px;" onclick="handleLogCase()">➕ Log New Case</button>
+            </div>
+        </div>
         <div class="dashboard-grid">
             <div class="stat-card"><div class="number" id="totalCases">0</div><div class="label">Total Cases</div></div>
             <div class="stat-card"><div class="number" id="primaryCount">0</div><div class="label">Primary Surgeon</div></div>
