@@ -34,7 +34,7 @@ button, .btn, input[type="submit"] {
 }
 
 button.primary, .btn-primary, [class*="primary"] {
-    background: linear-gradient(135deg, #2EA8FF, #1a8fd4) !important;
+    background: linear-gradient(135deg, #1D8BFF, #1a8fd4) !important;
     border: none !important;
     color: white !important;
 }
@@ -46,7 +46,7 @@ input, select, textarea {
 }
 
 input:focus, select:focus {
-    border-color: #2EA8FF !important;
+    border-color: #1D8BFF !important;
     box-shadow: 0 0 0 3px rgba(46,168,255,0.15) !important;
 }
 
@@ -57,15 +57,212 @@ tr:hover td { background: #f8fafc !important; }
 
 h1, h2, h3 { font-weight: 700 !important; letter-spacing: -0.02em !important; color: #0B1F3B !important; }
 
-a { color: #2EA8FF !important; }
+a { color: #1D8BFF !important; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+
+:root {
+  --cyr-navy: #0B1220;
+  --cyr-blue: #1D8BFF;
+  --cyr-white: #FFFFFF;
+  --cyr-steel: #7C8AA5;
+  --cyr-border: #E6EAF0;
+  --cyr-input: #D0D7E2;
+  --cyr-surface: #FFFFFF;
+  --cyr-surface-muted: #F7F9FC;
+  --cyr-shadow: 0 2px 8px rgba(11,18,32,0.06);
+  --cyr-radius-btn: 8px;
+  --cyr-radius-card: 12px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+}
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  color: var(--cyr-navy) !important;
+  background: var(--cyr-white) !important;
+}
+a { color: var(--cyr-blue); }
+button, .btn, .cta-button, .cta-primary, .subscribe-btn, .demo-button {
+  border-radius: var(--cyr-radius-btn) !important;
+}
+input, select, textarea, .search-input {
+  border: 1px solid var(--cyr-input) !important;
+  box-shadow: none !important;
+}
+input:focus, select:focus, textarea:focus, .search-input:focus {
+  outline: 1px solid var(--cyr-blue) !important;
+  border-color: var(--cyr-blue) !important;
+}
+.brand-shell .btn-primary,
+.brand-shell .cta-primary,
+.brand-shell .subscribe-btn,
+.brand-shell .cta-button,
+.brand-shell .demo-button,
+.brand-shell .btn:not(.secondary) {
+  background: var(--cyr-blue) !important;
+  color: var(--cyr-white) !important;
+  border: 0 !important;
+  padding: 12px 16px !important;
+  box-shadow: none !important;
+}
+.brand-shell .btn.secondary,
+.brand-shell .cta-secondary,
+.brand-shell .secondary,
+.brand-shell a.cta-button[style*='transparent'] {
+  background: transparent !important;
+  color: var(--cyr-navy) !important;
+  border: 1px solid var(--cyr-navy) !important;
+}
+.brand-shell .card, .brand-shell .feature-card, .brand-shell .stat-card, .brand-shell .pricing-card, .brand-shell .code-box, .brand-shell .related-card, .brand-shell .testimonial-container {
+  background: var(--cyr-surface) !important;
+  border: 1px solid var(--cyr-border) !important;
+  border-radius: var(--cyr-radius-card) !important;
+  box-shadow: var(--cyr-shadow) !important;
+}
+.cyr-header {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid var(--cyr-border);
+  backdrop-filter: blur(12px);
+}
+.cyr-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.cyr-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--cyr-navy);
+  min-height: 24px;
+}
+.cyr-brand img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.cyr-wordmark {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--cyr-navy);
+  line-height: 1;
+}
+.cyr-wordmark .x { color: var(--cyr-blue); display: inline-block; transform: scaleX(1.03); }
+.cyr-nav { display: flex; align-items: center; gap: 24px; }
+.cyr-nav-link, .cyr-dropdown-toggle {
+  color: var(--cyr-navy);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+.cyr-dropdown { position: relative; }
+.cyr-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 220px;
+  background: var(--cyr-white);
+  border: 1px solid var(--cyr-border);
+  border-radius: 12px;
+  box-shadow: var(--cyr-shadow);
+  padding: 8px;
+  display: none;
+}
+.cyr-dropdown.open .cyr-dropdown-menu { display: block; }
+.cyr-dropdown-menu a {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--cyr-navy);
+  text-decoration: none;
+  font-weight: 500;
+}
+.cyr-dropdown-menu a:hover { background: var(--cyr-surface-muted); }
+.cyr-menu-button {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cyr-border);
+  border-radius: 8px;
+  background: var(--cyr-white);
+  color: var(--cyr-navy);
+  font-size: 18px;
+}
+.cyr-mobile-drawer {
+  display: none;
+  border-top: 1px solid var(--cyr-border);
+  background: var(--cyr-white);
+  padding: 16px 24px 24px;
+}
+.cyr-mobile-drawer.open { display: block; }
+.cyr-mobile-drawer a, .cyr-mobile-products-label {
+  display: block;
+  color: var(--cyr-navy);
+  text-decoration: none;
+  padding: 12px 0;
+  font-weight: 500;
+}
+.cyr-mobile-products {
+  padding-left: 16px;
+}
+.cyr-footer {
+  background: var(--cyr-navy);
+  color: var(--cyr-white);
+  margin-top: 48px;
+}
+.cyr-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+.cyr-footer-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.cyr-footer-copy {
+  color: #D7DFEA;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.cyr-footer-products {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #D7DFEA;
+  line-height: 1.8;
+}
+.cyr-footer-products span { display: block; }
+@media (max-width: 767px) {
+  .cyr-header-inner { padding: 12px 16px; }
+  .cyr-brand img { width: 24px; height: 24px; }
+  .cyr-wordmark { font-size: 15px; }
+  .cyr-nav { display: none; }
+  .cyr-menu-button { display: inline-flex; align-items: center; justify-content: center; }
+}
+
 </style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVENYX | Legal — ClinicalCaseLog</title>
+    <title>CYRIONYX | ClinicalCaseLog</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -87,11 +284,11 @@ a { color: #2EA8FF !important; }
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #2EA8FF;
+            border-bottom: 2px solid #1D8BFF;
         }
 
         .header h1 {
-            color: #2EA8FF;
+            color: #1D8BFF;
             font-size: 28px;
             margin-bottom: 10px;
         }
@@ -103,14 +300,14 @@ a { color: #2EA8FF !important; }
 
         .back-link {
             display: inline-block;
-            color: #2EA8FF;
+            color: #1D8BFF;
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 20px;
             padding: 10px 16px;
             background: rgba(46, 139, 139, 0.1);
             border-radius: 8px;
-            border: 1px solid #2EA8FF;
+            border: 1px solid #1D8BFF;
             transition: all 0.2s;
         }
 
@@ -163,7 +360,7 @@ a { color: #2EA8FF !important; }
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            border-left: 4px solid #2EA8FF;
+            border-left: 4px solid #1D8BFF;
             color: #374151;
         }
 
@@ -190,17 +387,22 @@ a { color: #2EA8FF !important; }
             }
         }
     </style>
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="stylesheet" href="/assets/cyrionyx-brand.css">
 </head>
-<body>
+<body class="brand-shell-page" data-brand-page="legal">
+    <div id="cyr-site-header"></div>
     <div class="container">
         <nav style="margin-bottom: 40px;">
-            <a href="/" style="color: #2EA8FF; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+            <a href="/" style="color: #1D8BFF; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
                 <span>←</span> Back to ClinicalCaseLog
             </a>
             <div style="margin: 20px 0;">
-                <a href="/" style="color: #2EA8FF; text-decoration: none; margin-right: 24px;">Home</a>
-                <a href="/prep" style="color: #2EA8FF; text-decoration: none; margin-right: 24px;">Case Prep</a>
-                <a href="/demo" style="color: #2EA8FF; text-decoration: none;">Demo</a>
+                <a href="/" style="color: #1D8BFF; text-decoration: none; margin-right: 24px;">Home</a>
+                <a href="/prep" style="color: #1D8BFF; text-decoration: none; margin-right: 24px;">Case Prep</a>
+                <a href="/demo" style="color: #1D8BFF; text-decoration: none;">Demo</a>
             </div>
         </nav>
         
@@ -214,12 +416,12 @@ a { color: #2EA8FF !important; }
             <h2>Privacy Policy</h2>
             
             <div class="contact-info">
-                <strong>AVENYX LLC</strong><br>
-                Contact: <a href="mailto:support@clinicalcaselog.com" style="color: #2EA8FF;">support@clinicalcaselog.com</a>
+                <strong>CYRIONYX</strong><br>
+                Contact: <a href="mailto:support@clinicalcaselog.com" style="color: #1D8BFF;">support@clinicalcaselog.com</a>
             </div>
 
             <h3>Data We Collect</h3>
-            <p>Clinical Case Log collects and stores the following information:</p>
+            <p>ClinicalCaseLog collects and stores the following information:</p>
             <ul>
                 <li><strong>Account Information:</strong> Name and email address for account creation and authentication</li>
                 <li><strong>Clinical Case Data:</strong> Procedures, diagnoses, case dates, and related clinical documentation that you voluntarily enter</li>
@@ -230,7 +432,7 @@ a { color: #2EA8FF !important; }
             <p>Your data is stored securely in a PostgreSQL database on secure cloud infrastructure with industry-standard encryption and access controls. We implement appropriate technical and organizational measures to protect your information against unauthorized access, alteration, disclosure, or destruction.</p>
 
             <h3>Data Usage</h3>
-            <p>We use your data solely to provide the Clinical Case Log service to you. We do not sell, rent, or share your personal data or clinical case information with third parties for marketing or commercial purposes.</p>
+            <p>We use your data solely to provide the ClinicalCaseLog service to you. We do not sell, rent, or share your personal data or clinical case information with third parties for marketing or commercial purposes.</p>
 
             <h3>Your Rights</h3>
             <p>You have the right to:</p>
@@ -242,7 +444,7 @@ a { color: #2EA8FF !important; }
             </ul>
 
             <h3>Cookies & Tracking</h3>
-            <p>Clinical Case Log uses minimal tracking technology. We only store a session authentication token in your browser's localStorage to keep you logged in. We do not use advertising cookies or third-party tracking scripts.</p>
+            <p>ClinicalCaseLog uses minimal tracking technology. We only store a session authentication token in your browser's localStorage to keep you logged in. We do not use advertising cookies or third-party tracking scripts.</p>
 
             <h3>Data Retention</h3>
             <p>We retain your account and case data for as long as you maintain an active account. Upon account deletion, all associated data is permanently removed from our systems within 30 days.</p>
@@ -253,7 +455,7 @@ a { color: #2EA8FF !important; }
             <h2>Terms of Service</h2>
 
             <h3>Service Description</h3>
-            <p>Clinical Case Log is an educational tool designed to help medical students, residents, and other healthcare trainees track and organize their clinical case experiences. This is <strong>not a medical record system</strong> and should not be used to store official patient information.</p>
+            <p>ClinicalCaseLog is an educational tool designed to help medical students, residents, and other healthcare trainees track and organize their clinical case experiences. This is <strong>not a medical record system</strong> and should not be used to store official patient information.</p>
 
             <h3>Subscription & Billing</h3>
             <ul>
@@ -273,13 +475,13 @@ a { color: #2EA8FF !important; }
             </ul>
 
             <h3>Service Availability</h3>
-            <p>Clinical Case Log is provided on an "as-is" basis. While we strive for 99.9% uptime, we cannot guarantee uninterrupted service. We are not liable for any disruption of service or loss of data, though we maintain regular backups.</p>
+            <p>ClinicalCaseLog is provided on an "as-is" basis. While we strive for 99.9% uptime, we cannot guarantee uninterrupted service. We are not liable for any disruption of service or loss of data, though we maintain regular backups.</p>
 
             <h3>Data Ownership</h3>
-            <p>You retain full ownership of all case data and information you enter into Clinical Case Log. You may export your data at any time and request account deletion if desired.</p>
+            <p>You retain full ownership of all case data and information you enter into ClinicalCaseLog. You may export your data at any time and request account deletion if desired.</p>
 
             <h3>Limitation of Liability</h3>
-            <p>AVENYX LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the service.</p>
+            <p>CYRIONYX shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the service.</p>
 
             <h3>Termination</h3>
             <p>We may terminate or suspend your account immediately if you violate these terms, particularly regarding patient privacy or acceptable use policies.</p>
@@ -290,7 +492,7 @@ a { color: #2EA8FF !important; }
             <h2>FERPA Compliance Notice</h2>
 
             <h3>Educational Records Clarification</h3>
-            <p>Clinical Case Log does <strong>not</strong> collect, store, or process student education records as defined by the Family Educational Rights and Privacy Act (FERPA).</p>
+            <p>ClinicalCaseLog does <strong>not</strong> collect, store, or process student education records as defined by the Family Educational Rights and Privacy Act (FERPA).</p>
 
             <h3>What We Store</h3>
             <p>Our application stores only:</p>
@@ -301,7 +503,7 @@ a { color: #2EA8FF !important; }
             </ul>
 
             <h3>What We Do NOT Store</h3>
-            <p>Clinical Case Log does not involve:</p>
+            <p>ClinicalCaseLog does not involve:</p>
             <ul>
                 <li>Academic grades or transcripts</li>
                 <li>Official institutional evaluation records</li>
@@ -320,5 +522,33 @@ a { color: #2EA8FF !important; }
             Last updated: March 17, 2026
         </div>
     </div>
+<script>
+(function(){
+  document.querySelectorAll('.cyr-dropdown').forEach(function(drop){
+    var btn = drop.querySelector('.cyr-dropdown-toggle');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = drop.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+  document.querySelectorAll('[data-cyrionyx-header]').forEach(function(header){
+    var btn = header.querySelector('.cyr-menu-button');
+    var drawer = header.querySelector('.cyr-mobile-drawer');
+    if (btn && drawer) {
+      btn.addEventListener('click', function(){ drawer.classList.toggle('open'); });
+    }
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.cyr-dropdown.open').forEach(function(drop){
+      drop.classList.remove('open');
+      var btn = drop.querySelector('.cyr-dropdown-toggle');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
+    <div id="cyr-site-footer"></div>
+    <script src="/assets/cyrionyx-brand.js"></script>
 </body>
 </html>

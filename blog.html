@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVENYX | Medical Case Logging Blog - Expert Insights for Students & Residents | ClinicalCaseLog</title>
+    <title>CYRIONYX | ClinicalCaseLog</title>
     
     <!-- SEO -->
     <meta name="description" content="Expert insights on medical case logging, ACGME requirements, digital tracking tools, and clinical education. Essential reading for medical students, PA students, NP students, residents, and RNFAs.">
     <meta name="keywords" content="medical case logging, digital case log, ACGME case tracker, PA student case log, medical student case log, Typhon alternative, clinical rotation tracker, surgical case log, residency case tracker, RNFA case log, operative log, medical education technology, case logging software, CPT codes, CPT code lookup, finding CPT codes, ICD-10 codes, ICD-10 code finder, medical billing codes, surgical CPT codes, procedure codes lookup">
     
     <!-- Open Graph (social sharing) -->
-    <meta property="og:title" content="AVENYX | Medical Case Logging Blog - ClinicalCaseLog">
+    <meta property="og:title" content="CYRIONYX | ClinicalCaseLog">
     <meta property="og:description" content="Expert insights on medical case logging, ACGME requirements, digital tracking tools, and clinical education. Essential reading for medical students, PA students, NP students, residents, and RNFAs.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://clinicalcaselog.com/blog">
@@ -19,7 +19,7 @@
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="AVENYX | Medical Case Logging Blog - ClinicalCaseLog">
+    <meta name="twitter:title" content="CYRIONYX | ClinicalCaseLog">
     <meta name="twitter:description" content="Expert insights on medical case logging, ACGME requirements, digital tracking tools, and clinical education. Essential reading for medical students, PA students, NP students, residents, and RNFAs.">
     
     <!-- Google Fonts -->
@@ -36,7 +36,7 @@
         
         :root {
             --primary: #0B1F3B;
-            --accent: #2EA8FF;
+            --accent: #1D8BFF;
             --highlight: #3FE0C5;
             --purple: #8B5CF6;
             --background: #F7F9FB;
@@ -309,36 +309,241 @@
                 font-size: 1.5rem;
             }
         }
-    </style>
+    
+:root {
+  --cyr-navy: #0B1220;
+  --cyr-blue: #1D8BFF;
+  --cyr-white: #FFFFFF;
+  --cyr-steel: #7C8AA5;
+  --cyr-border: #E6EAF0;
+  --cyr-input: #D0D7E2;
+  --cyr-surface: #FFFFFF;
+  --cyr-surface-muted: #F7F9FC;
+  --cyr-shadow: 0 2px 8px rgba(11,18,32,0.06);
+  --cyr-radius-btn: 8px;
+  --cyr-radius-card: 12px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+}
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  color: var(--cyr-navy) !important;
+  background: var(--cyr-white) !important;
+}
+a { color: var(--cyr-blue); }
+button, .btn, .cta-button, .cta-primary, .subscribe-btn, .demo-button {
+  border-radius: var(--cyr-radius-btn) !important;
+}
+input, select, textarea, .search-input {
+  border: 1px solid var(--cyr-input) !important;
+  box-shadow: none !important;
+}
+input:focus, select:focus, textarea:focus, .search-input:focus {
+  outline: 1px solid var(--cyr-blue) !important;
+  border-color: var(--cyr-blue) !important;
+}
+.brand-shell .btn-primary,
+.brand-shell .cta-primary,
+.brand-shell .subscribe-btn,
+.brand-shell .cta-button,
+.brand-shell .demo-button,
+.brand-shell .btn:not(.secondary) {
+  background: var(--cyr-blue) !important;
+  color: var(--cyr-white) !important;
+  border: 0 !important;
+  padding: 12px 16px !important;
+  box-shadow: none !important;
+}
+.brand-shell .btn.secondary,
+.brand-shell .cta-secondary,
+.brand-shell .secondary,
+.brand-shell a.cta-button[style*='transparent'] {
+  background: transparent !important;
+  color: var(--cyr-navy) !important;
+  border: 1px solid var(--cyr-navy) !important;
+}
+.brand-shell .card, .brand-shell .feature-card, .brand-shell .stat-card, .brand-shell .pricing-card, .brand-shell .code-box, .brand-shell .related-card, .brand-shell .testimonial-container {
+  background: var(--cyr-surface) !important;
+  border: 1px solid var(--cyr-border) !important;
+  border-radius: var(--cyr-radius-card) !important;
+  box-shadow: var(--cyr-shadow) !important;
+}
+.cyr-header {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid var(--cyr-border);
+  backdrop-filter: blur(12px);
+}
+.cyr-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.cyr-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--cyr-navy);
+  min-height: 24px;
+}
+.cyr-brand img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.cyr-wordmark {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--cyr-navy);
+  line-height: 1;
+}
+.cyr-wordmark .x { color: var(--cyr-blue); display: inline-block; transform: scaleX(1.03); }
+.cyr-nav { display: flex; align-items: center; gap: 24px; }
+.cyr-nav-link, .cyr-dropdown-toggle {
+  color: var(--cyr-navy);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+.cyr-dropdown { position: relative; }
+.cyr-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 220px;
+  background: var(--cyr-white);
+  border: 1px solid var(--cyr-border);
+  border-radius: 12px;
+  box-shadow: var(--cyr-shadow);
+  padding: 8px;
+  display: none;
+}
+.cyr-dropdown.open .cyr-dropdown-menu { display: block; }
+.cyr-dropdown-menu a {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--cyr-navy);
+  text-decoration: none;
+  font-weight: 500;
+}
+.cyr-dropdown-menu a:hover { background: var(--cyr-surface-muted); }
+.cyr-menu-button {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cyr-border);
+  border-radius: 8px;
+  background: var(--cyr-white);
+  color: var(--cyr-navy);
+  font-size: 18px;
+}
+.cyr-mobile-drawer {
+  display: none;
+  border-top: 1px solid var(--cyr-border);
+  background: var(--cyr-white);
+  padding: 16px 24px 24px;
+}
+.cyr-mobile-drawer.open { display: block; }
+.cyr-mobile-drawer a, .cyr-mobile-products-label {
+  display: block;
+  color: var(--cyr-navy);
+  text-decoration: none;
+  padding: 12px 0;
+  font-weight: 500;
+}
+.cyr-mobile-products {
+  padding-left: 16px;
+}
+.cyr-footer {
+  background: var(--cyr-navy);
+  color: var(--cyr-white);
+  margin-top: 48px;
+}
+.cyr-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+.cyr-footer-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.cyr-footer-copy {
+  color: #D7DFEA;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.cyr-footer-products {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #D7DFEA;
+  line-height: 1.8;
+}
+.cyr-footer-products span { display: block; }
+@media (max-width: 767px) {
+  .cyr-header-inner { padding: 12px 16px; }
+  .cyr-brand img { width: 24px; height: 24px; }
+  .cyr-wordmark { font-size: 15px; }
+  .cyr-nav { display: none; }
+  .cyr-menu-button { display: inline-flex; align-items: center; justify-content: center; }
+}
+
+</style>
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="stylesheet" href="/assets/cyrionyx-brand.css">
 </head>
 
-<body>
-    <!-- Navigation -->
-    <nav class="nav">
-        <div class="nav-container">
-            <a href="/" class="logo">
-                Clinical <span class="highlight">Case Log</span>
-            </a>
-            <ul class="nav-links">
-                <li><a href="/#features">Features</a></li>
-                <li><a href="/#how-it-works">How It Works</a></li>
-                <li><a href="/#pricing">Pricing</a></li>
-                <li><a href="/prep">Case Prep</a></li>
-                <li><a href="/blog">Blog</a></li>
-                <li><a href="/#testimonial">About</a></li>
-                <li><a href="/login" style="color:#2EA8FF;font-weight:600;">Sign In</a></li>
-            </ul>
-            <div class="nav-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center;">
-                <a href="/login" class="cta-button" style="background:transparent;border:2px solid #2EA8FF;color:#2EA8FF;padding:10px 20px;">Sign In</a>
-                <a href="/demo" class="cta-button">Try Demo</a>
-            </div>
+<body class="brand-shell-page" data-brand-page="blog">
+    <div id="cyr-site-header"></div>
+    <div class="cyr-header" data-cyrionyx-header>
+  <div class="cyr-header-inner">
+    <a class="cyr-brand" href="/" aria-label="CYRIONYX home">
+      <img src="/logo/icon.svg" alt="CYRIONYX icon">
+      <span class="cyr-wordmark">CYRIONY<span class="x">X</span></span>
+    </a>
+    <nav class="cyr-nav" aria-label="Primary">
+      <div class="cyr-dropdown">
+        <button class="cyr-dropdown-toggle" type="button" aria-expanded="false">Products</button>
+        <div class="cyr-dropdown-menu">
+          <a href="https://freecptcodefinder.com/">FreeCPTCodeFinder</a>
+          <a href="https://clinicalcaselog.com/">ClinicalCaseLog</a>
         </div>
+      </div>
+      <a class="cyr-nav-link" href="/#testimonial">About</a>
+      <a class="cyr-nav-link" href="https://clinicalcaselog.com/login">Login</a>
     </nav>
+    <button class="cyr-menu-button" type="button" aria-label="Open menu">☰</button>
+  </div>
+  <div class="cyr-mobile-drawer" aria-label="Mobile menu">
+    <span class="cyr-mobile-products-label">Products</span>
+    <div class="cyr-mobile-products">
+      <a href="https://freecptcodefinder.com/">FreeCPTCodeFinder</a>
+      <a href="https://clinicalcaselog.com/">ClinicalCaseLog</a>
+    </div>
+    <a href="/#testimonial">About</a>
+    <a href="https://clinicalcaselog.com/login">Login</a>
+  </div>
+</div>
 
     <!-- Blog Content -->
     <div class="blog-container">
@@ -1526,7 +1731,7 @@
                 <li>Rotation schedules and deadlines</li>
             </ul>
 
-            <p>Whether that's a digital platform like Clinical Case Log Pro for your clinical documentation paired with a simple task manager, or an all-in-one solution, the key is consolidation. When you have one place to check, you check it. When you have six, you check none of them.</p>
+            <p>Whether that's a digital platform like ClinicalCaseLog Pro for your clinical documentation paired with a simple task manager, or an all-in-one solution, the key is consolidation. When you have one place to check, you check it. When you have six, you check none of them.</p>
 
             <h2>4. Create a Rotation Prep Checklist</h2>
 
@@ -1606,7 +1811,7 @@
 
             <p>Build the system once, maintain it with small daily habits, and let the system do the heavy lifting. That's how you stay organized through the intensity of clinical rotations without burning out.</p>
 
-            <p>Clinical Case Log Pro was designed with exactly this philosophy in mind: fast case entry that fits into your existing workflow, real-time progress tracking that eliminates guesswork, and a mobile-first design that works where you work. When your documentation tool is frictionless, organization becomes automatic rather than aspirational.</p>
+            <p>ClinicalCaseLog Pro was designed with exactly this philosophy in mind: fast case entry that fits into your existing workflow, real-time progress tracking that eliminates guesswork, and a mobile-first design that works where you work. When your documentation tool is frictionless, organization becomes automatic rather than aspirational.</p>
 
             <a href="https://clinicalcaselog.com/demo" class="demo-link">Try the Demo — Build Better Rotation Habits Starting Today</a>
         </article>
@@ -1636,5 +1841,33 @@
             }
         });
     </script>
+<script>
+(function(){
+  document.querySelectorAll('.cyr-dropdown').forEach(function(drop){
+    var btn = drop.querySelector('.cyr-dropdown-toggle');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = drop.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+  document.querySelectorAll('[data-cyrionyx-header]').forEach(function(header){
+    var btn = header.querySelector('.cyr-menu-button');
+    var drawer = header.querySelector('.cyr-mobile-drawer');
+    if (btn && drawer) {
+      btn.addEventListener('click', function(){ drawer.classList.toggle('open'); });
+    }
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.cyr-dropdown.open').forEach(function(drop){
+      drop.classList.remove('open');
+      var btn = drop.querySelector('.cyr-dropdown-toggle');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
+    <div id="cyr-site-footer"></div>
+    <script src="/assets/cyrionyx-brand.js"></script>
 </body>
 </html>

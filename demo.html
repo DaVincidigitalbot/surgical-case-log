@@ -16,7 +16,7 @@ code, pre, .mono, [class*="code"], [class*="cpt"], [class*="icd"] { font-family:
 /* Color system */
 :root {
     --navy: #0B1F3B !important;
-    --surgical-blue: #2EA8FF !important;
+    --surgical-blue: #1D8BFF !important;
     --teal: #3FE0C5 !important;
     --off-white: #F7F9FB !important;
     --card-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
@@ -67,7 +67,7 @@ button, .btn, [class*="btn"], input[type="submit"] {
 }
 
 button.primary, .btn-primary, [class*="primary"] {
-    background: linear-gradient(135deg, #2EA8FF, #1a8fd4) !important;
+    background: linear-gradient(135deg, #1D8BFF, #1a8fd4) !important;
     border: none !important;
     color: white !important;
     box-shadow: 0 2px 12px rgba(46,168,255,0.3) !important;
@@ -92,7 +92,7 @@ button.primary:hover, .btn-primary:hover, [class*="primary"]:hover {
 
 #landingPage input:focus, #landingPage select:focus,
 #authSection input:focus, #authSection select:focus {
-    border-color: #2EA8FF !important;
+    border-color: #1D8BFF !important;
     box-shadow: 0 0 0 3px rgba(46,168,255,0.15) !important;
     outline: none !important;
 }
@@ -125,7 +125,7 @@ tr:hover td {
 }
 
 .tab.active, [class*="tab"].active, .tab-active {
-    background: #2EA8FF !important;
+    background: #1D8BFF !important;
     color: white !important;
 }
 
@@ -164,7 +164,7 @@ tr:hover td {
 
 /* Links */
 a {
-    color: #2EA8FF !important;
+    color: #1D8BFF !important;
     transition: color 0.2s ease !important;
 }
 a:hover {
@@ -180,11 +180,208 @@ a:hover {
 #landingPage .card, #landingPage [class*="card"] {
     animation: fadeIn 0.4s ease forwards;
 }
+
+:root {
+  --cyr-navy: #0B1220;
+  --cyr-blue: #1D8BFF;
+  --cyr-white: #FFFFFF;
+  --cyr-steel: #7C8AA5;
+  --cyr-border: #E6EAF0;
+  --cyr-input: #D0D7E2;
+  --cyr-surface: #FFFFFF;
+  --cyr-surface-muted: #F7F9FC;
+  --cyr-shadow: 0 2px 8px rgba(11,18,32,0.06);
+  --cyr-radius-btn: 8px;
+  --cyr-radius-card: 12px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+}
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  color: var(--cyr-navy) !important;
+  background: var(--cyr-white) !important;
+}
+a { color: var(--cyr-blue); }
+button, .btn, .cta-button, .cta-primary, .subscribe-btn, .demo-button {
+  border-radius: var(--cyr-radius-btn) !important;
+}
+input, select, textarea, .search-input {
+  border: 1px solid var(--cyr-input) !important;
+  box-shadow: none !important;
+}
+input:focus, select:focus, textarea:focus, .search-input:focus {
+  outline: 1px solid var(--cyr-blue) !important;
+  border-color: var(--cyr-blue) !important;
+}
+.brand-shell .btn-primary,
+.brand-shell .cta-primary,
+.brand-shell .subscribe-btn,
+.brand-shell .cta-button,
+.brand-shell .demo-button,
+.brand-shell .btn:not(.secondary) {
+  background: var(--cyr-blue) !important;
+  color: var(--cyr-white) !important;
+  border: 0 !important;
+  padding: 12px 16px !important;
+  box-shadow: none !important;
+}
+.brand-shell .btn.secondary,
+.brand-shell .cta-secondary,
+.brand-shell .secondary,
+.brand-shell a.cta-button[style*='transparent'] {
+  background: transparent !important;
+  color: var(--cyr-navy) !important;
+  border: 1px solid var(--cyr-navy) !important;
+}
+.brand-shell .card, .brand-shell .feature-card, .brand-shell .stat-card, .brand-shell .pricing-card, .brand-shell .code-box, .brand-shell .related-card, .brand-shell .testimonial-container {
+  background: var(--cyr-surface) !important;
+  border: 1px solid var(--cyr-border) !important;
+  border-radius: var(--cyr-radius-card) !important;
+  box-shadow: var(--cyr-shadow) !important;
+}
+.cyr-header {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid var(--cyr-border);
+  backdrop-filter: blur(12px);
+}
+.cyr-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.cyr-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--cyr-navy);
+  min-height: 24px;
+}
+.cyr-brand img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.cyr-wordmark {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--cyr-navy);
+  line-height: 1;
+}
+.cyr-wordmark .x { color: var(--cyr-blue); display: inline-block; transform: scaleX(1.03); }
+.cyr-nav { display: flex; align-items: center; gap: 24px; }
+.cyr-nav-link, .cyr-dropdown-toggle {
+  color: var(--cyr-navy);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+.cyr-dropdown { position: relative; }
+.cyr-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 220px;
+  background: var(--cyr-white);
+  border: 1px solid var(--cyr-border);
+  border-radius: 12px;
+  box-shadow: var(--cyr-shadow);
+  padding: 8px;
+  display: none;
+}
+.cyr-dropdown.open .cyr-dropdown-menu { display: block; }
+.cyr-dropdown-menu a {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--cyr-navy);
+  text-decoration: none;
+  font-weight: 500;
+}
+.cyr-dropdown-menu a:hover { background: var(--cyr-surface-muted); }
+.cyr-menu-button {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cyr-border);
+  border-radius: 8px;
+  background: var(--cyr-white);
+  color: var(--cyr-navy);
+  font-size: 18px;
+}
+.cyr-mobile-drawer {
+  display: none;
+  border-top: 1px solid var(--cyr-border);
+  background: var(--cyr-white);
+  padding: 16px 24px 24px;
+}
+.cyr-mobile-drawer.open { display: block; }
+.cyr-mobile-drawer a, .cyr-mobile-products-label {
+  display: block;
+  color: var(--cyr-navy);
+  text-decoration: none;
+  padding: 12px 0;
+  font-weight: 500;
+}
+.cyr-mobile-products {
+  padding-left: 16px;
+}
+.cyr-footer {
+  background: var(--cyr-navy);
+  color: var(--cyr-white);
+  margin-top: 48px;
+}
+.cyr-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+.cyr-footer-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.cyr-footer-copy {
+  color: #D7DFEA;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.cyr-footer-products {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #D7DFEA;
+  line-height: 1.8;
+}
+.cyr-footer-products span { display: block; }
+@media (max-width: 767px) {
+  .cyr-header-inner { padding: 12px 16px; }
+  .cyr-brand img { width: 24px; height: 24px; }
+  .cyr-wordmark { font-size: 15px; }
+  .cyr-nav { display: none; }
+  .cyr-menu-button { display: inline-flex; align-items: center; justify-content: center; }
+}
+
 </style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVENYX | ClinicalCaseLog — For Medical, PA & NP Students</title>
+    <title>CYRIONYX | ClinicalCaseLog — For Medical, PA & NP Students</title>
     
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
@@ -199,7 +396,7 @@ a:hover {
     <meta name="keywords" content="surgical case log, surgery resident, ACGME, case tracking, CPT codes, operative log">
     
     <!-- Open Graph (social sharing) -->
-    <meta property="og:title" content="AVENYX | ClinicalCaseLog">
+    <meta property="og:title" content="CYRIONYX | ClinicalCaseLog">
     <meta property="og:description" content="Log surgical cases and clinical patient encounters from your phone in 30 seconds. Built by a practicing surgeon for medical, PA, NP, and RNFA students.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://clinicalcaselog.com">
@@ -235,7 +432,7 @@ a:hover {
             }
         }
         .header h1 { font-size: 18px; color: #fff; }
-        .header h1 span { color: #2EA8FF; }
+        .header h1 span { color: #1D8BFF; }
         .header-actions { display: flex; gap: 10px; }
         .header-actions button {
             background: rgba(255,255,255,0.15);
@@ -247,7 +444,7 @@ a:hover {
             font-size: 13px;
         }
         .header-actions button:hover { background: rgba(255,255,255,0.25); }
-        .header-actions button.primary { background: linear-gradient(135deg, #2EA8FF, #1a8fd4); color: white; border: none; font-weight: 600; }
+        .header-actions button.primary { background: linear-gradient(135deg, #1D8BFF, #1a8fd4); color: white; border: none; font-weight: 600; }
 
         /* Tabs */
         .tabs {
@@ -255,7 +452,7 @@ a:hover {
             background: #1a2744;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            border-bottom: 2px solid #2EA8FF;
+            border-bottom: 2px solid #1D8BFF;
             scrollbar-width: none;
         }
         .tabs::-webkit-scrollbar { display: none; }
@@ -270,7 +467,7 @@ a:hover {
             transition: all 0.2s;
         }
         .tab:hover { color: #ccc; }
-        .tab.active { color: #2EA8FF; border-bottom-color: #2EA8FF; }
+        .tab.active { color: #1D8BFF; border-bottom-color: #1D8BFF; }
 
         /* Content */
         .content { padding: 20px; max-width: 1200px; margin: 0 auto; overflow-x: hidden; }
@@ -293,7 +490,7 @@ a:hover {
             text-align: center;
             border: 1px solid #2a3a5c;
         }
-        .stat-card .number { font-size: 32px; font-weight: 700; color: #2EA8FF; }
+        .stat-card .number { font-size: 32px; font-weight: 700; color: #1D8BFF; }
         .stat-card .label { font-size: 12px; color: #888; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Add Case Form */
@@ -304,7 +501,7 @@ a:hover {
             border: 1px solid #2a3a5c;
             margin-bottom: 20px;
         }
-        .form-card h2 { color: #2EA8FF; margin-bottom: 20px; font-size: 18px; }
+        .form-card h2 { color: #1D8BFF; margin-bottom: 20px; font-size: 18px; }
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -335,7 +532,7 @@ a:hover {
             color: #ffffff !important;
         }
         .form-group input:focus, .form-group select:focus {
-            border-color: #2EA8FF;
+            border-color: #1D8BFF;
             box-shadow: 0 0 0 2px rgba(46,168,255,0.2);
         }
         .form-group select { appearance: auto; }
@@ -347,7 +544,7 @@ a:hover {
             font-size: 16px !important;
         }
         .form-group select option:hover, select option:hover, .form-group select option:focus, select option:focus {
-            background: #2EA8FF !important;
+            background: #1D8BFF !important;
             color: #ffffff !important;
         }
         
@@ -378,19 +575,19 @@ a:hover {
             transition: all 0.2s;
         }
         .role-toggle:hover {
-            border-color: #2EA8FF;
+            border-color: #1D8BFF;
             background: #1a2744;
         }
         .role-toggle.active {
-            background: #2EA8FF;
-            border-color: #2EA8FF;
+            background: #1D8BFF;
+            border-color: #1D8BFF;
             color: #ffffff;
         }
         .multi-chip {
             display: inline-flex;
             align-items: center;
             background: #1a2744;
-            border: 1px solid #2EA8FF;
+            border: 1px solid #1D8BFF;
             color: #e0e0e0;
             padding: 4px 8px;
             border-radius: 16px;
@@ -419,11 +616,11 @@ a:hover {
             font-weight: 600;
             transition: all 0.2s;
         }
-        .btn-primary { background: #2EA8FF; color: #fff; }
+        .btn-primary { background: #1D8BFF; color: #fff; }
         .btn-primary:hover { background: #3aa5a5; }
         .btn-danger { background: #c0392b; color: #fff; }
         .btn-danger:hover { background: #e74c3c; }
-        .btn-gold { background: #2EA8FF; color: white; }
+        .btn-gold { background: #1D8BFF; color: white; }
 
         /* Case List Table */
         .case-list { overflow-x: auto; }
@@ -434,7 +631,7 @@ a:hover {
         }
         .case-table th {
             background: #1B2A4A;
-            color: #2EA8FF;
+            color: #1D8BFF;
             padding: 10px 12px;
             text-align: left;
             font-size: 11px;
@@ -465,8 +662,8 @@ a:hover {
             font-size: 11px;
             font-weight: 600;
         }
-        .badge-primary { background: rgba(46,168,255,0.2); color: #2EA8FF; }
-        .badge-assist { background: rgba(46,168,255,0.2); color: #2EA8FF; }
+        .badge-primary { background: rgba(46,168,255,0.2); color: #1D8BFF; }
+        .badge-assist { background: rgba(46,168,255,0.2); color: #1D8BFF; }
         .badge-comp { background: rgba(192,57,43,0.2); color: #e74c3c; }
 
         /* CPT Reference */
@@ -480,7 +677,7 @@ a:hover {
             font-size: 15px;
             margin-bottom: 15px;
         }
-        .cpt-search:focus { border-color: #2EA8FF; outline: none; }
+        .cpt-search:focus { border-color: #1D8BFF; outline: none; }
 
         /* ACGME Progress */
         .milestone-row {
@@ -533,11 +730,11 @@ a:hover {
         }
         .search-dropdown .dropdown-item:hover {
             background: #243656;
-            color: #2EA8FF;
+            color: #1D8BFF;
         }
         .search-dropdown .dropdown-item.highlighted {
             background: #243656;
-            color: #2EA8FF;
+            color: #1D8BFF;
         }
 
         /* Form transitions */
@@ -575,7 +772,7 @@ a:hover {
             white-space: nowrap;
         }
         .program-toggle button.active {
-            background: #2EA8FF;
+            background: #1D8BFF;
             color: #fff;
             font-weight: 600;
         }
@@ -590,7 +787,7 @@ a:hover {
             cursor: pointer;
             transition: all 0.2s;
         }
-        .rnfa-case-card:hover { border-color: #2EA8FF; }
+        .rnfa-case-card:hover { border-color: #1D8BFF; }
         .rnfa-case-card .card-header {
             display: flex;
             justify-content: space-between;
@@ -598,7 +795,7 @@ a:hover {
             margin-bottom: 8px;
         }
         .rnfa-case-card .card-header h3 {
-            color: #2EA8FF;
+            color: #1D8BFF;
             font-size: 15px;
             margin: 0;
         }
@@ -621,7 +818,7 @@ a:hover {
             margin-bottom: 12px;
         }
         .rnfa-case-card .detail-section h4 {
-            color: #2EA8FF;
+            color: #1D8BFF;
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -657,7 +854,7 @@ a:hover {
         .rnfa-progress-bar {
             height: 100%;
             border-radius: 12px;
-            background: linear-gradient(90deg, #2EA8FF, #3aa5a5);
+            background: linear-gradient(90deg, #1D8BFF, #3aa5a5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -683,7 +880,7 @@ a:hover {
             box-sizing: border-box;
         }
         .rnfa-textarea:focus {
-            border-color: #2EA8FF;
+            border-color: #1D8BFF;
             box-shadow: 0 0 0 2px rgba(46,168,255,0.2);
             outline: none;
         }
@@ -794,30 +991,30 @@ a:hover {
         }
     </style>
 </head>
-<body>
+<body class="brand-shell">
 
 <!-- LANDING PAGE - shown when not logged in -->
 <div id="landingPage" style="display:none; min-height:100vh; background:linear-gradient(135deg, #0f1729, #1B2A4A);">
     <div style="max-width:600px; margin:0 auto; padding:40px 20px; text-align:center;">
         <div style="margin-bottom:30px;">
-            <h1 style="color:#FFFFFF; font-size:28px; margin-bottom:8px;">Clinical Case Log</h1>
-            <p style="color:#2EA8FF; font-size:18px; font-weight:600;">PRO SYSTEM</p>
+            <h1 style="color:#FFFFFF; font-size:28px; margin-bottom:8px;">ClinicalCaseLog</h1>
+            <p style="color:#1D8BFF; font-size:18px; font-weight:600;">PRO SYSTEM</p>
         </div>
         
         <p style="color:#AAAAAA; font-size:16px; margin-bottom:30px;">Log clinical cases from your phone in 30 seconds.<br>Built for medical, PA, NP & RNFA students. Every rotation covered.</p>
         
         <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
-            <h2 style="color:#2EA8FF; font-size:18px; margin-bottom:20px;">Sign In</h2>
+            <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px;">Sign In</h2>
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <input type="email" id="landingEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="password" id="landingPassword" placeholder="Password" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <button class="btn btn-primary" style="padding:14px;font-size:16px;" onclick="doLandingLogin()">Log In</button>
-                <p style="text-align:center; margin-top:8px;"><a href="#" onclick="showForgotPassword(); return false;" style="color:#2EA8FF; text-decoration:none; font-size:14px;">Forgot Password?</a></p>
+                <p style="text-align:center; margin-top:8px;"><a href="#" onclick="showForgotPassword(); return false;" style="color:#1D8BFF; text-decoration:none; font-size:14px;">Forgot Password?</a></p>
             </div>
         </div>
 
         <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
-            <h2 style="color:#2EA8FF; font-size:18px; margin-bottom:20px;">New User? Register</h2>
+            <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px;">New User? Register</h2>
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <input type="text" id="landingName" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <input type="email" id="landingRegEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
@@ -829,19 +1026,19 @@ a:hover {
 
         <div style="background:#1a2744; border-radius:12px; padding:20px; border:1px solid #2a3a5c; margin-bottom:20px;">
             <h3 style="color:#FFFFFF; font-size:16px; margin-bottom:15px; text-align:center;">Get Started</h3>
-            <div style="background:#243656; border-radius:8px; padding:20px; text-align:center; border:2px solid #2EA8FF;">
-                <p style="color:#2EA8FF; font-weight:700; font-size:28px;">$49.99</p>
+            <div style="background:#243656; border-radius:8px; padding:20px; text-align:center; border:2px solid #1D8BFF;">
+                <p style="color:#1D8BFF; font-weight:700; font-size:28px;">$49.99</p>
                 <p style="color:#AAAAAA; font-size:14px;">1 Year of Full Access</p>
                 <p style="color:#666; font-size:12px; margin-top:5px;">365 days · All features · RNFA + Medical/PA modes</p>
             </div>
             <div style="margin-top:15px;">
-                <a href="#" onclick="startSubscription(); return false;" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:16px; font-weight:700; cursor:pointer;">🚀 Get Clinical Case Log — $49.99/year</a>
+                <a href="#" onclick="startSubscription(); return false;" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:16px; font-weight:700; cursor:pointer;">🚀 Get ClinicalCaseLog — $49.99/year</a>
             </div>
             <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">After subscribing, register below with the same email</p>
         </div>
 
         <div style="color:#666; font-size:13px; margin-top:20px;">
-            <p>clinicalcaselog.com | <a href="/legal" style="color:#2EA8FF;text-decoration:none;">Privacy & Legal</a></p>
+            <p>clinicalcaselog.com | <a href="/legal" style="color:#1D8BFF;text-decoration:none;">Privacy & Legal</a></p>
         </div>
     </div>
 </div>
@@ -852,7 +1049,7 @@ a:hover {
         
         <!-- Step 1: Enter Email -->
         <div id="resetStep1">
-            <h2 style="color:#2EA8FF; font-size:18px; margin-bottom:20px; text-align:center;">Reset Password</h2>
+            <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px; text-align:center;">Reset Password</h2>
             <p style="color:#e0e0e0; font-size:14px; margin-bottom:20px;">Enter your email address and we'll send you a 6-digit reset code.</p>
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <input type="email" id="resetEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
@@ -863,7 +1060,7 @@ a:hover {
 
         <!-- Step 2: Enter Code + New Password -->
         <div id="resetStep2" style="display:none;">
-            <h2 style="color:#2EA8FF; font-size:18px; margin-bottom:20px; text-align:center;">Enter Reset Code</h2>
+            <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px; text-align:center;">Enter Reset Code</h2>
             <p style="color:#e0e0e0; font-size:14px; margin-bottom:20px;">We sent a 6-digit code to your email. Enter it below with your new password.</p>
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <input type="text" id="resetCode" placeholder="6-digit code" maxlength="6" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;text-align:center;letter-spacing:2px;">
@@ -875,7 +1072,7 @@ a:hover {
 
         <!-- Step 3: Success -->
         <div id="resetStep3" style="display:none;">
-            <h2 style="color:#2EA8FF; font-size:18px; margin-bottom:20px; text-align:center;">Password Reset!</h2>
+            <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px; text-align:center;">Password Reset!</h2>
             <p style="color:#e0e0e0; font-size:14px; margin-bottom:20px; text-align:center;">Your password has been updated successfully. You can now log in with your new password.</p>
             <button class="btn btn-primary" style="padding:14px;font-size:16px;width:100%;" onclick="hideForgotPassword()">Continue</button>
         </div>
@@ -909,7 +1106,7 @@ a:hover {
 
 <!-- Demo Mode Banner (hidden by default, shown in demo mode) -->
 <div id="demoBanner" class="demo-banner" style="display:none;">
-    <span>🎯 DEMO MODE — Exploring Clinical Case Log</span>
+    <span>🎯 DEMO MODE — Exploring ClinicalCaseLog</span>
     <button class="demo-cta-btn" onclick="exitDemoMode()">Create Account</button>
 </div>
 
@@ -957,7 +1154,7 @@ a:hover {
 <!-- Auth Modal -->
 <div id="authModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;justify-content:center;align-items:center;">
     <div style="background:#1a2744;border-radius:12px;padding:30px;width:90%;max-width:400px;border:1px solid #2a3a5c;">
-        <h2 style="color:#2EA8FF;margin-bottom:20px;">🔑 Sign In / Register</h2>
+        <h2 style="color:#1D8BFF;margin-bottom:20px;">🔑 Sign In / Register</h2>
         <p style="color:#888;font-size:13px;margin-bottom:15px;">Create an account to save your cases to the cloud. Your data syncs across all devices.</p>
         <div style="display:flex;flex-direction:column;gap:12px;">
             <input type="text" id="authName" placeholder="Your name (optional)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
@@ -967,7 +1164,7 @@ a:hover {
                 <button class="btn btn-primary" style="flex:1" onclick="doLogin()">Log In</button>
                 <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Register</button>
             </div>
-            <p style="text-align:center; margin:8px 0;"><a href="#" onclick="hideAuth(); showForgotPassword(); return false;" style="color:#2EA8FF; text-decoration:none; font-size:13px;">Forgot Password?</a></p>
+            <p style="text-align:center; margin:8px 0;"><a href="#" onclick="hideAuth(); showForgotPassword(); return false;" style="color:#1D8BFF; text-decoration:none; font-size:13px;">Forgot Password?</a></p>
             <button class="btn" style="background:#2a3a5c;color:#888;" onclick="hideAuth()">Continue without account</button>
         </div>
     </div>
@@ -1002,7 +1199,7 @@ a:hover {
     <div id="cases" class="section">
         <!-- New Case Button -->
         <div style="margin-bottom:20px;">
-            <button id="newCaseBtn" class="btn btn-primary" style="width:100%; padding:15px; font-size:16px; font-weight:600; background:#2EA8FF; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s;" onclick="toggleAddCaseForm()">
+            <button id="newCaseBtn" class="btn btn-primary" style="width:100%; padding:15px; font-size:16px; font-weight:600; background:#1D8BFF; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s;" onclick="toggleAddCaseForm()">
                 ➕ New Case
             </button>
         </div>
@@ -1020,14 +1217,14 @@ a:hover {
                 </div>
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-                <h2 style="color:#2EA8FF; margin:0;">➕ Log New Case</h2>
+                <h2 style="color:#1D8BFF; margin:0;">➕ Log New Case</h2>
                 <button type="button" onclick="toggleAddCaseForm()" style="background:none; border:1px solid #555; color:#888; padding:6px 12px; border-radius:6px; font-size:13px; cursor:pointer;">Cancel</button>
             </div>
             <form id="caseForm" onsubmit="addCase(event)">
                 <div class="form-grid">
                     <div class="form-group" style="grid-column: span 2;">
-                        <label>Case ID <span style="color:#2EA8FF; font-size:10px; font-weight:400;">(ACGME Required — Auto-generated)</span></label>
-                        <input type="text" id="caseId" placeholder="Auto-generated" readonly style="font-weight:600; color:#2EA8FF; letter-spacing:1px; background:#0a0f1d; cursor:default; border:1px solid #2EA8FF30;">
+                        <label>Case ID <span style="color:#1D8BFF; font-size:10px; font-weight:400;">(ACGME Required — Auto-generated)</span></label>
+                        <input type="text" id="caseId" placeholder="Auto-generated" readonly style="font-weight:600; color:#1D8BFF; letter-spacing:1px; background:#0a0f1d; cursor:default; border:1px solid #1D8BFF30;">
                     </div>
                     <div class="form-group">
                         <label>Date</label>
@@ -1073,7 +1270,7 @@ a:hover {
                             <div id="diagnosisChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;"></div>
                             <input type="text" id="diagnosisInput" placeholder="⚠ Select Specialty/Rotation First" disabled autocomplete="off" oninput="filterDropdown('diagnosis')" onfocus="showDropdown('diagnosis')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;opacity:0.5;">
                             <input type="hidden" id="diagnosis">
-                            <div id="diagnosisDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2EA8FF;border-radius:0 0 8px 8px;z-index:50;"></div>
+                            <div id="diagnosisDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #1D8BFF;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
                     </div>
                     <div class="form-group" style="grid-column: span 2;">
@@ -1081,7 +1278,7 @@ a:hover {
                         <div style="position:relative;">
                             <input type="text" id="procedureInput" placeholder="⚠ Select Specialty/Rotation First" disabled autocomplete="off" oninput="filterDropdown('procedure')" onfocus="showDropdown('procedure')" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;opacity:0.5;">
                             <input type="hidden" id="procedure">
-                            <div id="procedureDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #2EA8FF;border-radius:0 0 8px 8px;z-index:50;"></div>
+                            <div id="procedureDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:250px;overflow-y:auto;background:#0f1729;border:1px solid #1D8BFF;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
                         <select id="procedureOld" style="display:none;">
                             <option value="">Select procedure...</option>
@@ -1191,7 +1388,7 @@ a:hover {
                             <div id="icd10Chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;"></div>
                             <input type="text" id="icd10Input" placeholder="Type diagnosis for ICD-10..." autocomplete="off" oninput="searchICD10()" onfocus="searchICD10()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                             <input type="hidden" id="icd10Code">
-                            <div id="icd10Dropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2EA8FF;border-radius:0 0 8px 8px;z-index:50;"></div>
+                            <div id="icd10Dropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #1D8BFF;border-radius:0 0 8px 8px;z-index:50;"></div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -1211,15 +1408,15 @@ a:hover {
                     <div class="form-group">
                         <label style="display:flex; align-items:center; justify-content:space-between;">
                             <span>Attending/Preceptor</span>
-                            <span onclick="showManageAttendings()" style="color:#2EA8FF; font-size:11px; cursor:pointer; text-transform:none; letter-spacing:0;">⚙️ Manage</span>
+                            <span onclick="showManageAttendings()" style="color:#1D8BFF; font-size:11px; cursor:pointer; text-transform:none; letter-spacing:0;">⚙️ Manage</span>
                         </label>
                         <div style="position:relative; display:flex; align-items:center; gap:6px;">
                             <div style="position:relative; flex:1;">
                                 <input type="text" id="attendingInput" placeholder="Type or select attending..." autocomplete="off" oninput="filterAttending()" onfocus="filterAttending()" style="width:100%;background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:16px;">
                                 <input type="hidden" id="attending">
-                                <div id="attendingDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #2EA8FF;border-radius:0 0 8px 8px;z-index:50;"></div>
+                                <div id="attendingDropdown" class="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#0f1729;border:1px solid #1D8BFF;border-radius:0 0 8px 8px;z-index:50;"></div>
                             </div>
-                            <button type="button" id="saveAttendingBtn" onclick="quickSaveAttending()" style="display:none; align-items:center; justify-content:center; background:#2EA8FF; border:none; color:#fff; width:38px; height:38px; border-radius:8px; font-size:18px; cursor:pointer; flex-shrink:0;" title="Save this attending">💾</button>
+                            <button type="button" id="saveAttendingBtn" onclick="quickSaveAttending()" style="display:none; align-items:center; justify-content:center; background:#1D8BFF; border:none; color:#fff; width:38px; height:38px; border-radius:8px; font-size:18px; cursor:pointer; flex-shrink:0;" title="Save this attending">💾</button>
                         </div>
                     </div>
                     <!-- SURGICAL FIELDS - hidden for medical specialties -->
@@ -1325,7 +1522,7 @@ a:hover {
             <h2>🎯 Progress Toward 65 Intra-op Hours</h2>
             <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                 <span style="color:#888; font-size:13px;" id="rnfaProgressLabel">0 / 65 hours</span>
-                <span style="color:#2EA8FF; font-weight:600; font-size:13px;" id="rnfaProgressPct">0%</span>
+                <span style="color:#1D8BFF; font-weight:600; font-size:13px;" id="rnfaProgressPct">0%</span>
             </div>
             <div class="rnfa-progress-container">
                 <div class="rnfa-progress-bar" id="rnfaProgressBar" style="width:0%">0%</div>
@@ -1341,7 +1538,7 @@ a:hover {
     <div id="rnfaCases" class="section">
         <!-- New RNFA Case Button -->
         <div style="margin-bottom:20px;">
-            <button id="newRnfaCaseBtn" class="btn btn-primary" style="width:100%; padding:15px; font-size:16px; font-weight:600; background:#2EA8FF; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s;" onclick="toggleRnfaCaseForm()">
+            <button id="newRnfaCaseBtn" class="btn btn-primary" style="width:100%; padding:15px; font-size:16px; font-weight:600; background:#1D8BFF; border:none; border-radius:8px; cursor:pointer; transition:all 0.3s;" onclick="toggleRnfaCaseForm()">
                 ➕ New RNFA Case
             </button>
         </div>
@@ -1349,7 +1546,7 @@ a:hover {
         <!-- RNFA Add Case Form -->
         <div id="rnfaCaseForm" class="form-card" style="display:none; margin-bottom:20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-                <h2 style="color:#2EA8FF; margin:0;" id="rnfaFormTitle">➕ Log RNFA Case</h2>
+                <h2 style="color:#1D8BFF; margin:0;" id="rnfaFormTitle">➕ Log RNFA Case</h2>
                 <button type="button" onclick="toggleRnfaCaseForm()" style="background:none; border:1px solid #555; color:#888; padding:6px 12px; border-radius:6px; font-size:13px; cursor:pointer;">Cancel</button>
             </div>
             <form id="rnfaForm" onsubmit="saveRnfaCase(event)">
@@ -1393,7 +1590,7 @@ a:hover {
 
                     <!-- First Assisting Behaviors -->
                     <div style="border:1px solid #2a3a5c; border-radius:10px; padding:16px; background:#141e33;">
-                        <h3 style="color:#2EA8FF; font-size:14px; margin-bottom:14px; text-transform:uppercase; letter-spacing:1px;">First Assisting Behaviors</h3>
+                        <h3 style="color:#1D8BFF; font-size:14px; margin-bottom:14px; text-transform:uppercase; letter-spacing:1px;">First Assisting Behaviors</h3>
 
                         <div class="form-group" style="margin-bottom:14px;">
                             <label>1. Pre-op</label>
@@ -1549,7 +1746,7 @@ function searchICD10() {
     
     dropdown.innerHTML = matches.slice(0, 15).map(item =>
         `<div class="dropdown-item" onclick="selectICD10('${item.code}', '${item.desc.replace(/'/g, "\\'")}')">
-            <span style="color:#2EA8FF;font-weight:600;">${item.code}</span> — ${item.desc}
+            <span style="color:#1D8BFF;font-weight:600;">${item.code}</span> — ${item.desc}
         </div>`
     ).join('');
     dropdown.style.display = 'block';
@@ -1606,7 +1803,7 @@ function renderDiagnosisChips() {
 function renderICD10Chips() {
     const container = document.getElementById('icd10Chips');
     container.innerHTML = selectedICD10s.map((item, i) =>
-        `<span class="multi-chip"><span style="color:#2EA8FF;font-weight:600;">${item.code}</span> — ${item.desc}<span class="chip-remove" onclick="removeICD10Chip(${i})">×</span></span>`
+        `<span class="multi-chip"><span style="color:#1D8BFF;font-weight:600;">${item.code}</span> — ${item.desc}<span class="chip-remove" onclick="removeICD10Chip(${i})">×</span></span>`
     ).join('');
 }
 
@@ -1729,7 +1926,7 @@ function filterAttending() {
     dropdown.innerHTML = filtered.map(a =>
         `<div class="dropdown-item" onclick="selectAttending('${a.name.replace(/'/g, "\\'")}')">
             <span style="color:#FFFFFF;">${a.name}</span>
-            ${a.specialty ? `<span style="color:#2EA8FF; font-size:12px; margin-left:8px;">${a.specialty}</span>` : ''}
+            ${a.specialty ? `<span style="color:#1D8BFF; font-size:12px; margin-left:8px;">${a.specialty}</span>` : ''}
         </div>`
     ).join('');
     dropdown.style.display = 'block';
@@ -1776,7 +1973,7 @@ function showManageAttendings() {
             <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #1a2744;" id="att-row-${a.id}">
                 <div>
                     <span style="color:#fff; font-size:14px;">${a.name}</span>
-                    ${a.specialty ? `<span style="color:#2EA8FF; font-size:12px; margin-left:8px;">${a.specialty}</span>` : ''}
+                    ${a.specialty ? `<span style="color:#1D8BFF; font-size:12px; margin-left:8px;">${a.specialty}</span>` : ''}
                 </div>
                 <button onclick="confirmDeleteAttending(${a.id}, '${a.name.replace(/'/g, "\\'")}')" style="background:none; border:none; color:#c0392b; cursor:pointer; font-size:18px; padding:4px 8px;">🗑</button>
             </div>
@@ -1786,7 +1983,7 @@ function showManageAttendings() {
     modal.innerHTML = `
         <div style="background:#1a2744; border-radius:12px; padding:25px; width:90%; max-width:450px; border:1px solid #2a3a5c; max-height:80vh; overflow-y:auto;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
-                <h2 style="color:#2EA8FF; font-size:18px; margin:0;">👨‍⚕️ Saved Attendings</h2>
+                <h2 style="color:#1D8BFF; font-size:18px; margin:0;">👨‍⚕️ Saved Attendings</h2>
                 <button onclick="document.getElementById('manageAttendingsModal').style.display='none'" style="background:none; border:1px solid #555; color:#888; padding:6px 12px; border-radius:6px; font-size:13px; cursor:pointer;">Close</button>
             </div>
             <p style="color:#888; font-size:12px; margin-bottom:15px;">${userAttendings.length} saved attending${userAttendings.length !== 1 ? 's' : ''}</p>
@@ -1916,10 +2113,10 @@ function showDropdown(type) {
         let display = item;
         // Show CPT code next to procedures, ICD-10 next to diagnoses
         if (type === 'procedure' && typeof PROCEDURE_TO_CPT !== 'undefined' && PROCEDURE_TO_CPT[item]) {
-            display = `${item} <span style="color:#2EA8FF;font-size:12px;margin-left:6px;">CPT: ${PROCEDURE_TO_CPT[item]}</span>`;
+            display = `${item} <span style="color:#1D8BFF;font-size:12px;margin-left:6px;">CPT: ${PROCEDURE_TO_CPT[item]}</span>`;
         }
         if (type === 'diagnosis' && typeof DIAGNOSIS_TO_ICD10 !== 'undefined' && DIAGNOSIS_TO_ICD10[item]) {
-            display = `${item} <span style="color:#2EA8FF;font-size:12px;margin-left:6px;">ICD: ${DIAGNOSIS_TO_ICD10[item]}</span>`;
+            display = `${item} <span style="color:#1D8BFF;font-size:12px;margin-left:6px;">ICD: ${DIAGNOSIS_TO_ICD10[item]}</span>`;
         }
         return `<div class="dropdown-item" onclick="selectDropdownItem('${type}', '${item.replace(/'/g, "\\'")}')">${display}</div>`;
     }).join('');
@@ -2173,7 +2370,7 @@ function toggleAddCaseForm() {
         // Hide form
         form.style.display = 'none';
         btn.textContent = '➕ New Case';
-        btn.style.background = '#2EA8FF';
+        btn.style.background = '#1D8BFF';
     }
 }
 
@@ -2313,7 +2510,7 @@ function updateDashboard() {
                 <div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #0f1729;">
                     <span style="flex:1">${rot}</span>
                     <div style="flex:2;background:#0f1729;border-radius:6px;height:24px;overflow:hidden;margin:0 15px;">
-                        <div style="width:${(count/total)*100}%;background:#2EA8FF;height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:12px;font-weight:600;">${count}</div>
+                        <div style="width:${(count/total)*100}%;background:#1D8BFF;height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:12px;font-weight:600;">${count}</div>
                     </div>
                     <span style="color:#888;width:40px;text-align:right">${Math.round((count/total)*100)}%</span>
                 </div>
@@ -2327,7 +2524,7 @@ function updateDashboard() {
         recentDiv.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No cases yet. Log your first case!</p><button class="btn btn-primary" onclick="showSection(\'cases\'); setTimeout(() => toggleAddCaseForm(), 200);">+ Log Case</button></div>';
     } else {
         recentDiv.innerHTML = '<table class="case-table"><tr><th>Case ID</th><th>Date</th><th>Procedure</th><th>Role</th><th>Rotation</th></tr>' +
-            recent.map(c => `<tr><td style="font-weight:600;color:#2EA8FF;font-size:11px;">${c.caseId || '-'}</td><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
+            recent.map(c => `<tr><td style="font-weight:600;color:#1D8BFF;font-size:11px;">${c.caseId || '-'}</td><td>${c.date}</td><td>${c.procedure}</td><td><span class="badge ${c.role==='Primary Surgeon'?'badge-primary':'badge-assist'}">${c.role}</span></td><td>${c.rotation}</td></tr>`).join('') + '</table>';
     }
 
     // Update rotation filter
@@ -2363,7 +2560,7 @@ function renderCases() {
     div.innerHTML = `<table class="case-table">
         <tr><th>Case ID</th><th>Date</th><th>Diagnosis</th><th>Procedure</th><th>CPT</th><th>Role</th><th>Approach</th><th>Rotation</th><th>Attending</th><th>Comp</th><th>OR Time</th><th></th></tr>
         ${filtered.map((c,i) => `<tr>
-            <td style="font-weight:600;color:#2EA8FF;font-size:11px;white-space:nowrap;">${c.caseId || ('CCL-' + (c.date||'').substring(0,4) + '-' + String(filtered.length - i).padStart(4,'0'))}</td>
+            <td style="font-weight:600;color:#1D8BFF;font-size:11px;white-space:nowrap;">${c.caseId || ('CCL-' + (c.date||'').substring(0,4) + '-' + String(filtered.length - i).padStart(4,'0'))}</td>
             <td>${c.date}</td>
             <td style="max-width:180px;white-space:normal;font-size:12px;">${c.diagnosis || '-'}</td>
             <td>${c.procedure}</td>
@@ -2402,7 +2599,7 @@ function renderCPTFiltered(codes, div) {
             <h2 style="font-size:15px;margin-bottom:10px;">${cat}</h2>
             <table class="case-table">
                 ${items.map(c => `<tr style="cursor:pointer" onclick="document.getElementById('cptCode').value='${c.code}';document.getElementById('procedure').value='${c.procedure}';document.getElementById('procedureInput').value='${c.procedure}';showSection('cases'); setTimeout(() => { if(document.getElementById('addCaseForm').style.display === 'none') toggleAddCaseForm(); }, 200);">
-                    <td style="width:80px;font-weight:600;color:#2EA8FF">${c.code}</td>
+                    <td style="width:80px;font-weight:600;color:#1D8BFF">${c.code}</td>
                     <td>${c.procedure}</td>
                 </tr>`).join('')}
             </table>
@@ -3068,16 +3265,16 @@ function exportPDF() {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AVENYX | Clinical Case Log Report</title>
+    <title>CYRIONYX | ClinicalCaseLog Report</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; color: #333; padding: 40px; max-width: 1000px; margin: 0 auto; }
-        h1 { font-size: 24px; color: #1B2A4A; border-bottom: 3px solid #2EA8FF; padding-bottom: 10px; margin-bottom: 5px; }
+        h1 { font-size: 24px; color: #1B2A4A; border-bottom: 3px solid #1D8BFF; padding-bottom: 10px; margin-bottom: 5px; }
         h2 { font-size: 18px; color: #1B2A4A; margin-top: 25px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #ddd; }
         .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: #f5f5f5; border-radius: 8px; padding: 15px; text-align: center; }
-        .stat-box .number { font-size: 28px; font-weight: 700; color: #2EA8FF; }
+        .stat-box .number { font-size: 28px; font-weight: 700; color: #1D8BFF; }
         .stat-box .label { font-size: 11px; color: #888; text-transform: uppercase; margin-top: 3px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         th { background: #1B2A4A; color: white; padding: 8px 6px; text-align: left; font-size: 11px; text-transform: uppercase; }
@@ -3085,15 +3282,15 @@ function exportPDF() {
         tr:nth-child(even) { background: #f9f9f9; }
         .rotation-bar { display: flex; align-items: center; margin: 4px 0; }
         .rotation-name { width: 150px; font-size: 13px; }
-        .rotation-fill { height: 18px; background: #2EA8FF; border-radius: 4px; display: flex; align-items: center; padding-left: 6px; color: white; font-size: 11px; font-weight: 600; }
+        .rotation-fill { height: 18px; background: #1D8BFF; border-radius: 4px; display: flex; align-items: center; padding-left: 6px; color: white; font-size: 11px; font-weight: 600; }
         .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; color: #888; font-size: 11px; text-align: center; }
         @media print { body { padding: 20px; } .no-print { display: none; } }
     </style>
 </head>
 <body>
-    <button class="no-print" onclick="window.print()" style="float:right; padding:10px 20px; background:#2EA8FF; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Print / Save PDF</button>
+    <button class="no-print" onclick="window.print()" style="float:right; padding:10px 20px; background:#1D8BFF; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Print / Save PDF</button>
     
-    <h1>Clinical Case Log Report</h1>
+    <h1>ClinicalCaseLog Report</h1>
     <p class="subtitle">${userName} | Generated ${today} | ${total} Total Cases</p>
     
     <h2>Summary Statistics</h2>
@@ -3138,8 +3335,34 @@ function exportPDF() {
     </table>
     
     <div class="footer">
-        Generated by AVENYX | ClinicalCaseLog | clinicalcaselog.com | ${today}
+        Generated by ClinicalCaseLog | clinicalcaselog.com | ${today}
     </div>
+<script>
+(function(){
+  document.querySelectorAll('.cyr-dropdown').forEach(function(drop){
+    var btn = drop.querySelector('.cyr-dropdown-toggle');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = drop.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+  document.querySelectorAll('[data-cyrionyx-header]').forEach(function(header){
+    var btn = header.querySelector('.cyr-menu-button');
+    var drawer = header.querySelector('.cyr-mobile-drawer');
+    if (btn && drawer) {
+      btn.addEventListener('click', function(){ drawer.classList.toggle('open'); });
+    }
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.cyr-dropdown.open').forEach(function(drop){
+      drop.classList.remove('open');
+      var btn = drop.querySelector('.cyr-dropdown-toggle');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
 </body>
 </html>`);
     printWindow.document.close();
@@ -3231,7 +3454,7 @@ function toggleRnfaCaseForm() {
     } else {
         form.style.display = 'none';
         btn.textContent = '➕ New RNFA Case';
-        btn.style.background = '#2EA8FF';
+        btn.style.background = '#1D8BFF';
         resetRnfaForm();
     }
 }
@@ -3328,7 +3551,7 @@ function renderRnfaDashboard() {
         recentDiv.innerHTML = recent.map(c => `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #0f1729;">
                 <div>
-                    <span style="color:#2EA8FF; font-weight:600;">#${c.case_number}</span>
+                    <span style="color:#1D8BFF; font-weight:600;">#${c.case_number}</span>
                     <span style="margin-left:8px;">${c.procedure_name || ''}</span>
                 </div>
                 <div style="color:#888; font-size:13px;">
@@ -3374,7 +3597,7 @@ function renderRnfaCases() {
                 ${behaviors.map(b => `<div class="detail-section"><h4>${b.title}</h4><p>${b.text}</p></div>`).join('')}
                 ${c.learning_log ? `<div class="detail-section"><h4>📝 Learning Log</h4><p>${c.learning_log}</p></div>` : ''}
                 <div class="card-actions">
-                    <button onclick="event.stopPropagation(); editRnfaCase(${c.id})" style="background:#2EA8FF; color:#fff;">✏️ Edit</button>
+                    <button onclick="event.stopPropagation(); editRnfaCase(${c.id})" style="background:#1D8BFF; color:#fff;">✏️ Edit</button>
                     <button onclick="event.stopPropagation(); deleteRnfaCase(${c.id})" style="background:#c0392b; color:#fff;">🗑 Delete</button>
                 </div>
             </div>
@@ -3555,14 +3778,14 @@ async function startSubscription(emailHint) {
 </script>
 
 <!-- Install App Banner -->
-<div id="installBanner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:linear-gradient(135deg, #1B2A4A, #243656); padding:15px 20px; z-index:300; border-top:2px solid #2EA8FF; box-shadow:0 -4px 20px rgba(0,0,0,0.3);">
+<div id="installBanner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:linear-gradient(135deg, #1B2A4A, #243656); padding:15px 20px; z-index:300; border-top:2px solid #1D8BFF; box-shadow:0 -4px 20px rgba(0,0,0,0.3);">
     <div style="display:flex; align-items:center; justify-content:space-between; max-width:600px; margin:0 auto;">
         <div>
             <p style="color:#FFFFFF; font-size:15px; font-weight:600; margin-bottom:2px;">Install Case Log App</p>
             <p style="color:#888; font-size:12px;">Add to home screen for quick access</p>
         </div>
         <div style="display:flex; gap:10px;">
-            <button onclick="installApp()" style="background:#2EA8FF; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Install</button>
+            <button onclick="installApp()" style="background:#1D8BFF; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Install</button>
             <button onclick="dismissInstall()" style="background:none; border:1px solid #555; color:#888; padding:10px 14px; border-radius:8px; font-size:13px; cursor:pointer;">Later</button>
         </div>
     </div>
@@ -3570,7 +3793,7 @@ async function startSubscription(emailHint) {
 
 <!-- App Footer -->
 <div style="text-align:center; padding:20px; color:#666; font-size:12px; border-top:1px solid #2a3a5c; margin-top:20px;">
-    <a href="/legal" style="color:#2EA8FF;text-decoration:none;">Privacy Policy & Terms</a>
+    <a href="/legal" style="color:#1D8BFF;text-decoration:none;">Privacy Policy & Terms</a>
 </div>
 
 </div><!-- close appContainer -->
@@ -3615,6 +3838,32 @@ function dismissInstall() {
     document.getElementById('installBanner').style.display = 'none';
     localStorage.setItem('installDismissed', 'true');
 }
+</script>
+<script>
+(function(){
+  document.querySelectorAll('.cyr-dropdown').forEach(function(drop){
+    var btn = drop.querySelector('.cyr-dropdown-toggle');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var open = drop.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+  document.querySelectorAll('[data-cyrionyx-header]').forEach(function(header){
+    var btn = header.querySelector('.cyr-menu-button');
+    var drawer = header.querySelector('.cyr-mobile-drawer');
+    if (btn && drawer) {
+      btn.addEventListener('click', function(){ drawer.classList.toggle('open'); });
+    }
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.cyr-dropdown.open').forEach(function(drop){
+      drop.classList.remove('open');
+      var btn = drop.querySelector('.cyr-dropdown-toggle');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
 </script>
 </body>
 </html>

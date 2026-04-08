@@ -65,7 +65,7 @@ a { color: #2EA8FF !important; }
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVENYX | Clinical Case Log - Admin Dashboard</title>
+    <title>CYRIONYX | ClinicalCaseLog - Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
         * {
@@ -323,8 +323,12 @@ a { color: #2EA8FF !important; }
             }
         }
     </style>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="stylesheet" href="/assets/cyrionyx-brand.css">
 </head>
-<body>
+<body class="brand-shell-page" data-brand-page="admin">
+    <div id="cyr-site-header"></div>
     <!-- Navigation -->
     <nav style="background: rgba(11, 31, 59, 0.95); backdrop-filter: blur(12px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);">
         <a href="/" style="color: white; text-decoration: none; font-size: 18px; font-weight: 800;">
@@ -340,7 +344,7 @@ a { color: #2EA8FF !important; }
         </div>
     </nav>
     <div class="header">
-        <h1>Clinical Case Log</h1>
+        <h1>ClinicalCaseLog</h1>
         <p>Admin Dashboard - Real-time analytics and user management</p>
     </div>
 
@@ -749,5 +753,7 @@ a { color: #2EA8FF !important; }
             initDashboard();
         }
     </script>
+    <div id="cyr-site-footer"></div>
+    <script src="/assets/cyrionyx-brand.js"></script>
 </body>
 </html>

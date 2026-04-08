@@ -1,0 +1,320 @@
+:root {
+  --cyr-navy: #0B1220;
+  --cyr-blue: #1D8BFF;
+  --cyr-white: #FFFFFF;
+  --cyr-steel: #7C8AA5;
+  --cyr-border: #E6EAF0;
+  --cyr-input: #D0D7E2;
+  --cyr-surface: #FFFFFF;
+  --cyr-surface-alt: #F7F9FC;
+  --cyr-text: #0B1220;
+  --cyr-muted: #7C8AA5;
+  --cyr-shadow: 0 2px 8px rgba(11,18,32,0.06);
+  --cyr-radius-button: 8px;
+  --cyr-radius-card: 12px;
+  --cyr-space-xs: 4px;
+  --cyr-space-sm: 8px;
+  --cyr-space-md: 16px;
+  --cyr-space-lg: 24px;
+  --cyr-space-xl: 32px;
+  --cyr-space-xxl: 48px;
+}
+
+html, body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--cyr-text);
+}
+
+body.brand-shell-page {
+  background: var(--cyr-surface-alt);
+}
+
+body[data-brand-page="home"] > .nav,
+body[data-brand-page="prep"] > .nav,
+body[data-brand-page="blog"] > .nav,
+body[data-brand-page="admin"] > nav,
+body[data-brand-page="legal"] nav,
+body[data-brand-page="privacy"] nav,
+body[data-brand-page="home"] > .footer,
+body[data-brand-page="blog"] > .footer {
+  display: none !important;
+}
+
+.cyr-brand-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--cyr-navy);
+  text-decoration: none;
+}
+
+.cyr-brand-wordmark svg {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.cyr-brand-wordmark .brand-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.cyr-brand-wordmark .brand-name .x-mark {
+  color: var(--cyr-blue);
+  display: inline-block;
+  transform: scaleX(1.04);
+  transform-origin: center;
+}
+
+.cyr-brand-wordmark .brand-sub {
+  color: var(--cyr-text);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cyr-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--cyr-border);
+}
+
+.cyr-site-header__inner,
+.cyr-site-footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--cyr-lg, 24px);
+}
+
+.cyr-site-header__inner {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.cyr-site-nav,
+.cyr-site-nav__group,
+.cyr-products-menu {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.cyr-site-nav a,
+.cyr-products-trigger {
+  color: var(--cyr-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.cyr-products {
+  position: relative;
+}
+
+.cyr-products-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+}
+
+.cyr-products-trigger::after {
+  content: "▾";
+  font-size: 12px;
+  color: var(--cyr-steel);
+}
+
+.cyr-products-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 220px;
+  padding: 8px;
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  background: var(--cyr-white);
+  border: 1px solid var(--cyr-border);
+  border-radius: 12px;
+  box-shadow: var(--cyr-shadow);
+}
+
+.cyr-products.open .cyr-products-menu,
+.cyr-products:focus-within .cyr-products-menu {
+  display: flex;
+}
+
+.cyr-products-menu a {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.cyr-products-menu a:hover,
+.cyr-site-nav a:hover,
+.cyr-products-trigger:hover {
+  color: var(--cyr-blue);
+  background: rgba(29,139,255,0.06);
+}
+
+.cyr-btn-primary,
+.cyr-btn-secondary,
+.brand-button-primary,
+.brand-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.cyr-btn-primary,
+.brand-button-primary {
+  background: var(--cyr-blue);
+  color: var(--cyr-white);
+}
+
+.cyr-btn-secondary,
+.brand-button-secondary {
+  background: transparent;
+  color: var(--cyr-navy);
+  border-color: var(--cyr-navy);
+}
+
+.brand-shell-page .card,
+.brand-shell-page [class*="card"],
+.brand-shell-page .section,
+.brand-shell-page .top-users,
+.brand-shell-page .pricing-badge,
+.brand-shell-page .modal,
+.brand-shell-page .container-card {
+  border-radius: var(--cyr-radius-card) !important;
+  border: 1px solid var(--cyr-border) !important;
+  box-shadow: var(--cyr-shadow) !important;
+}
+
+.brand-shell-page input,
+.brand-shell-page select,
+.brand-shell-page textarea {
+  border: 1px solid var(--cyr-input) !important;
+  box-shadow: none !important;
+}
+
+.brand-shell-page input:focus,
+.brand-shell-page select:focus,
+.brand-shell-page textarea:focus {
+  outline: 1px solid var(--cyr-blue) !important;
+  border-color: var(--cyr-blue) !important;
+}
+
+.cyr-site-footer {
+  background: var(--cyr-navy);
+  color: var(--cyr-white);
+  margin-top: 64px;
+}
+
+.cyr-site-footer__inner {
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+.cyr-site-footer p,
+.cyr-site-footer li,
+.cyr-site-footer a {
+  color: var(--cyr-white);
+  text-decoration: none;
+}
+
+.cyr-site-footer .footer-label {
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 8px;
+}
+
+.cyr-site-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cyr-mobile-toggle,
+.cyr-mobile-drawer {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .cyr-site-header__inner {
+    min-height: 64px;
+  }
+
+  .cyr-brand-wordmark svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .cyr-site-nav {
+    display: none;
+  }
+
+  .cyr-mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--cyr-border);
+    border-radius: 8px;
+    background: var(--cyr-white);
+    color: var(--cyr-navy);
+    font-size: 18px;
+  }
+
+  .cyr-mobile-drawer {
+    display: none;
+    border-top: 1px solid var(--cyr-border);
+    background: var(--cyr-white);
+  }
+
+  .cyr-mobile-drawer.open {
+    display: block;
+  }
+
+  .cyr-mobile-drawer__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px 24px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .cyr-mobile-drawer a,
+  .cyr-mobile-products-label {
+    color: var(--cyr-text);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 0;
+  }
+
+  .cyr-mobile-products {
+    display: grid;
+    gap: 4px;
+    padding-left: 12px;
+  }
+}
