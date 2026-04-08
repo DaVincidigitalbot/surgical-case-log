@@ -3103,15 +3103,22 @@ function exitDemoMode() {
     startSubscription();
 }
 
-// Check for demo mode FIRST — before auth check
+// Check for explicit demo mode only. Logged-in users on /demo should enter the real app, not be trapped in demo mode.
 const urlParams = new URLSearchParams(window.location.search);
-const isDemoUrl = urlParams.get('demo') === 'true' || window.location.pathname === '/demo';
+const isDemoUrl = urlParams.get('demo') === 'true';
 
-// Auto-load on startup - REQUIRE LOGIN
-if (isDemoUrl) {
-    // Guest demo mode - full app preview (skip auth even if token exists)
+// Auto-load on startup - REQUIRE LOGIN unless explicit demo mode is requested
+if (authToken) {
+    loadFromServer();
+    loadUserAttendings();
+    updateUserUI();
+    initProgramMode();
+    document.getElementById('appContainer').style.display = 'block';
+    document.getElementById('landingPage').style.display = 'none';
+} else if (isDemoUrl) {
+    // Guest demo mode - full app preview only when explicitly requested
     initDemoMode();
-} else if (authToken) {
+} else {
     loadFromServer();
     loadUserAttendings();
     updateUserUI();
