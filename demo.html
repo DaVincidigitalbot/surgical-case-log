@@ -1665,7 +1665,6 @@ function persistAuthSession(data) {
         programType = data.program_type;
         localStorage.setItem('programType', programType);
     }
-    console.log('[auth] auth state set', { email: currentUser.email, hasToken: !!authToken, programType });
 }
 
 function clearAuthSession(reason) {
@@ -1676,11 +1675,9 @@ function clearAuthSession(reason) {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
     localStorage.removeItem('programType');
-    console.log('[auth] auth state cleared', { reason });
 }
 
 function redirectToLogin(reason) {
-    console.log('[auth] redirect decision', { destination: '/login', reason });
     window.location.replace('/login');
 }
 
@@ -2689,7 +2686,6 @@ async function api(endpoint, method='GET', body=null) {
     if (body) opts.body = JSON.stringify(body);
     const r = await fetch(API + endpoint, opts);
     if (r.status === 401 && endpoint !== '/me' && endpoint !== '/login') {
-        console.log('[auth] token detected or not', { hasToken: !!authToken, endpoint, status: 401 });
         clearAuthSession('api-401-' + endpoint);
         redirectToLogin('api-401-' + endpoint);
         return null;
@@ -3115,7 +3111,6 @@ function exitDemoMode() {
 }
 
 async function bootstrapAuth() {
-    console.log('[auth] token detected or not', { hasToken: !!authToken, pathname: window.location.pathname });
     if (!authToken) {
         redirectToLogin('missing-token');
         return;
@@ -3143,7 +3138,7 @@ async function bootstrapAuth() {
         });
         showAuthenticatedApp();
     } catch (e) {
-        console.error('[auth] bootstrap failed', e);
+        console.error('Auth bootstrap failed', e);
         clearAuthSession('bootstrap-error');
         redirectToLogin('bootstrap-error');
     }

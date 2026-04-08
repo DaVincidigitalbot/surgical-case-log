@@ -582,17 +582,14 @@ function persistAuthSession(data) {
         role: data.role,
         program_type: data.program_type
     }));
-    console.log('[auth] auth state set', { email: data.email, hasToken: !!data.token });
 }
 
 function clearAuthSession(reason) {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
-    console.log('[auth] auth state cleared', { reason });
 }
 
 function routeToApp(reason) {
-    console.log('[auth] redirect decision', { destination: '/demo', reason });
     window.location.replace('/demo');
 }
 
@@ -773,7 +770,6 @@ async function submitReset() {
 // Auto-detect if user is already logged in
 (function() {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    console.log('[auth] token detected or not', { hasToken: !!token, pathname: window.location.pathname });
     if (token) {
         fetch('/api/me', {
             headers: {'Authorization': 'Bearer ' + token}
