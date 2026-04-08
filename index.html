@@ -1330,12 +1330,22 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
   .cyr-nav { display: none; }
   .cyr-menu-button { display: inline-flex; align-items: center; justify-content: center; }
 }
+.cyr-brand { flex: 1 1 auto; min-width: 0; }
+.cyr-wordmark { white-space: nowrap; }
+.cyr-menu-button { flex-shrink: 0; }
+.hero-platform, .hero h1, .hero p { overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .cyr-menu-button { display: inline-flex !important; }
+  .hero-platform, .hero h1, .hero h1 span, .hero p { max-width: 100% !important; white-space: normal !important; word-break: break-word !important; overflow-wrap: anywhere !important; }
+  .hero-platform { font-size: 12px !important; }
+  .hero h1 { font-size: 34px !important; line-height: 1.12 !important; }
+  .hero p { font-size: 16px !important; }
+}
 
 </style>
     <link rel="apple-touch-icon" href="/icon-192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
-    <link rel="stylesheet" href="/assets/cyrionyx-brand.css">
 </head>
 <body class="brand-shell-page" data-brand-page="home">
     <div id="cyr-site-header"></div>
@@ -1817,6 +1827,5 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 })();
 </script>
     <div id="cyr-site-footer"></div>
-    <script src="/assets/cyrionyx-brand.js"></script>
 </body>
 </html>
