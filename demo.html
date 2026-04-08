@@ -1644,10 +1644,55 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 <script src="/specialties.js"></script>
 <script src="/codes.js"></script>
 <script>
-// FORCE DEMO MODE - this is demo.html
-var isDemoMode = true;
-var programType = 'medical';
-var authToken = null;
+const AUTH_TOKEN_KEY = 'authToken';
+const AUTH_USER_KEY = 'currentUser';
+var isDemoMode = false;
+var programType = localStorage.getItem('programType') || 'medical';
+var authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+function persistAuthSession(data) {
+    authToken = data.token;
+    currentUser = {
+        name: data.name,
+        email: data.email,
+        plan: data.plan,
+        role: data.role,
+        program_type: data.program_type
+    };
+    localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(currentUser));
+    if (data.program_type) {
+        programType = data.program_type;
+        localStorage.setItem('programType', programType);
+    }
+    console.log('[auth] auth state set', { email: currentUser.email, hasToken: !!authToken, programType });
+}
+
+function clearAuthSession(reason) {
+    authToken = null;
+    currentUser = null;
+    programType = 'medical';
+    isDemoMode = false;
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    localStorage.removeItem('programType');
+    console.log('[auth] auth state cleared', { reason });
+}
+
+function redirectToLogin(reason) {
+    console.log('[auth] redirect decision', { destination: '/login', reason });
+    window.location.replace('/login');
+}
+
+function showAuthenticatedApp() {
+    document.getElementById('appContainer').style.display = 'block';
+    document.getElementById('landingPage').style.display = 'none';
+    updateUserUI();
+    initProgramMode();
+    loadFromServer();
+    loadUserAttendings();
+}
+
 // Surgical vs Medical specialty detection
 const SURGICAL_SPECIALTIES = ['General Surgery', 'Emergency Medicine', 'CVT Surgery', 'Vascular Surgery', 'Orthopedic Surgery', 'Neurosurgery', 'Surgical/Medical Critical Care', 'Interventional Radiology', 'Interventional Cardiology'];
 const MEDICAL_SPECIALTIES = ['Internal Medicine', 'Family Medicine', 'Pediatrics', 'Psychiatry', 'Neurology', 'Nephrology', 'Cardiology'];
@@ -2636,21 +2681,18 @@ function updateMilestone(idx, val) {
 
 // ============ SERVER SYNC ============
 const API = window.location.origin + '/api';
-// authToken already declared at top for demo mode
-let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+let currentUser = JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null');
 
 async function api(endpoint, method='GET', body=null) {
     const opts = { method, headers: {'Content-Type':'application/json'} };
     if (authToken) opts.headers['Authorization'] = 'Bearer ' + authToken;
     if (body) opts.body = JSON.stringify(body);
     const r = await fetch(API + endpoint, opts);
-    if (r.status === 401 && endpoint !== '/me' && endpoint !== '/login') { 
-        // Token expired — don't force logout, just clear token and show sign in
-        console.log('Token expired, please sign in again');
-        authToken = null;
-        localStorage.removeItem('authToken');
-        updateUserUI();
-        return null; 
+    if (r.status === 401 && endpoint !== '/me' && endpoint !== '/login') {
+        console.log('[auth] token detected or not', { hasToken: !!authToken, endpoint, status: 401 });
+        clearAuthSession('api-401-' + endpoint);
+        redirectToLogin('api-401-' + endpoint);
+        return null;
     }
     return r.json();
 }
@@ -2671,17 +2713,10 @@ async function doRegister() {
     try {
         const result = await api('/register', 'POST', {email, password, name});
         if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        persistAuthSession(result);
         hideAuth();
-        updateUserUI();
-        initProgramMode();
-        document.getElementById('appContainer').style.display = 'block';
-        document.getElementById('landingPage').style.display = 'none';
+        showAuthenticatedApp();
         syncLocalToServer();
-        loadUserAttendings();
     } catch(e) { alert('Registration failed'); }
 }
 
@@ -2692,21 +2727,9 @@ async function doLogin() {
     try {
         const result = await api('/login', 'POST', {email, password});
         if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        if (result.program_type) {
-            programType = result.program_type;
-            localStorage.setItem('programType', programType);
-        }
+        persistAuthSession(result);
         hideAuth();
-        updateUserUI();
-        initProgramMode();
-        document.getElementById('appContainer').style.display = 'block';
-        document.getElementById('landingPage').style.display = 'none';
-        loadFromServer();
-        loadUserAttendings();
+        showAuthenticatedApp();
     } catch(e) { alert('Login failed'); }
 }
 
@@ -2770,20 +2793,8 @@ async function submitPasswordReset() {
 }
 
 function logout() {
-    authToken = null;
-    currentUser = null;
-    programType = 'medical';
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('programType');
-    updateUserUI();
-    document.getElementById('programToggle').style.display = 'none';
-    document.getElementById('medicalTabs').style.display = 'flex';
-    document.getElementById('rnfaTabs').style.display = 'none';
-    document.getElementById('pdfExportBtn').style.display = '';
-    document.getElementById('exxatExportBtn').style.display = '';
-    document.getElementById('appContainer').style.display = 'none';
-    document.getElementById('landingPage').style.display = 'block';
+    clearAuthSession('user-logout');
+    redirectToLogin('logout');
 }
 
 function updateUserUI() {
@@ -3103,41 +3114,42 @@ function exitDemoMode() {
     startSubscription();
 }
 
-// Check for explicit demo mode only. Logged-in users on /demo should enter the real app, not be trapped in demo mode.
-const urlParams = new URLSearchParams(window.location.search);
-const isDemoUrl = urlParams.get('demo') === 'true';
+async function bootstrapAuth() {
+    console.log('[auth] token detected or not', { hasToken: !!authToken, pathname: window.location.pathname });
+    if (!authToken) {
+        redirectToLogin('missing-token');
+        return;
+    }
 
-// Auto-load on startup - REQUIRE LOGIN unless explicit demo mode is requested
-if (authToken) {
-    loadFromServer();
-    loadUserAttendings();
-    updateUserUI();
-    initProgramMode();
-    document.getElementById('appContainer').style.display = 'block';
-    document.getElementById('landingPage').style.display = 'none';
-} else if (isDemoUrl) {
-    // Guest demo mode - full app preview only when explicitly requested
-    initDemoMode();
-} else {
-    loadFromServer();
-    loadUserAttendings();
-    updateUserUI();
-    initProgramMode();
-    document.getElementById('appContainer').style.display = 'block';
-    document.getElementById('landingPage').style.display = 'none';
-} else {
-    if (urlParams.get('demo') === 'admin2026') {
-        // Legacy admin demo access
-        updateUserUI();
-        document.getElementById('appContainer').style.display = 'block';
-        document.getElementById('landingPage').style.display = 'none';
-    } else {
-        // Normal visitors - show login
-        updateUserUI();
-        document.getElementById('appContainer').style.display = 'none';
-        document.getElementById('landingPage').style.display = 'block';
+    try {
+        const response = await fetch('/api/me', {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+
+        if (!response.ok) {
+            clearAuthSession('invalid-token');
+            redirectToLogin('invalid-token');
+            return;
+        }
+
+        const me = await response.json();
+        persistAuthSession({
+            token: authToken,
+            name: me.name,
+            email: me.email,
+            plan: me.plan,
+            role: me.role,
+            program_type: me.program_type
+        });
+        showAuthenticatedApp();
+    } catch (e) {
+        console.error('[auth] bootstrap failed', e);
+        clearAuthSession('bootstrap-error');
+        redirectToLogin('bootstrap-error');
     }
 }
+
+bootstrapAuth();
 
 // Export as Excel (.xlsx via CSV with Excel-compatible format)
 function exportExcel() {
@@ -3658,35 +3670,9 @@ async function doLandingRegister() {
     try {
         const result = await api('/register', 'POST', {email, password, name});
         if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        
-        // Auto-verify subscription by email (Stripe first, Gumroad fallback)
-        try {
-            const activation = await api('/activate', 'POST', {});
-            if (activation.success) {
-                currentUser.plan = activation.plan;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                updateUserUI();
-                initProgramMode();
-                document.getElementById('appContainer').style.display = 'block';
-                document.getElementById('landingPage').style.display = 'none';
-                syncLocalToServer();
-                loadUserAttendings();
-            } else {
-                if (confirm('No active subscription found for ' + email + '. Would you like to subscribe now? ($49.99/year)')) {
-                    startSubscription(email);
-                }
-                logout();
-            }
-        } catch(e) {
-            if (confirm('No active subscription found for ' + email + '. Would you like to subscribe now? ($49.99/year)')) {
-                startSubscription(email);
-            }
-            logout();
-        }
+        persistAuthSession(result);
+        showAuthenticatedApp();
+        syncLocalToServer();
     } catch(e) { alert('Registration failed. Try a different email.'); }
 }
 
@@ -3697,40 +3683,8 @@ async function doLandingLogin() {
     try {
         const result = await api('/login', 'POST', {email, password});
         if (result.error) return alert(result.error);
-        authToken = result.token;
-        currentUser = {name: result.name, email: result.email};
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        if (result.program_type) {
-            programType = result.program_type;
-            localStorage.setItem('programType', programType);
-        }
-        
-        // Re-verify purchase on every login (catches cancellations)
-        try {
-            const activation = await api('/activate', 'POST', {});
-            if (activation.success) {
-                currentUser.plan = activation.plan;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            }
-        } catch(e) {
-            // Check if plan already active from before
-            const planCheck = await api('/plan');
-            if (!planCheck.active) {
-                if (confirm('Your subscription has expired. Would you like to renew now? ($49.99/year)')) {
-                    startSubscription(email);
-                }
-                logout();
-                return;
-            }
-        }
-        
-        updateUserUI();
-        initProgramMode();
-        document.getElementById('appContainer').style.display = 'block';
-        document.getElementById('landingPage').style.display = 'none';
-        loadFromServer();
-        loadUserAttendings();
+        persistAuthSession(result);
+        showAuthenticatedApp();
     } catch(e) { alert('Login failed. Check your email and password.'); }
 }
 

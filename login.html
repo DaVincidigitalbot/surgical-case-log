@@ -570,6 +570,32 @@ function showSuccess(msg) {
     document.getElementById('errorMsg').style.display = 'none';
 }
 
+const AUTH_TOKEN_KEY = 'authToken';
+const AUTH_USER_KEY = 'currentUser';
+
+function persistAuthSession(data) {
+    localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify({
+        name: data.name,
+        email: data.email,
+        plan: data.plan,
+        role: data.role,
+        program_type: data.program_type
+    }));
+    console.log('[auth] auth state set', { email: data.email, hasToken: !!data.token });
+}
+
+function clearAuthSession(reason) {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    console.log('[auth] auth state cleared', { reason });
+}
+
+function routeToApp(reason) {
+    console.log('[auth] redirect decision', { destination: '/demo', reason });
+    window.location.replace('/demo');
+}
+
 // Sign In
 async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
@@ -595,15 +621,8 @@ async function doLogin() {
             return;
         }
 
-        // Store auth
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('currentUser', JSON.stringify({
-            name: data.name,
-            email: data.email
-        }));
-
-        // Redirect to home. Authenticated users can enter the app without being forced through the demo route.
-        window.location.href = '/';
+        persistAuthSession(data);
+        routeToApp('login-success');
 
     } catch(e) {
         showError('Connection error. Please try again.');
@@ -639,34 +658,8 @@ async function doRegister() {
             return;
         }
 
-        // Store auth
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('currentUser', JSON.stringify({
-            name: data.name,
-            email: data.email
-        }));
-
-        // Try to activate subscription
-        try {
-            const actResp = await fetch('/api/activate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + data.token
-                }
-            });
-            const actData = await actResp.json();
-            if (actData.success) {
-                // Has active subscription - go to home/app shell
-                window.location.href = '/';
-                return;
-            }
-        } catch(e) {}
-
-        // No subscription found - prompt to subscribe
-        showSuccess('Account created! Subscribe below to activate full access.');
-        btn.disabled = false;
-        btn.textContent = 'Create Account';
+        persistAuthSession(data);
+        routeToApp('register-success');
 
     } catch(e) {
         showError('Connection error. Please try again.');
@@ -779,17 +772,33 @@ async function submitReset() {
 
 // Auto-detect if user is already logged in
 (function() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    console.log('[auth] token detected or not', { hasToken: !!token, pathname: window.location.pathname });
     if (token) {
-        // Verify token is still valid
         fetch('/api/me', {
             headers: {'Authorization': 'Bearer ' + token}
-        }).then(r => r.json()).then(data => {
-            if (data.email) {
-                // Already logged in - redirect to home/app shell
-                window.location.href = '/';
+        }).then(async (r) => {
+            if (!r.ok) {
+                throw new Error('invalid-token');
             }
-        }).catch(() => {});
+            return r.json();
+        }).then(data => {
+            if (data.email) {
+                persistAuthSession({
+                    token,
+                    name: data.name,
+                    email: data.email,
+                    plan: data.plan,
+                    role: data.role,
+                    program_type: data.program_type
+                });
+                routeToApp('already-authenticated');
+                return;
+            }
+            clearAuthSession('invalid-token-on-login-page');
+        }).catch(() => {
+            clearAuthSession('login-page-token-check-failed');
+        });
     }
 
     // Check URL params for tab and payment status
