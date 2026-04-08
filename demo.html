@@ -1182,6 +1182,15 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
                 <button id="dashboardLogCaseBtn" class="btn btn-primary" style="min-width:220px;" onclick="handleLogCase()">➕ Log New Case</button>
             </div>
         </div>
+        <div id="caseSuccessBanner" class="form-card" style="display:none; margin-bottom:20px; border:1px solid #16a34a; background:linear-gradient(135deg, rgba(22,163,74,0.16), rgba(22,163,74,0.05));">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                <div>
+                    <h2 style="margin:0 0 6px 0; color:#86efac;">✅ Case saved successfully</h2>
+                    <p id="caseSuccessDetails" style="margin:0; color:#d1fae5;"></p>
+                </div>
+                <button class="btn btn-primary" style="min-width:200px;" onclick="showSection('cases')">View Saved Case</button>
+            </div>
+        </div>
         <div class="dashboard-grid">
             <div class="stat-card"><div class="number" id="totalCases">0</div><div class="label">Total Cases</div></div>
             <div class="stat-card"><div class="number" id="primaryCount">0</div><div class="label">Primary Surgeon</div></div>
@@ -2427,6 +2436,10 @@ function toggleAddCaseForm() {
 
 // Tab navigation
 function showSection(id) {
+    const successBanner = document.getElementById('caseSuccessBanner');
+    if (successBanner && id !== 'cases') {
+        successBanner.style.display = 'none';
+    }
     // Handle legacy 'add' id by redirecting to 'cases'
     if (id === 'add') {
         id = 'cases';
@@ -2508,6 +2521,14 @@ function addCase(e) {
         toggleAddCaseForm();
     }
     renderCases();
+    showSection('cases');
+    const banner = document.getElementById('caseSuccessBanner');
+    const details = document.getElementById('caseSuccessDetails');
+    if (banner && details) {
+        details.textContent = `${newCase.procedure || 'Case'} | ${newCase.date || 'No date'} | ${newCase.attending || 'No attending'}`;
+        banner.style.display = 'block';
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 function deleteCase(id) {
