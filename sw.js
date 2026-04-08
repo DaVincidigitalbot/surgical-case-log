@@ -1,4 +1,4 @@
-// Service Worker for CYRIONYX | ClinicalCaseLog PWA
+// Service Worker for Cyrionyx – Clinical Case Log PWA
 const CACHE_NAME = 'caselog-v4';
 const ASSETS_TO_CACHE = [
   '/',

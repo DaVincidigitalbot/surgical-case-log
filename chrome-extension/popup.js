@@ -1,5 +1,5 @@
 // ============================================================
-// AVENYX | ClinicalCaseLog → ACGME Export — Popup Controller
+// Cyrionyx – Clinical Case Log → ACGME Export — Popup Controller
 // ============================================================
 
 const API_BASE = 'https://clinicalcaselog.com/api';

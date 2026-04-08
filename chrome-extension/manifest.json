@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "CYRIONYX | ClinicalCaseLog → ACGME Export",
+  "name": "Cyrionyx – Clinical Case Log → ACGME Export",
   "version": "1.0.0",
   "description": "Export your surgical cases from ClinicalCaseLog directly into the ACGME Case Log System (ADS). Built by CYRIONYX for surgical training workflows.",
   "permissions": [
