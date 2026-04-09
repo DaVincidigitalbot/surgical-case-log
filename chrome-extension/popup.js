@@ -97,12 +97,17 @@ function renderCaseList(cases) {
     const name = c.procedure || `CPT ${c.cptCode}`;
     return `
       <label class="case-item">
-        <input type="checkbox" value="${c.id}" ${checked} onchange="toggleCase(${c.id})">
+        <input type="checkbox" value="${c.id}" ${checked}>
         <span class="case-name" title="${name}">${name}</span>
         <span class="case-cpt">${c.cptCode || '—'}</span>
         <span class="case-date">${dateStr}</span>
       </label>`;
   }).join('');
+
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => toggleCase(parseInt(cb.value, 10)));
+  });
+
   updateExportBtn();
 }
 
@@ -125,6 +130,11 @@ function selectNone() {
   selectedIds.clear();
   updateExportBtn();
 }
+
+// Expose popup actions for inline handlers in popup.html
+window.toggleCase = toggleCase;
+window.selectAll = selectAll;
+window.selectNone = selectNone;
 
 function updateExportBtn() {
   const btn = document.getElementById('exportBtn');
@@ -198,6 +208,11 @@ async function exportSelected() {
 function openACGME() {
   chrome.tabs.create({ url: 'https://apps.acgme.org/ads/caselog' });
 }
+
+window.exportSelected = exportSelected;
+window.openACGME = openACGME;
+window.saveSettings = saveSettings;
+window.switchTab = switchTab;
 
 // ---- Settings ----
 async function saveSettings() {
