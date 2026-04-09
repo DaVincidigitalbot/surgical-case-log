@@ -1516,8 +1516,19 @@ def admin_panel():
         return send_from_directory('.', 'admin.html')
     return admin_required(lambda: send_from_directory('.', 'admin.html'))()
 
+def admin_key_or_admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        admin_key = request.args.get('key', '').strip()
+        configured_key = os.environ.get('ADMIN_KEY', 'stallard2026admin').strip()
+        if admin_key and secrets.compare_digest(admin_key, configured_key):
+            return f(*args, **kwargs)
+        return admin_required(f)(*args, **kwargs)
+    return decorated
+
 @app.route('/api/admin/stats', methods=['GET'])
-@admin_required
+@admin_key_or_admin_required
 def admin_stats():
     try:
         conn = get_db()
@@ -1588,7 +1599,7 @@ def admin_stats():
         return jsonify({'error': str(e)})
 
 @app.route('/api/admin/users', methods=['GET'])
-@admin_required
+@admin_key_or_admin_required
 def admin_users():
     try:
         conn = get_db()
@@ -1627,7 +1638,7 @@ def admin_users():
         return jsonify({'error': str(e)})
 
 @app.route('/api/admin/activity', methods=['GET'])
-@admin_required
+@admin_key_or_admin_required
 def admin_activity():
     try:
         conn = get_db()

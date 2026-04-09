@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Administrative dashboard for ClinicalCaseLog platform operations, analytics, subscribers, and support workflows.">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <style id="redesign-override">
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
@@ -436,14 +442,24 @@ a { color: #2EA8FF !important; }
             return localStorage.getItem('authToken');
         }
 
+        function getAdminKey() {
+            return new URLSearchParams(window.location.search).get('key') || '';
+        }
+
         async function authFetch(url, options = {}) {
             const token = getAuthToken();
             const headers = {
                 ...(options.headers || {}),
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             };
-            const response = await fetch(url, { ...options, headers });
+            const adminKey = getAdminKey();
+            const separator = url.includes('?') ? '&' : '?';
+            const finalUrl = adminKey ? `${url}${separator}key=${encodeURIComponent(adminKey)}` : url;
+            const response = await fetch(finalUrl, { ...options, headers });
             if (response.status === 401) {
+                if (adminKey) {
+                    throw new Error('Admin key rejected');
+                }
                 window.location.href = '/login?next=/admin';
                 throw new Error('Authentication required');
             }
@@ -747,7 +763,7 @@ a { color: #2EA8FF !important; }
         }
 
         // Start the dashboard
-        if (!getAuthToken()) {
+        if (!getAuthToken() && !getAdminKey()) {
             window.location.href = '/login?next=/admin';
         } else {
             initDashboard();
