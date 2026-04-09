@@ -43,23 +43,33 @@ body[data-brand-page="blog"] > .footer {
 .cyr-brand-wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--cyr-navy);
   text-decoration: none;
 }
 
-.cyr-brand-wordmark svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+.cyr-brand-badge {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1D8BFF, #0f76ea);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 10px 22px rgba(29, 139, 255, 0.22);
 }
 
 .cyr-brand-wordmark .brand-name {
   display: inline-flex;
   align-items: center;
   gap: 0;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   font-size: 1rem;
   text-transform: none;
   line-height: 1;
