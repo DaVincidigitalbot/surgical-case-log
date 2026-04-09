@@ -518,10 +518,25 @@ a { color: #2EA8FF !important; }
 
         // Initialize all charts
         function initCharts(stats, activity) {
+            if (typeof echarts === 'undefined') {
+                console.warn('ECharts failed to load, skipping chart rendering.');
+                renderChartsUnavailableNotice();
+                return;
+            }
             initSignupsChart(activity.signups);
             initCasesChart(activity.medical_cases, activity.rnfa_cases);
             initPlansChart(stats.plan_breakdown);
             initCaseTypesChart(stats.medical_cases, stats.rnfa_cases);
+        }
+
+        function renderChartsUnavailableNotice() {
+            document.querySelectorAll('.chart-container').forEach((container) => {
+                container.innerHTML = `
+                    <div class="error" style="margin: 0; color: #1a1a2e; background: rgba(248, 113, 113, 0.08); border-color: rgba(248, 113, 113, 0.35);">
+                        Charts are temporarily unavailable because the chart library failed to load. Core admin metrics and user management remain available below.
+                    </div>
+                `;
+            });
         }
 
         // Signups over time chart
