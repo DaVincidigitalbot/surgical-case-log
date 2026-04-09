@@ -109,6 +109,10 @@ def init_db():
                 role TEXT,
                 approach TEXT,
                 attending TEXT,
+                site TEXT,
+                case_year INTEGER,
+                patient_type TEXT,
+                involved_trauma BOOLEAN DEFAULT FALSE,
                 complications TEXT DEFAULT 'None',
                 ebl INTEGER,
                 or_time INTEGER,
@@ -151,6 +155,16 @@ def init_db():
             END $$
         ''')
         cur.execute('CREATE INDEX IF NOT EXISTS idx_cases_case_id ON cases(user_id, case_id)')
+        for ddl in [
+            "ALTER TABLE cases ADD COLUMN IF NOT EXISTS site TEXT",
+            "ALTER TABLE cases ADD COLUMN IF NOT EXISTS case_year INTEGER",
+            "ALTER TABLE cases ADD COLUMN IF NOT EXISTS patient_type TEXT",
+            "ALTER TABLE cases ADD COLUMN IF NOT EXISTS involved_trauma BOOLEAN DEFAULT FALSE",
+        ]:
+            try:
+                cur.execute(ddl)
+            except:
+                conn.rollback()
         # RNFA cases table
         cur.execute('''
             CREATE TABLE IF NOT EXISTS rnfa_cases (
@@ -1023,14 +1037,17 @@ def add_case():
         case_id = f'CCL-{year}-{count + 1:04d}'
     cur.execute('''
         INSERT INTO cases (user_id, date, age, sex, rotation, procedure_name, cpt_code, 
-                          role, approach, attending, complications, ebl, or_time, notes, diagnosis, case_id)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                          role, approach, attending, site, case_year, patient_type, involved_trauma,
+                          complications, ebl, or_time, notes, diagnosis, case_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING *
     ''', (
         request.user['id'],
         data.get('date'), data.get('age') or None, data.get('sex'),
         data.get('rotation'), data.get('procedure'), data.get('cpt'),
         data.get('role'), data.get('approach'), data.get('attending'),
+        data.get('site'), data.get('caseYear') or data.get('case_year') or None,
+        data.get('patientType') or data.get('patient_type'), bool(data.get('involvedTrauma') or data.get('involved_trauma')),
         data.get('complications', 'None'), data.get('ebl') or None, data.get('orTime') or None,
         data.get('notes'), data.get('diagnosis'), case_id
     ))
@@ -1057,13 +1074,16 @@ def update_case(case_id):
     
     cur.execute('''
         UPDATE cases SET date=%s, age=%s, sex=%s, rotation=%s, procedure_name=%s, cpt_code=%s,
-        role=%s, approach=%s, attending=%s, complications=%s, ebl=%s, or_time=%s, notes=%s,
-        diagnosis=%s, case_id=%s, updated_at=NOW()
+        role=%s, approach=%s, attending=%s, site=%s, case_year=%s, patient_type=%s, involved_trauma=%s,
+        complications=%s, ebl=%s, or_time=%s, notes=%s, diagnosis=%s, case_id=%s, updated_at=NOW()
         WHERE id = %s AND user_id = %s RETURNING *
     ''', (
         data.get('date'), data.get('age') or None, data.get('sex'),
         data.get('rotation'), data.get('procedure'), data.get('cpt'),
         data.get('role'), data.get('approach'), data.get('attending'),
+        data.get('site'), data.get('caseYear') or data.get('case_year') or case.get('case_year'),
+        data.get('patientType') or data.get('patient_type') or case.get('patient_type'),
+        bool(data.get('involvedTrauma') if data.get('involvedTrauma') is not None else data.get('involved_trauma') if data.get('involved_trauma') is not None else case.get('involved_trauma')),
         data.get('complications', 'None'), data.get('ebl') or None, data.get('orTime') or None,
         data.get('notes'), data.get('diagnosis'), data.get('caseId') or data.get('case_id') or case['case_id'],
         case_id, request.user['id']
