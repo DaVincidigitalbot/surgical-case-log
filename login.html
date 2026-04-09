@@ -16,95 +16,121 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0a0f1c 0%, #1B2A4A 100%);
-            color: #e0e0e0;
+            background: linear-gradient(180deg, #f6f9fc 0%, #edf3fb 100%);
+            color: #0f172a;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 104px 20px 40px;
         }
         .container {
-            max-width: 440px;
+            max-width: 520px;
             width: 100%;
+            margin: 0 auto;
         }
         .logo {
             text-align: center;
-            margin-bottom: 32px;
+            margin: 0 auto 24px;
+            display: grid;
+            gap: 10px;
+            justify-items: center;
+        }
+        .logo-mark {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #1D8BFF, #0f6ad6);
+            color: #fff;
+            font-size: 28px;
+            box-shadow: 0 16px 36px rgba(29, 139, 255, 0.22);
         }
         .logo h1 {
-            color: #fff;
-            font-size: 24px;
+            color: #0B1F3B;
+            font-size: 34px;
             font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
         }
         .logo h1 span { color: #1D8BFF; }
         .logo p {
-            color: #1D8BFF;
-            font-size: 14px;
+            color: #4b5b75;
+            font-size: 15px;
             font-weight: 600;
-            margin-top: 4px;
-            letter-spacing: 2px;
+            margin-top: 0;
+            letter-spacing: 0.02em;
+            max-width: 420px;
         }
         .card {
-            background: #1a2744;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
             padding: 32px;
-            border: 1px solid #2a3a5c;
+            border: 1px solid rgba(11, 31, 59, 0.08);
             margin-bottom: 16px;
+            box-shadow: 0 24px 60px rgba(11, 31, 59, 0.12);
         }
         .card h2 {
-            color: #fff;
+            color: #0B1F3B;
             font-size: 20px;
             margin-bottom: 20px;
             text-align: center;
         }
         .tabs {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             margin-bottom: 24px;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #2a3a5c;
+            border: 1px solid #d7dfeb;
+            background: #f4f7fb;
+            padding: 4px;
+            gap: 4px;
         }
         .tab {
-            flex: 1;
-            padding: 12px;
+            padding: 12px 14px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 14px;
             cursor: pointer;
-            background: #0f1729;
-            color: #888;
+            background: transparent;
+            color: #5f6f86;
+            border-radius: 10px;
             transition: all 0.2s;
         }
         .tab.active {
-            background: #1D8BFF;
-            color: #fff;
+            background: #ffffff;
+            color: #0B1F3B;
+            box-shadow: 0 4px 16px rgba(11, 31, 59, 0.08);
         }
         .form-group {
             margin-bottom: 16px;
         }
         .form-group label {
             display: block;
-            color: #aaa;
+            color: #334155;
             font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 6px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.01em;
         }
         input[type="text"], input[type="email"], input[type="password"] {
             width: 100%;
-            background: #0f1729;
-            border: 1px solid #2a3a5c;
-            color: #e0e0e0;
+            background: #ffffff;
+            border: 1px solid #cdd7e4;
+            color: #0f172a;
             padding: 14px 16px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
             font-family: inherit;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         input:focus {
             border-color: #1D8BFF;
+            box-shadow: 0 0 0 4px rgba(29, 139, 255, 0.12);
         }
         .btn {
             width: 100%;
@@ -118,10 +144,11 @@
             transition: all 0.2s;
         }
         .btn-primary {
-            background: #1D8BFF;
+            background: linear-gradient(135deg, #1D8BFF, #0f76ea);
             color: #fff;
+            box-shadow: 0 12px 28px rgba(29, 139, 255, 0.24);
         }
-        .btn-primary:hover { background: #1a95e8; }
+        .btn-primary:hover { background: linear-gradient(135deg, #2492ff, #117cf1); }
         .btn-gold {
             background: linear-gradient(135deg, #D4A843, #B8902E);
             color: #fff;
@@ -139,7 +166,7 @@
         }
         .link:hover { text-decoration: underline; }
         .text-center { text-align: center; }
-        .text-muted { color: #888; font-size: 13px; }
+        .text-muted { color: #5f6f86; font-size: 13px; line-height: 1.55; }
         .mt-12 { margin-top: 12px; }
         .mt-16 { margin-top: 16px; }
         .mt-24 { margin-top: 24px; }
@@ -164,27 +191,51 @@
             display: none;
         }
         .pricing-badge {
-            background: #243656;
-            border-radius: 8px;
-            padding: 16px;
+            background: linear-gradient(180deg, #f7fbff 0%, #eef5ff 100%);
+            border-radius: 14px;
+            padding: 18px;
             text-align: center;
-            border: 2px solid #1D8BFF;
-            margin-top: 16px;
+            border: 1px solid rgba(29, 139, 255, 0.22);
+            margin-top: 18px;
         }
         .pricing-badge .price {
             color: #1D8BFF;
-            font-weight: 700;
-            font-size: 28px;
+            font-weight: 800;
+            font-size: 30px;
         }
         .pricing-badge .detail {
-            color: #aaa;
+            color: #4b5b75;
             font-size: 13px;
-            margin-top: 4px;
+            margin-top: 6px;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .quick-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 52px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid rgba(11, 31, 59, 0.1);
+            border-radius: 12px;
+            color: #0B1F3B;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 12px 30px rgba(11, 31, 59, 0.08);
+        }
+        .quick-link.primary-link {
+            color: #1D8BFF;
         }
         .footer {
             text-align: center;
-            margin-top: 24px;
-            color: #666;
+            margin-top: 18px;
+            color: #5f6f86;
             font-size: 13px;
         }
         .footer a { color: #1D8BFF; text-decoration: none; }
@@ -202,15 +253,16 @@
         }
         .modal-overlay.show { display: flex; }
         .modal {
-            background: #1a2744;
-            border-radius: 12px;
+            background: #ffffff;
+            border-radius: 18px;
             padding: 32px;
-            border: 1px solid #2a3a5c;
+            border: 1px solid rgba(11, 31, 59, 0.08);
             max-width: 400px;
             width: 90%;
+            box-shadow: 0 24px 60px rgba(11, 31, 59, 0.18);
         }
         .modal h2 {
-            color: #1D8BFF;
+            color: #0B1F3B;
             font-size: 18px;
             margin-bottom: 16px;
             text-align: center;
@@ -218,7 +270,9 @@
 
         @media (max-width: 480px) {
             .card { padding: 24px 20px; }
-            body { padding: 16px; }
+            body { padding: 88px 16px 28px; }
+            .logo h1 { font-size: 30px; }
+            .quick-actions { grid-template-columns: 1fr; }
         }
     
 :root {
@@ -429,8 +483,9 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 <div class="container">
     <!-- Logo -->
     <div class="logo">
-        <h1>⚕️ Clinical <span>Case Log</span></h1>
-        <p>PRO SYSTEM</p>
+        <div class="logo-mark" aria-hidden="true">⚕</div>
+        <h1>Clinical <span>Case Log</span></h1>
+        <p>Case logging for serious clinical training, clean, fast, and built to feel trustworthy.</p>
     </div>
 
     <!-- Main Auth Card -->
@@ -488,13 +543,13 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
     </div>
 
     <!-- Quick Actions -->
-    <div style="display:flex;gap:12px;">
-        <a href="/demo" style="flex:1;display:block;text-align:center;padding:14px;background:#1a2744;border:1px solid #2a3a5c;border-radius:8px;color:#1D8BFF;text-decoration:none;font-weight:600;font-size:14px;">Try Demo</a>
-        <a href="/" style="flex:1;display:block;text-align:center;padding:14px;background:#1a2744;border:1px solid #2a3a5c;border-radius:8px;color:#aaa;text-decoration:none;font-weight:600;font-size:14px;">← Back to Home</a>
+    <div class="quick-actions">
+        <a href="/demo" class="quick-link primary-link">Try Demo</a>
+        <a href="/" class="quick-link">← Back to Home</a>
     </div>
 
     <div class="footer">
-        <p>clinicalcaselog.com · <a href="/legal">Privacy & Legal</a></p>
+        <p>ClinicalCaseLog · <a href="/legal">Privacy & Legal</a></p>
     </div>
 </div>
 
