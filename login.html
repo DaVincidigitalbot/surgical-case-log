@@ -475,15 +475,15 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
                 <label for="regPassword">Password</label>
                 <input type="password" id="regPassword" name="password" placeholder="6+ characters" autocomplete="new-password" minlength="6" required>
             </div>
-            <p class="text-muted" style="margin-bottom:16px;">Use the same email you subscribed with (or will subscribe with).</p>
-            <button type="submit" class="btn btn-gold" id="regBtn">Create Account</button>
+            <p class="text-muted" style="margin-bottom:16px;">Create your account first. If you want full access, upgrade to paid after signup with the same email.</p>
+            <button type="submit" class="btn btn-gold" id="regBtn">Create Free Trial Account</button>
 
             <div class="pricing-badge">
                 <div class="price">$49.99</div>
                 <div class="detail">1 Year of Full Access · All features</div>
             </div>
-            <button type="button" class="btn btn-primary mt-16" onclick="startSubscription()">Subscribe Now — $49.99/year</button>
-            <p class="text-muted text-center mt-12">Subscribe first, then create your account with the same email.</p>
+            <button type="button" class="btn btn-primary mt-16" onclick="startSubscription()">Upgrade to Full Access — $49.99/year</button>
+            <p class="text-muted text-center mt-12">Trial signup works immediately. Paid billing is optional and uses the same email.</p>
         </form>
     </div>
 
@@ -653,7 +653,7 @@ async function doRegister() {
         if (data.error) {
             showError(data.error);
             btn.disabled = false;
-            btn.textContent = 'Create Account';
+            btn.textContent = 'Create Free Trial Account';
             return;
         }
 
@@ -663,7 +663,7 @@ async function doRegister() {
     } catch(e) {
         showError('Connection error. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Create Account';
+        btn.textContent = 'Create Free Trial Account';
     }
 }
 
@@ -684,7 +684,7 @@ async function startSubscription() {
         if (data.url) {
             window.location.href = data.url;
         } else {
-            showError('Could not start checkout. Please try again.');
+            showError(data.message || 'Could not start checkout. Please try again.');
         }
     } catch(e) {
         showError('Could not connect to payment system.');
@@ -806,7 +806,7 @@ async function submitReset() {
     }
     if (params.get('paid') === 'true') {
         showTab('register');
-        showSuccess('✅ Payment successful! Create your account below using the same email you subscribed with.');
+        showSuccess('✅ Payment successful! Sign in or create your account below using the same email you used at checkout.');
         // Clean URL
         window.history.replaceState({}, '', '/login?tab=register');
     }

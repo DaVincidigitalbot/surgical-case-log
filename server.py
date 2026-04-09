@@ -762,11 +762,16 @@ def forgot_password():
     conn.commit()
     conn.close()
     
-    # Send email
+    # Send email. If delivery fails, keep the flow non-enumerating and non-blocking.
+    # The reset code remains stored, and support can resend or assist manually.
     if send_reset_email(email, code):
         return jsonify({'success': True, 'message': 'Reset code sent to your email.'})
     else:
-        return jsonify({'error': 'Failed to send reset email. Please try again.'}), 500
+        print(f"[PASSWORD RESET] Email delivery failed for {email}, code stored for manual recovery", flush=True)
+        return jsonify({
+            'success': True,
+            'message': 'If an account with this email exists, a reset code has been generated. Email delivery may be delayed. If you do not receive it shortly, contact support@clinicalcaselog.com.'
+        })
 
 @app.route('/api/reset-password', methods=['POST'])
 def reset_password():
