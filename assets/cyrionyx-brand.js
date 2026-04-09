@@ -1,13 +1,13 @@
 (function () {
   const pages = {
-    home: { aboutHref: '#testimonial', loginHref: '/login' },
-    prep: { aboutHref: '/#testimonial', loginHref: '/login' },
-    blog: { aboutHref: '/#testimonial', loginHref: '/login' },
-    login: { aboutHref: '/#testimonial', loginHref: '/login' },
-    admin: { aboutHref: '/#testimonial', loginHref: '/login' },
-    legal: { aboutHref: '/#testimonial', loginHref: '/login' },
-    privacy: { aboutHref: '/#testimonial', loginHref: '/login' },
-    fallback: { aboutHref: '/#testimonial', loginHref: '/login' }
+    home: { aboutHref: '#testimonial', loginHref: '/login', loginLabel: 'Sign In' },
+    prep: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Sign In' },
+    blog: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Sign In' },
+    login: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Dashboard Login' },
+    admin: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Dashboard Login' },
+    legal: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Sign In' },
+    privacy: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Sign In' },
+    fallback: { aboutHref: '/#testimonial', loginHref: '/login', loginLabel: 'Sign In' }
   };
 
   const page = document.body.dataset.brandPage || 'fallback';
@@ -16,9 +16,9 @@
   const footerMount = document.getElementById('cyr-site-footer');
 
   const logo = `
-    <a href="/" class="cyr-brand-wordmark" aria-label="CYRIONYX home">
-      <img src="/logo/icon.svg" alt="CYRIONYX" width="24" height="24" />
-      <span class="brand-name">CYRIONY<span class="x-mark">X</span></span>
+    <a href="/" class="cyr-brand-wordmark" aria-label="ClinicalCaseLog home">
+      <img src="/logo/icon.svg" alt="ClinicalCaseLog" width="24" height="24" />
+      <span class="brand-name">ClinicalCaseLog</span>
     </a>`;
 
   const navLinks = `
@@ -30,7 +30,7 @@
       </div>
     </div>
     <a href="${config.aboutHref}">About</a>
-    <a href="${config.loginHref}">Login</a>`;
+    <a href="${config.loginHref}">${config.loginLabel}</a>`;
 
   if (headerMount) {
     headerMount.innerHTML = `
@@ -50,7 +50,7 @@
               <a href="/">ClinicalCaseLog</a>
             </div>
             <a href="${config.aboutHref}">About</a>
-            <a href="${config.loginHref}">Login</a>
+            <a href="${config.loginHref}">${config.loginLabel}</a>
           </div>
         </div>
       </header>`;
@@ -80,8 +80,8 @@
     footerMount.innerHTML = `
       <footer class="cyr-site-footer">
         <div class="cyr-site-footer__inner">
-          <p>© CYRIONYX</p>
-          <p class="footer-label">Clinical Intelligence Platform</p>
+          <p>© ClinicalCaseLog</p>
+          <p class="footer-label">Case logging for surgical trainees and clinical programs</p>
           <p class="footer-label">Products:</p>
           <ul>
             <li>• <a href="https://freecptcodefinder.com">FreeCPTCodeFinder</a></li>
