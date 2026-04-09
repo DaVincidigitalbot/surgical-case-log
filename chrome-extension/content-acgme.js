@@ -41,7 +41,7 @@
         Review each entry before submitting.
       </div>
       <div class="ccl-case-info" id="ccl-current-case"></div>
-      <button class="ccl-btn ccl-btn-primary" id="ccl-fill-btn" onclick="window.__cclFillNext()">
+      <button class="ccl-btn ccl-btn-primary" id="ccl-fill-btn">
         Fill Next Case
       </button>
       <div class="ccl-progress" id="ccl-progress">
@@ -90,6 +90,11 @@
       document.getElementById('ccl-fill-btn').textContent = `Fill Next Case (${cases.length - currentIndex} remaining)`;
     }
   };
+
+  const fillBtn = document.getElementById('ccl-fill-btn');
+  if (fillBtn) {
+    fillBtn.addEventListener('click', () => window.__cclFillNext());
+  }
   
   function tryFill(selector, value) {
     if (!value) return;
