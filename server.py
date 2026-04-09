@@ -1844,7 +1844,13 @@ init_analytics()
 
 # ============ STRIPE PAYMENTS ============
 import stripe as stripe_lib
-stripe_lib.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', 'price_1TDsP2C0LC9x3wbewDKfgfXh').strip()
+STRIPE_CONFIGURED = bool(STRIPE_SECRET_KEY)
+stripe_lib.api_key = STRIPE_SECRET_KEY
+
+if not STRIPE_CONFIGURED:
+    print("⚠️ Stripe is not configured: STRIPE_SECRET_KEY is missing. Checkout endpoints will return a controlled 503.")
 
 @app.route('/api/check-subscription', methods=['POST'])
 def check_subscription():
@@ -1887,12 +1893,19 @@ def check_subscription():
 def create_checkout_session():
     try:
         data = request.get_json() or {}
-        user_email = data.get('email', '')
-        
+        user_email = (data.get('email') or '').strip()
+
+        if not STRIPE_CONFIGURED:
+            return jsonify({
+                'error': 'Billing is temporarily unavailable.',
+                'code': 'stripe_not_configured',
+                'message': 'Checkout is temporarily unavailable. Please contact support@clinicalcaselog.com and we will get you set up manually.'
+            }), 503
+
         session = stripe_lib.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[{
-                'price': os.environ.get('STRIPE_PRICE_ID', 'price_1TDsP2C0LC9x3wbewDKfgfXh'),
+                'price': STRIPE_PRICE_ID,
                 'quantity': 1,
             }],
             mode='subscription',
@@ -1905,7 +1918,12 @@ def create_checkout_session():
         )
         return jsonify({'url': session.url})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Checkout session error: {e}")
+        return jsonify({
+            'error': 'Unable to start checkout.',
+            'code': 'checkout_session_failed',
+            'message': 'We could not connect to billing right now. Please try again in a few minutes or contact support@clinicalcaselog.com.'
+        }), 502
 
 @app.route('/api/stripe-webhook', methods=['POST'])
 def stripe_webhook():
@@ -1944,4 +1962,8 @@ def stripe_webhook():
 
 if __name__ == '__main__':
     print(f"🚀 Server starting on port 8080...")
+    if STRIPE_CONFIGURED:
+        print("✅ Stripe checkout configured")
+    else:
+        print("⚠️ Stripe checkout disabled until STRIPE_SECRET_KEY is set")
     app.run(host='0.0.0.0', port=8080, debug=False)

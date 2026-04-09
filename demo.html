@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <style id="redesign-override">
 /* ============================================
    CLINICAL CASE LOG PRO — PREMIUM REDESIGN
@@ -997,7 +1003,7 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 <div id="landingPage" style="display:none; min-height:100vh; background:linear-gradient(135deg, #0f1729, #1B2A4A);">
     <div style="max-width:600px; margin:0 auto; padding:40px 20px; text-align:center;">
         <div style="margin-bottom:30px;">
-            <h1 style="color:#FFFFFF; font-size:28px; margin-bottom:8px;">ClinicalCaseLog</h1>
+            <div style="color:#FFFFFF; font-size:28px; margin-bottom:8px; font-weight:800;">ClinicalCaseLog</div>
             <p style="color:#1D8BFF; font-size:18px; font-weight:600;">PRO SYSTEM</p>
         </div>
         
@@ -1006,8 +1012,8 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
         <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
             <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px;">Sign In</h2>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <input type="email" id="landingEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
-                <input type="password" id="landingPassword" placeholder="Password" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="email" id="landingEmail" name="landingEmail" autocomplete="username" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="password" id="landingPassword" name="landingPassword" autocomplete="current-password" placeholder="Password" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <button class="btn btn-primary" style="padding:14px;font-size:16px;" onclick="doLandingLogin()">Log In</button>
                 <p style="text-align:center; margin-top:8px;"><a href="#" onclick="showForgotPassword(); return false;" style="color:#1D8BFF; text-decoration:none; font-size:14px;">Forgot Password?</a></p>
             </div>
@@ -1016,9 +1022,9 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
         <div style="background:#1a2744; border-radius:12px; padding:30px; border:1px solid #2a3a5c; margin-bottom:20px;">
             <h2 style="color:#1D8BFF; font-size:18px; margin-bottom:20px;">New User? Register</h2>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <input type="text" id="landingName" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
-                <input type="email" id="landingRegEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
-                <input type="password" id="landingRegPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="text" id="landingName" name="landingName" autocomplete="name" placeholder="Your name" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="email" id="landingRegEmail" name="landingRegEmail" autocomplete="username" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
+                <input type="password" id="landingRegPassword" name="landingRegPassword" autocomplete="new-password" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:14px;border-radius:8px;font-size:16px;">
                 <p style="color:#888; font-size:12px;">Use the same email you'll subscribe with</p>
                 <button class="btn btn-gold" style="padding:14px;font-size:16px;" onclick="doLandingRegister()">Create Account</button>
             </div>
@@ -1157,9 +1163,9 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
         <h2 style="color:#1D8BFF;margin-bottom:20px;">🔑 Sign In / Register</h2>
         <p style="color:#888;font-size:13px;margin-bottom:15px;">Create an account to save your cases to the cloud. Your data syncs across all devices.</p>
         <div style="display:flex;flex-direction:column;gap:12px;">
-            <input type="text" id="authName" placeholder="Your name (optional)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
-            <input type="email" id="authEmail" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
-            <input type="password" id="authPassword" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
+            <input type="text" id="authName" name="authName" autocomplete="name" placeholder="Your name (optional)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
+            <input type="email" id="authEmail" name="authEmail" autocomplete="username" placeholder="Email" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
+            <input type="password" id="authPassword" name="authPassword" autocomplete="current-password" placeholder="Password (6+ characters)" style="background:#0f1729;border:1px solid #2a3a5c;color:#e0e0e0;padding:12px;border-radius:8px;font-size:15px;">
             <div style="display:flex;gap:10px;">
                 <button class="btn btn-primary" style="flex:1" onclick="doLogin()">Log In</button>
                 <button class="btn btn-gold" style="flex:1" onclick="doRegister()">Register</button>
@@ -3334,7 +3340,7 @@ function exportPDF() {
 <body>
     <button class="no-print" onclick="window.print()" style="float:right; padding:10px 20px; background:#1D8BFF; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Print / Save PDF</button>
     
-    <h1>ClinicalCaseLog Report</h1>
+    <h2>ClinicalCaseLog Report</h2>
     <p class="subtitle">${userName} | Generated ${today} | ${total} Total Cases</p>
     
     <h2>Summary Statistics</h2>

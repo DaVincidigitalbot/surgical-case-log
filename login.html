@@ -446,45 +446,45 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
         <div class="success" id="successMsg"></div>
 
         <!-- Sign In Form -->
-        <div id="signinForm">
+        <form id="signinForm" onsubmit="doLogin(); return false;">
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" name="email" placeholder="you@email.com" autocomplete="username" required>
             </div>
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" name="password" placeholder="Your password" autocomplete="current-password" required>
             </div>
-            <button class="btn btn-primary" onclick="doLogin()" id="loginBtn">Sign In</button>
+            <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
             <p class="text-center mt-12">
-                <a class="link" onclick="showResetModal()">Forgot Password?</a>
+                <a href="#" class="link" onclick="showResetModal(); return false;">Forgot Password?</a>
             </p>
-        </div>
+        </form>
 
         <!-- Register Form -->
-        <div id="registerForm" style="display:none;">
+        <form id="registerForm" style="display:none;" onsubmit="doRegister(); return false;">
             <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="regName" placeholder="Your name" autocomplete="name">
+                <label for="regName">Full Name</label>
+                <input type="text" id="regName" name="name" placeholder="Your name" autocomplete="name" required>
             </div>
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="regEmail" placeholder="you@email.com" autocomplete="email">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" name="email" placeholder="you@email.com" autocomplete="username" required>
             </div>
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="regPassword" placeholder="6+ characters" autocomplete="new-password">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" name="password" placeholder="6+ characters" autocomplete="new-password" minlength="6" required>
             </div>
             <p class="text-muted" style="margin-bottom:16px;">Use the same email you subscribed with (or will subscribe with).</p>
-            <button class="btn btn-gold" onclick="doRegister()" id="regBtn">Create Account</button>
+            <button type="submit" class="btn btn-gold" id="regBtn">Create Account</button>
 
             <div class="pricing-badge">
                 <div class="price">$49.99</div>
                 <div class="detail">1 Year of Full Access · All features</div>
             </div>
-            <button class="btn btn-primary mt-16" onclick="startSubscription()">Subscribe Now — $49.99/year</button>
+            <button type="button" class="btn btn-primary mt-16" onclick="startSubscription()">Subscribe Now — $49.99/year</button>
             <p class="text-muted text-center mt-12">Subscribe first, then create your account with the same email.</p>
-        </div>
+        </form>
     </div>
 
     <!-- Quick Actions -->
@@ -502,30 +502,32 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 <div class="modal-overlay" id="resetModal">
     <div class="modal">
         <!-- Step 1: Enter Email -->
-        <div id="resetStep1">
+        <form id="resetStep1" onsubmit="sendResetCode(); return false;">
             <h2>Reset Password</h2>
             <p class="text-muted" style="margin-bottom:16px;">Enter your email and we'll send you a 6-digit reset code.</p>
             <div class="form-group">
-                <input type="email" id="resetEmail" placeholder="Email" autocomplete="email">
+                <label for="resetEmail" class="sr-only" style="position:absolute;left:-9999px;">Reset email</label>
+                <input type="email" id="resetEmail" name="resetEmail" placeholder="Email" autocomplete="email" required>
             </div>
-            <button class="btn btn-primary" onclick="sendResetCode()" id="resetSendBtn">Send Reset Code</button>
-            <p class="text-center mt-12"><a class="link" onclick="closeResetModal()">Cancel</a></p>
-        </div>
+            <button type="submit" class="btn btn-primary" id="resetSendBtn">Send Reset Code</button>
+            <p class="text-center mt-12"><a href="#" class="link" onclick="closeResetModal(); return false;">Cancel</a></p>
+        </form>
 
         <!-- Step 2: Enter Code -->
-        <div id="resetStep2" style="display:none;">
+        <form id="resetStep2" style="display:none;" onsubmit="submitReset(); return false;">
             <h2>Enter Reset Code</h2>
             <p class="text-muted" style="margin-bottom:16px;">Check your email for the 6-digit code.</p>
             <div class="form-group">
-                <input type="text" id="resetCode" placeholder="6-digit code" maxlength="6" aria-label="6-digit reset code" inputmode="numeric" pattern="[0-9]*" style="text-align:center;font-size:24px;letter-spacing:8px;">
+                <label for="resetCode" class="sr-only" style="position:absolute;left:-9999px;">6-digit reset code</label>
+                <input type="text" id="resetCode" name="resetCode" placeholder="6-digit code" maxlength="6" aria-label="6-digit reset code" inputmode="numeric" pattern="[0-9]{6}" required style="text-align:center;font-size:24px;letter-spacing:8px;">
             </div>
             <div class="form-group">
-                <label>New Password</label>
-                <input type="password" id="resetNewPassword" placeholder="6+ characters" autocomplete="new-password">
+                <label for="resetNewPassword">New Password</label>
+                <input type="password" id="resetNewPassword" name="newPassword" placeholder="6+ characters" autocomplete="new-password" minlength="6" required>
             </div>
-            <button class="btn btn-primary" onclick="submitReset()" id="resetSubmitBtn">Reset Password</button>
-            <p class="text-center mt-12"><a class="link" onclick="closeResetModal()">Cancel</a></p>
-        </div>
+            <button type="submit" class="btn btn-primary" id="resetSubmitBtn">Reset Password</button>
+            <p class="text-center mt-12"><a href="#" class="link" onclick="closeResetModal(); return false;">Cancel</a></p>
+        </form>
 
         <!-- Step 3: Success -->
         <div id="resetStep3" style="display:none;">

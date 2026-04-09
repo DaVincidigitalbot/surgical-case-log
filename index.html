@@ -759,25 +759,30 @@
             border: 2px solid transparent;
             position: relative;
             background-clip: padding-box;
+            overflow: hidden;
         }
         
         .pricing-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: conic-gradient(from 0deg, var(--accent), var(--highlight), var(--purple), var(--accent));
             border-radius: 12px;
             padding: 2px;
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask-composite: xor;
             animation: rotateBorder 3s linear infinite;
+            pointer-events: none;
         }
         
         @keyframes rotateBorder {
             to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 767px) {
+            .pricing-card {
+                padding: 32px 20px;
+            }
         }
         
         .pricing-badge {
@@ -1770,33 +1775,56 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
     }).catch(() => {});
 
     async function startCheckout() {
-        try {
-            const emailInput = document.getElementById('checkoutEmail');
-            const email = emailInput ? emailInput.value.trim() : '';
-            if (!email || !email.includes('@')) {
-                if (emailInput) {
-                    emailInput.style.borderColor = '#FF4D4D';
-                    emailInput.focus();
-                    emailInput.placeholder = 'Please enter a valid email';
-                }
-                return;
+        const emailInput = document.getElementById('checkoutEmail');
+        const checkoutButton = document.querySelector('[onclick="startCheckout()"]');
+        const email = emailInput ? emailInput.value.trim() : '';
+
+        if (!email || !email.includes('@')) {
+            if (emailInput) {
+                emailInput.style.borderColor = '#FF4D4D';
+                emailInput.focus();
+                emailInput.placeholder = 'Please enter a valid email';
             }
-            
+            return;
+        }
+
+        if (emailInput) emailInput.style.borderColor = 'rgba(46,168,255,0.3)';
+        if (checkoutButton) {
+            checkoutButton.dataset.originalText = checkoutButton.dataset.originalText || checkoutButton.textContent;
+            checkoutButton.textContent = 'Opening secure checkout...';
+            checkoutButton.style.pointerEvents = 'none';
+            checkoutButton.style.opacity = '0.75';
+        }
+
+        try {
             const resp = await fetch('/api/create-checkout-session', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({email: email})
             });
-            const data = await resp.json();
-            if (data.url) {
+
+            let data = {};
+            try {
+                data = await resp.json();
+            } catch (_) {}
+
+            if (resp.ok && data.url) {
                 window.location.href = data.url;
-            } else {
-                alert('Something went wrong. Please try again or contact support.');
-                console.error('Checkout error:', data.error);
+                return;
             }
-        } catch(e) {
-            alert('Could not connect to payment system. Please try again.');
-            console.error(e);
+
+            const friendlyMessage = data.message || 'Checkout is temporarily unavailable. Please try again in a few minutes or contact support@clinicalcaselog.com.';
+            alert(friendlyMessage);
+            console.error('Checkout error:', { status: resp.status, data });
+        } catch (e) {
+            alert('We could not connect to billing right now. Please try again in a few minutes or contact support@clinicalcaselog.com.');
+            console.error('Checkout request failed:', e);
+        } finally {
+            if (checkoutButton) {
+                checkoutButton.textContent = checkoutButton.dataset.originalText || 'Start Your Trial →';
+                checkoutButton.style.pointerEvents = '';
+                checkoutButton.style.opacity = '';
+            }
         }
     }
     </script>
