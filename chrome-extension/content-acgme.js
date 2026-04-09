@@ -96,9 +96,51 @@
     fillBtn.addEventListener('click', () => window.__cclFillNext());
   }
   
+  function getSearchRoots(root = document, seen = new Set()) {
+    const roots = [];
+    if (!root || seen.has(root)) return roots;
+    seen.add(root);
+    roots.push(root);
+
+    let elements = [];
+    try {
+      elements = Array.from(root.querySelectorAll('*'));
+    } catch (e) {
+      return roots;
+    }
+
+    for (const el of elements) {
+      if (el.shadowRoot) {
+        roots.push(...getSearchRoots(el.shadowRoot, seen));
+      }
+      if (el.tagName === 'IFRAME') {
+        try {
+          if (el.contentDocument) {
+            roots.push(...getSearchRoots(el.contentDocument, seen));
+          }
+        } catch (e) {
+          // Cross-origin or inaccessible frame, skip
+        }
+      }
+    }
+
+    return roots;
+  }
+
+  function findField(selector) {
+    const roots = getSearchRoots(document);
+    for (const root of roots) {
+      try {
+        const el = root.querySelector(selector);
+        if (el) return el;
+      } catch (e) {}
+    }
+    return null;
+  }
+
   function tryFill(selector, value) {
     if (!value) return;
-    const el = document.querySelector(selector);
+    const el = findField(selector);
     if (!el) return;
     
     if (el.tagName === 'SELECT') {
@@ -110,6 +152,7 @@
       );
       if (match) {
         el.value = match.value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
       }
     } else {
