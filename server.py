@@ -23,6 +23,26 @@ from datetime import timedelta
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
+@app.after_request
+def apply_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://js.stripe.com https://challenges.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://api.resend.com https://api.stripe.com https://challenges.cloudflare.com; "
+        "frame-src https://js.stripe.com https://hooks.stripe.com; "
+        "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; upgrade-insecure-requests"
+    )
+    response.headers['Content-Security-Policy'] = csp
+    return response
+
 # PostgreSQL connection
 DB_PASSWORD = urllib.parse.quote(os.environ.get('DB_PASSWORD', 'CaseLog2026!'))
 DATABASE_URL = os.environ.get('DATABASE_URL', 
