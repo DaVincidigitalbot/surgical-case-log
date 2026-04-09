@@ -363,10 +363,10 @@ def admin_required(f):
 
 @app.route('/api/register', methods=['POST'])
 def register():
-    data = request.json
+    data = request.json or {}
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
-    name = data.get('name', '')
+    name = data.get('name', '').strip()
     
     if not email or not password:
         return jsonify({'error': 'Email and password required'}), 400
@@ -375,33 +375,36 @@ def register():
     
     conn = get_db()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute('SELECT id FROM users WHERE email = %s', (email,))
-    existing = cur.fetchone()
-    if existing:
-        conn.close()
+    try:
+        cur.execute('SELECT id FROM users WHERE LOWER(TRIM(email)) = %s', (email,))
+        existing = cur.fetchone()
+        if existing:
+            return jsonify({'error': 'Email already registered'}), 409
+        
+        token = secrets.token_urlsafe(32)
+        pw_hash = hash_password(password)
+        
+        cur.execute('''INSERT INTO users (email, password_hash, name, token, plan, trial_started_at, trial_ends_at, trial_case_limit, trial_status) 
+                     VALUES (%s, %s, %s, %s, 'trial', NOW(), NOW() + INTERVAL '7 days', 25, 'active')''',
+                     (email, pw_hash, name, token))
+        conn.commit()
+        return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'role': 'user', 'plan_expires_at': None, 'program_type': 'medical',
+                        'trial_status': 'active', 'trial_case_limit': 25, 'trial_cases_used': 0, 'trial_days_remaining': 7})
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
         return jsonify({'error': 'Email already registered'}), 409
-    
-    token = secrets.token_urlsafe(32)
-    pw_hash = hash_password(password)
-    
-    cur.execute('''INSERT INTO users (email, password_hash, name, token, plan, trial_started_at, trial_ends_at, trial_case_limit, trial_status) 
-                 VALUES (%s, %s, %s, %s, 'trial', NOW(), NOW() + INTERVAL '7 days', 25, 'active')''',
-                 (email, pw_hash, name, token))
-    conn.commit()
-    conn.close()
-    
-    return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'role': 'user', 'plan_expires_at': None, 'program_type': 'medical',
-                    'trial_status': 'active', 'trial_case_limit': 25, 'trial_cases_used': 0, 'trial_days_remaining': 7})
+    finally:
+        conn.close()
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
+    data = request.json or {}
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
     
     conn = get_db()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute('SELECT * FROM users WHERE email = %s', (email,))
+    cur.execute('SELECT * FROM users WHERE LOWER(TRIM(email)) = %s ORDER BY id ASC LIMIT 1', (email,))
     user = cur.fetchone()
     
     if not user or not verify_password(user['password_hash'], password):
