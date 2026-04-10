@@ -1754,6 +1754,30 @@ def admin_activity():
     except Exception as e:
         return jsonify({'error': str(e)})
 
+@app.route('/api/admin/reset-code', methods=['GET'])
+@admin_key_or_admin_required
+def admin_reset_code():
+    email = request.args.get('email', '').strip().lower()
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute('''
+            SELECT id, email, code, created_at, used
+            FROM password_resets
+            WHERE LOWER(TRIM(email)) = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        ''', (email,))
+        record = cur.fetchone()
+        conn.close()
+        if not record:
+            return jsonify({'error': 'Reset code not found'}), 404
+        return jsonify(record)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ============ STATIC FILES ============
 
 @app.route('/googlef8c23c2804f8d2c1.html')
