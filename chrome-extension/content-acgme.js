@@ -7,6 +7,8 @@
   const response = await chrome.runtime.sendMessage({ type: 'GET_PENDING_EXPORT' });
   if (!response || !response.cases || response.cases.length === 0) return;
 
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
   const cases = response.cases.map(c => ({
     dateOfProcedure: c.dateOfProcedure || null,
     cptCode: c.cptCode || null,
@@ -179,7 +181,13 @@
   };
 
   const fillBtn = document.getElementById('ccl-fill-btn');
-  if (fillBtn) fillBtn.addEventListener('click', () => window.__cclFillNext());
+  if (fillBtn) {
+    fillBtn.dataset.cclBound = '1';
+    fillBtn.addEventListener('click', async () => {
+      await wait(150);
+      window.__cclFillNext();
+    });
+  }
 
   function escapeHtml(value) {
     return String(value)
@@ -214,7 +222,7 @@
     return roots;
   }
 
-  function getCandidateElements(selectorList) {
+  function getCandidateElements(selectorList, field) {
     const roots = getSearchRoots(document);
     const matches = [];
     const seen = new Set();
@@ -233,7 +241,27 @@
         }
       }
     }
-    return matches.filter(isUsableField);
+
+    const semanticMatches = [];
+    const labelTerms = getFieldSearchTerms(field);
+    for (const root of roots) {
+      let all = [];
+      try {
+        all = Array.from(root.querySelectorAll('input, select, textarea, [role="combobox"], [contenteditable="true"], .k-input-inner, .k-picker, .k-dropdownlist, .k-combobox'));
+      } catch (e) {
+        continue;
+      }
+      for (const el of all) {
+        if (seen.has(el)) continue;
+        const haystack = collectElementContext(el);
+        if (labelTerms.some(term => haystack.includes(term))) {
+          seen.add(el);
+          semanticMatches.push(el);
+        }
+      }
+    }
+
+    return [...matches, ...semanticMatches].filter(isUsableField);
   }
 
   function isUsableField(el) {
@@ -244,6 +272,45 @@
     if (style.display === 'none' || style.visibility === 'hidden') return false;
     const rect = el.getBoundingClientRect();
     return rect.width > 0 && rect.height > 0;
+  }
+
+  function getFieldSearchTerms(field) {
+    const base = [field.label, field.key]
+      .filter(Boolean)
+      .map(v => String(v).toLowerCase());
+
+    const extras = {
+      cptCode: ['cpt', 'procedure code', 'procedure'],
+      dateOfProcedure: ['date of procedure', 'procedure date', 'date'],
+      role: ['role', 'resident role'],
+      attending: ['attending', 'supervising physician', 'attending surgeon', 'faculty'],
+      site: ['site', 'institution', 'hospital', 'facility', 'location'],
+      caseId: ['case id', 'case identifier'],
+      patientType: ['patient type', 'inpatient', 'outpatient']
+    };
+
+    return [...new Set([...(extras[field.key] || []), ...base])];
+  }
+
+  function collectElementContext(el) {
+    const pieces = [
+      el.name,
+      el.id,
+      el.className,
+      el.placeholder,
+      el.textContent,
+      el.getAttribute('aria-label'),
+      el.getAttribute('aria-labelledby'),
+      el.getAttribute('data-bind'),
+      el.getAttribute('formcontrolname'),
+      el.getAttribute('ng-reflect-name'),
+      el.labels ? Array.from(el.labels).map(l => l.textContent).join(' ') : '',
+      el.closest('label')?.textContent,
+      el.closest('[role="group"], .form-group, .field, td, tr, div, li')?.textContent,
+      el.parentElement?.textContent,
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return pieces.replace(/\s+/g, ' ');
   }
 
   function scoreElement(el, expectedLabel) {
@@ -270,7 +337,7 @@
   function fillField(field, value) {
     if (!value) return { key: field.key, label: field.label, status: 'skipped', reason: 'no value', value };
 
-    const candidates = getCandidateElements(field.selectors)
+    const candidates = getCandidateElements(field.selectors, field)
       .map(el => ({ el, score: scoreElement(el, field.label) }))
       .sort((a, b) => b.score - a.score);
 
@@ -295,6 +362,9 @@
     }
     if (valueType === 'smart' && el.tagName === 'SELECT') {
       return fillSelect(el, value);
+    }
+    if (isComboBoxLike(el)) {
+      return fillComboBox(el, value);
     }
     return fillInput(el, value);
   }
@@ -324,6 +394,28 @@
     return true;
   }
 
+  function isComboBoxLike(el) {
+    if (!el || !(el instanceof HTMLElement)) return false;
+    return el.getAttribute('role') === 'combobox'
+      || el.matches('.k-input-inner, .k-picker input, .k-combobox input, .k-dropdownlist input')
+      || el.closest('[role="combobox"], .k-picker, .k-combobox, .k-dropdownlist');
+  }
+
+  function fillComboBox(el, value) {
+    try {
+      const input = el.matches('input, textarea') ? el : el.querySelector('input, textarea') || el;
+      input.focus();
+      if (!fillInput(input, value)) {
+        fillInput(input, value);
+      }
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown', bubbles: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function normalizeText(value) {
     return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
   }
@@ -333,6 +425,18 @@
     el.dispatchEvent(new Event('change', { bubbles: true }));
     el.dispatchEvent(new Event('blur', { bubbles: true }));
   }
+
+  const observer = new MutationObserver(() => {
+    const fillBtn = document.getElementById('ccl-fill-btn');
+    if (fillBtn && !fillBtn.dataset.cclBound) {
+      fillBtn.dataset.cclBound = '1';
+      fillBtn.addEventListener('click', async () => {
+        await wait(150);
+        window.__cclFillNext();
+      });
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 
   function highlight(el) {
     const original = el.style.outline;
