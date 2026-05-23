@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import timedelta
 
-FREE_STUDENT_CASE_LIMIT = 10
+FREE_STUDENT_CASE_LIMIT = 25
 FREE_STUDENT_PLANS = ('free', 'trial')
 UNLIMITED_PLANS = ('subscription', 'monthly', 'annual', '90day', 'pro', 'demo')
 
@@ -249,7 +249,7 @@ def verify_password(stored, provided):
 def check_trial_status(user):
     """Check if a free student account can still log cases.
 
-    Free student accounts are capped at 10 total medical + RNFA cases.
+    Free student accounts are capped at 25 total medical + RNFA cases.
     Paid/legacy unlimited plans can continue without restriction.
     """
     plan = user.get('plan', 'free') or 'free'
@@ -646,7 +646,7 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id, trial
 
 @app.route('/api/internal/process-trial-emails', methods=['POST'])
 def process_trial_emails():
-    """Process subscription conversion email queue after a free account reaches 10 cases."""
+    """Process subscription conversion email queue after a free account reaches 25 cases."""
     auth_key = request.headers.get('X-Internal-Key', '')
     if auth_key != 'stallard2026internal':
         return jsonify({'error': 'Unauthorized'}), 401
