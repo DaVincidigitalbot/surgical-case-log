@@ -52,15 +52,8 @@ body[data-brand-page="blog"] > .footer {
   width: 32px;
   height: 32px;
   flex: 0 0 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   border-radius: 10px;
-  background: linear-gradient(135deg, #1D8BFF, #0f76ea);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1;
   box-shadow: 0 10px 22px rgba(29, 139, 255, 0.22);
 }
 

@@ -44,6 +44,16 @@ body {
     box-shadow: 0 2px 20px rgba(0,0,0,0.1) !important;
 }
 
+.app-logo-mark {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    border-radius: 8px;
+    background: url('/logo/icon.svg') center/contain no-repeat;
+    box-shadow: 0 8px 18px rgba(29,139,255,0.22);
+}
 .header h1, header h1 {
     font-weight: 800 !important;
     letter-spacing: -0.03em !important;
@@ -1091,7 +1101,7 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
 
 <div id="appContainer" style="display:none;">
 <div class="header">
-    <h1>⚕️ Clinical <span>Case Log</span></h1>
+    <h1><span class="app-logo-mark" aria-hidden="true"></span>Clinical <span>Case Log</span></h1>
     <div class="nav-links" style="display: none; gap: 24px; align-items: center;">
         <a href="/#features" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">Features</a>
         <a href="/#how-it-works" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 14px;">How It Works</a>

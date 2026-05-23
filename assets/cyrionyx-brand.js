@@ -17,7 +17,7 @@
 
   const logo = `
     <a href="/" class="cyr-brand-wordmark" aria-label="ClinicalCaseLog home">
-      <span class="cyr-brand-badge" aria-hidden="true">⚕</span>
+      <img class="cyr-brand-badge" src="/logo/icon.svg" alt="" aria-hidden="true">
       <span class="brand-name">ClinicalCaseLog</span>
     </a>`;
 
