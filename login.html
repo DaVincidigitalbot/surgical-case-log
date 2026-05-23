@@ -537,7 +537,7 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
                 <div class="price">Free</div>
                 <div class="detail">Student access · 25 logged cases</div>
             </div>
-            <button type="button" class="btn btn-primary mt-16" onclick="startSubscription()">Need more than 25? Subscribe — $49.99/year</button>
+            <button type="button" class="btn btn-primary mt-16" id="subscribeBtn" onclick="startSubscription()">Need more than 25? Subscribe — $49.99/year</button>
             <p class="text-muted text-center mt-12">No payment required to start.</p>
         </form>
     </div>
@@ -724,25 +724,41 @@ async function doRegister() {
 
 // Subscribe via Stripe
 async function startSubscription() {
+    const btn = document.getElementById('subscribeBtn');
     try {
+        const storedUser = JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null');
         const email = document.getElementById('regEmail')?.value?.trim() ||
                       document.getElementById('loginEmail')?.value?.trim() ||
-                      prompt('Enter your email:');
+                      storedUser?.email ||
+                      prompt('Enter the email for your subscription:');
         if (!email) return;
+        if (!email.includes('@')) return showError('Enter a valid email before subscribing.');
+
+        if (btn) {
+            btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+            btn.textContent = 'Opening secure checkout...';
+            btn.disabled = true;
+        }
 
         const resp = await fetch('/api/create-checkout-session', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email: email})
         });
-        const data = await resp.json();
-        if (data.url) {
-            window.location.href = data.url;
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data.url) {
+            window.location.assign(data.url);
+            return;
         } else {
             showError(data.message || 'Could not start checkout. Please try again.');
         }
     } catch(e) {
         showError('Could not connect to payment system.');
+    } finally {
+        if (btn) {
+            btn.textContent = btn.dataset.originalText || 'Need more than 25? Subscribe — $49.99/year';
+            btn.disabled = false;
+        }
     }
 }
 

@@ -1042,7 +1042,7 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
             </div>
             <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">Log 25 cases free. Subscribe for unlimited logging.</p>
             <div style="margin-top:12px;">
-                <a href="#" onclick="startSubscription(); return false;" class="btn btn-gold" style="display:block; text-align:center; text-decoration:none; padding:12px; font-size:14px; font-weight:700; cursor:pointer;">Need more than 25? Subscribe — $49.99/year</a>
+                <a href="#" id="subscribeLink" onclick="startSubscription(); return false;" class="btn btn-gold" style="display:block; text-align:center; text-decoration:none; padding:12px; font-size:14px; font-weight:700; cursor:pointer;">Need more than 25? Subscribe — $49.99/year</a>
             </div>
         </div>
 
@@ -1132,7 +1132,7 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
             Your free student account has reached its 25-case limit.
         </p>
         <p style="color:#888; font-size:14px; margin-bottom:24px;">Your existing cases are safe. Subscribe to continue logging beyond 25 cases.</p>
-        <button onclick="startSubscription()" style="background:linear-gradient(135deg, #D4A843, #B8902E); color:#fff; border:none; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:700; cursor:pointer; width:100%; margin-bottom:12px;">Subscribe — $49.99/year</button>
+        <button id="subscribeOverlayBtn" onclick="startSubscription()" style="background:linear-gradient(135deg, #D4A843, #B8902E); color:#fff; border:none; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:700; cursor:pointer; width:100%; margin-bottom:12px;">Subscribe — $49.99/year</button>
         <button onclick="document.getElementById('trialExpiredOverlay').style.display='none'" style="background:transparent; color:#e0e0e0; border:1px solid #2a3a5c; padding:14px 32px; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; width:100%;">Back to Case Log</button>
     </div>
 </div>
@@ -3760,25 +3760,52 @@ async function doLandingLogin() {
 }
 
 async function startSubscription(emailHint) {
+    const btn = document.getElementById('subscribeOverlayBtn');
+    const link = document.getElementById('subscribeLink');
     try {
-        const email = emailHint || prompt('Enter your email:');
+        const storedUser = JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null');
+        const email = emailHint || currentUser?.email || storedUser?.email || prompt('Enter the email for your subscription:');
         if (!email) return;
-        
+        if (!email.includes('@')) return alert('Enter a valid email before subscribing.');
+
+        if (btn) {
+            btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+            btn.textContent = 'Opening secure checkout...';
+            btn.disabled = true;
+        }
+        if (link) {
+            link.dataset.originalText = link.dataset.originalText || link.textContent;
+            link.textContent = 'Opening secure checkout...';
+            link.style.pointerEvents = 'none';
+            link.style.opacity = '0.75';
+        }
+
         const resp = await fetch('/api/create-checkout-session', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email: email})
         });
-        const data = await resp.json();
-        if (data.url) {
-            window.location.href = data.url;
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data.url) {
+            window.location.assign(data.url);
+            return;
         } else {
-            alert('Could not start checkout. Please try again or email support.');
-            console.error('Checkout error:', data.error);
+            alert(data.message || 'Could not start checkout. Please try again or email support.');
+            console.error('Checkout error:', data);
         }
     } catch(e) {
         alert('Could not connect to payment system. Please try again.');
         console.error(e);
+    } finally {
+        if (btn) {
+            btn.textContent = btn.dataset.originalText || 'Subscribe — $49.99/year';
+            btn.disabled = false;
+        }
+        if (link) {
+            link.textContent = link.dataset.originalText || 'Need more than 25? Subscribe — $49.99/year';
+            link.style.pointerEvents = '';
+            link.style.opacity = '';
+        }
     }
 }
 </script>
