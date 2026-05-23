@@ -530,15 +530,14 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
                 <label for="regPassword">Password</label>
                 <input type="password" id="regPassword" name="password" placeholder="6+ characters" autocomplete="new-password" minlength="6" required>
             </div>
-            <p class="text-muted" style="margin-bottom:16px;">Create your account first. If you want full access, upgrade to paid after signup with the same email.</p>
-            <button type="submit" class="btn btn-gold" id="regBtn">Create Free Trial Account</button>
+            <p class="text-muted" style="margin-bottom:16px;">Create a free student account. You can log up to 10 cases, then still view and export what you entered.</p>
+            <button type="submit" class="btn btn-gold" id="regBtn">Create Free Student Account</button>
 
             <div class="pricing-badge">
-                <div class="price">$49.99</div>
-                <div class="detail">1 Year of Full Access · All features</div>
+                <div class="price">Free</div>
+                <div class="detail">Student access · 10 logged cases</div>
             </div>
-            <button type="button" class="btn btn-primary mt-16" onclick="startSubscription()">Upgrade to Full Access — $49.99/year</button>
-            <p class="text-muted text-center mt-12">Trial signup works immediately. Paid billing is optional and uses the same email.</p>
+            <p class="text-muted text-center mt-12">No payment required.</p>
         </form>
     </div>
 
@@ -708,7 +707,7 @@ async function doRegister() {
         if (data.error) {
             showError(data.error);
             btn.disabled = false;
-            btn.textContent = 'Create Free Trial Account';
+            btn.textContent = 'Create Free Student Account';
             return;
         }
 
@@ -718,7 +717,7 @@ async function doRegister() {
     } catch(e) {
         showError('Connection error. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Create Free Trial Account';
+        btn.textContent = 'Create Free Student Account';
     }
 }
 
@@ -727,7 +726,7 @@ async function startSubscription() {
     try {
         const email = document.getElementById('regEmail')?.value?.trim() ||
                       document.getElementById('loginEmail')?.value?.trim() ||
-                      prompt('Enter your email to subscribe:');
+                      prompt('Enter your email:');
         if (!email) return;
 
         const resp = await fetch('/api/create-checkout-session', {
@@ -861,7 +860,7 @@ async function submitReset() {
     }
     if (params.get('paid') === 'true') {
         showTab('register');
-        showSuccess('✅ Payment successful! Sign in or create your account below using the same email you used at checkout.');
+        showSuccess('Account access is free for students. Sign in or create your account below.');
         // Clean URL
         window.history.replaceState({}, '', '/login?tab=register');
     }

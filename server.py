@@ -20,6 +20,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import timedelta
 
+FREE_STUDENT_CASE_LIMIT = 10
+FREE_STUDENT_PLANS = ('free', 'trial')
+UNLIMITED_PLANS = ('subscription', 'monthly', 'annual', '90day', 'pro', 'demo')
+
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
@@ -64,14 +68,14 @@ def init_db():
                 password_hash TEXT NOT NULL,
                 name TEXT,
                 token TEXT UNIQUE,
-                plan TEXT DEFAULT 'trial',
+                plan TEXT DEFAULT 'free',
                 role TEXT DEFAULT 'user',
                 license_key TEXT,
                 plan_expires_at TEXT,
                 program_type TEXT DEFAULT 'medical',
                 trial_started_at TIMESTAMP,
                 trial_ends_at TIMESTAMP,
-                trial_case_limit INTEGER DEFAULT 25,
+                trial_case_limit INTEGER DEFAULT 10,
                 trial_status TEXT DEFAULT 'active',
                 trial_end_reason TEXT,
                 created_at TIMESTAMP DEFAULT NOW()
@@ -86,7 +90,7 @@ def init_db():
         for col, coltype, default in [
             ('trial_started_at', 'TIMESTAMP', None),
             ('trial_ends_at', 'TIMESTAMP', None),
-            ('trial_case_limit', 'INTEGER', '25'),
+            ('trial_case_limit', 'INTEGER', '10'),
             ('trial_status', 'TEXT', "'active'"),
             ('trial_end_reason', 'TEXT', None),
             ('trial_completed_at', 'TIMESTAMP', None),
@@ -243,67 +247,30 @@ def verify_password(stored, provided):
     return h.hex() == stored_hash
 
 def check_trial_status(user):
-    """Check if a trial user can still log cases. Returns (can_log, info_dict).
-    Paid users always return True. Trial users checked against 25 cases / 7 days."""
-    plan = user.get('plan', 'trial')
+    """Check if a free student account can still log cases.
+
+    Free student accounts are capped at 10 total medical + RNFA cases.
+    Paid/legacy unlimited plans can continue without restriction.
+    """
+    plan = user.get('plan', 'free') or 'free'
     
     # Paid users — no restrictions
-    if plan in ('subscription', 'monthly', 'annual', '90day', 'pro'):
+    if plan in UNLIMITED_PLANS:
         return True, {'plan': plan, 'active': True}
-    
-    # Demo account — no restrictions
-    if plan == 'demo':
-        return True, {'plan': 'demo', 'active': True}
     
     # Expired plans
     if plan == 'expired':
         return False, {'plan': 'expired', 'active': False, 'reason': 'subscription_expired'}
     
-    # Trial users — enforce limits
+    # Free student users — enforce a permanent case cap.
     trial_status = user.get('trial_status', 'active')
     
-    # Already marked expired
-    if trial_status in ('expired', 'converted'):
-        return trial_status == 'converted', {
-            'plan': 'trial',
-            'trial_status': trial_status,
-            'active': trial_status == 'converted',
-            'reason': user.get('trial_end_reason', 'unknown')
+    if trial_status == 'converted':
+        return True, {
+            'plan': 'free',
+            'trial_status': 'converted',
+            'active': True
         }
-    
-    # Check time limit
-    trial_ends_at = user.get('trial_ends_at')
-    trial_started_at = user.get('trial_started_at')
-    from datetime import datetime, timezone, timedelta
-    now = datetime.now(timezone.utc)
-    
-    # Backfill: if trial user has no trial_ends_at, set from created_at
-    if not trial_ends_at and plan == 'trial':
-        created = user.get('created_at')
-        if created:
-            if isinstance(created, str):
-                created = datetime.fromisoformat(created.replace('Z', '+00:00'))
-            if created.tzinfo is None:
-                created = created.replace(tzinfo=timezone.utc)
-            trial_ends_at = created + timedelta(days=7)
-            trial_started_at = created
-            # Persist the backfill
-            conn2 = get_db()
-            cur2 = conn2.cursor()
-            cur2.execute('UPDATE users SET trial_started_at = %s, trial_ends_at = %s WHERE id = %s AND trial_ends_at IS NULL',
-                        (trial_started_at, trial_ends_at, user['id']))
-            conn2.commit()
-            conn2.close()
-    time_expired = False
-    days_remaining = 7
-    
-    if trial_ends_at:
-        if isinstance(trial_ends_at, str):
-            trial_ends_at = datetime.fromisoformat(trial_ends_at.replace('Z', '+00:00'))
-        if trial_ends_at.tzinfo is None:
-            trial_ends_at = trial_ends_at.replace(tzinfo=timezone.utc)
-        time_expired = now >= trial_ends_at
-        days_remaining = max(0, (trial_ends_at - now).days)
     
     # Count cases (both medical + RNFA)
     conn = get_db()
@@ -314,43 +281,42 @@ def check_trial_status(user):
     rnfa_count = cur.fetchone()['cnt']
     total_cases = medical_count + rnfa_count
     
-    case_limit = user.get('trial_case_limit') or 25
+    case_limit = FREE_STUDENT_CASE_LIMIT
     case_limit_hit = total_cases >= case_limit
     
-    # Determine if trial should expire
-    if case_limit_hit or time_expired:
-        # Expire the trial
-        reason = 'case_limit' if case_limit_hit else 'time_limit'
-        # If both hit simultaneously, prioritize case_limit
-        if case_limit_hit and time_expired:
-            reason = 'case_limit'
-        
+    # Determine if the free account should stop accepting new cases.
+    if case_limit_hit:
+        reason = 'case_limit'
         cur.execute('''UPDATE users SET trial_status = 'expired', trial_end_reason = %s,
-                      trial_completed_at = NOW(), email_sequence_status = 'active'
-                      WHERE id = %s AND trial_status = 'active' ''', (reason, user['id']))
+                      trial_completed_at = NOW(), email_sequence_status = 'completed'
+                      WHERE id = %s AND COALESCE(trial_status, 'active') != 'expired' ''', (reason, user['id']))
         conn.commit()
         conn.close()
         
         return False, {
-            'plan': 'trial',
+            'plan': 'free',
             'trial_status': 'expired',
             'active': False,
             'reason': reason,
             'cases_used': total_cases,
             'case_limit': case_limit,
-            'days_remaining': 0
+            'cases_remaining': 0
         }
     
+    if trial_status == 'expired':
+        cur.execute('''UPDATE users SET trial_status = 'active', trial_end_reason = NULL,
+                      email_sequence_status = 'completed'
+                      WHERE id = %s''', (user['id'],))
+        conn.commit()
     conn.close()
     
     return True, {
-        'plan': 'trial',
+        'plan': 'free',
         'trial_status': 'active',
         'active': True,
         'cases_used': total_cases,
         'case_limit': case_limit,
-        'cases_remaining': case_limit - total_cases,
-        'days_remaining': days_remaining
+        'cases_remaining': case_limit - total_cases
     }
 
 
@@ -419,11 +385,11 @@ def register():
         pw_hash = hash_password(password)
         
         cur.execute('''INSERT INTO users (email, password_hash, name, token, plan, trial_started_at, trial_ends_at, trial_case_limit, trial_status) 
-                     VALUES (%s, %s, %s, %s, 'trial', NOW(), NOW() + INTERVAL '7 days', 25, 'active')''',
-                     (email, pw_hash, name, token))
+                     VALUES (%s, %s, %s, %s, 'free', NOW(), NULL, %s, 'active')''',
+                     (email, pw_hash, name, token, FREE_STUDENT_CASE_LIMIT))
         conn.commit()
-        return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'trial', 'role': 'user', 'plan_expires_at': None, 'program_type': 'medical',
-                        'trial_status': 'active', 'trial_case_limit': 25, 'trial_cases_used': 0, 'trial_days_remaining': 7})
+        return jsonify({'token': token, 'name': name, 'email': email, 'plan': 'free', 'role': 'user', 'plan_expires_at': None, 'program_type': 'medical',
+                        'trial_status': 'active', 'trial_case_limit': FREE_STUDENT_CASE_LIMIT, 'trial_cases_used': 0})
     except psycopg2.errors.UniqueViolation:
         conn.rollback()
         return jsonify({'error': 'Email already registered'}), 409
@@ -453,7 +419,7 @@ def login():
         conn.commit()
     conn.close()
     
-    return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'role': user.get('role', 'user') or 'user', 'plan_expires_at': user['plan_expires_at'], 'program_type': user.get('program_type', 'medical') or 'medical'})
+    return jsonify({'token': token, 'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'free', 'role': user.get('role', 'user') or 'user', 'plan_expires_at': user['plan_expires_at'], 'program_type': user.get('program_type', 'medical') or 'medical'})
 
 # ============ PASSWORD RESET ============
 
@@ -680,11 +646,18 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id, trial
 
 @app.route('/api/internal/process-trial-emails', methods=['POST'])
 def process_trial_emails():
-    """Process trial conversion email queue. Called by external cron hourly.
-    Sends dual-track emails based on trial_end_reason (case_limit vs time_limit)."""
+    """Trial conversion email queue is disabled now that student access is free."""
     auth_key = request.headers.get('X-Internal-Key', '')
     if auth_key != 'stallard2026internal':
         return jsonify({'error': 'Unauthorized'}), 401
+    return jsonify({
+        'processed': 0,
+        'sent': 0,
+        'skipped': 0,
+        'errors': 0,
+        'disabled': True,
+        'reason': 'free_student_plan'
+    })
     
     from datetime import timezone
     now = datetime.now(timezone.utc)
@@ -866,7 +839,7 @@ def check_token():
     user = get_user_from_token(token)
     if not user:
         return jsonify({'error': 'Invalid token'}), 401
-    return jsonify({'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'trial', 'role': user.get('role', 'user') or 'user', 'program_type': user.get('program_type', 'medical') or 'medical'})
+    return jsonify({'name': user['name'], 'email': user['email'], 'plan': user['plan'] or 'free', 'role': user.get('role', 'user') or 'user', 'program_type': user.get('program_type', 'medical') or 'medical'})
 
 # ============ LICENSE VERIFICATION ============
 
@@ -950,24 +923,23 @@ def activate_by_email():
 @app.route('/api/plan', methods=['GET'])
 @auth_required
 def get_plan():
-    plan = request.user['plan'] or 'trial'
+    plan = request.user['plan'] or 'free'
     expires = request.user['plan_expires_at']
     if plan in ('annual', '90day') and expires:
         if datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') > expires:
             plan = 'expired'
     
-    # Include trial info for trial users
-    if plan == 'trial':
+    # Include free student limit info for free/legacy trial users.
+    if plan in FREE_STUDENT_PLANS:
         can_log, trial_info = check_trial_status(request.user)
         return jsonify({
-            'plan': 'trial',
+            'plan': 'free',
             'plan_expires_at': expires,
             'active': can_log,
             'trial_status': trial_info.get('trial_status', 'active'),
             'cases_used': trial_info.get('cases_used', 0),
-            'case_limit': trial_info.get('case_limit', 25),
-            'cases_remaining': trial_info.get('cases_remaining', 25),
-            'days_remaining': trial_info.get('days_remaining', 7),
+            'case_limit': trial_info.get('case_limit', FREE_STUDENT_CASE_LIMIT),
+            'cases_remaining': trial_info.get('cases_remaining', FREE_STUDENT_CASE_LIMIT),
             'reason': trial_info.get('reason')
         })
     
@@ -1035,11 +1007,11 @@ def add_case():
     can_log, trial_info = check_trial_status(request.user)
     if not can_log:
         return jsonify({
-            'error': 'Trial limit reached. Upgrade to continue logging cases.',
+            'error': 'Free student case limit reached. You can view and export existing cases, but this account is capped at 10 logged cases.',
             'trial_expired': True,
             'reason': trial_info.get('reason', 'unknown'),
             'cases_used': trial_info.get('cases_used', 0),
-            'case_limit': trial_info.get('case_limit', 25),
+            'case_limit': trial_info.get('case_limit', FREE_STUDENT_CASE_LIMIT),
             'upgrade_url': '/login?tab=register'
         }), 403
     
@@ -1279,11 +1251,11 @@ def add_rnfa_case():
     can_log, trial_info = check_trial_status(request.user)
     if not can_log:
         return jsonify({
-            'error': 'Trial limit reached. Upgrade to continue logging cases.',
+            'error': 'Free student case limit reached. You can view and export existing cases, but this account is capped at 10 logged cases.',
             'trial_expired': True,
             'reason': trial_info.get('reason', 'unknown'),
             'cases_used': trial_info.get('cases_used', 0),
-            'case_limit': trial_info.get('case_limit', 25),
+            'case_limit': trial_info.get('case_limit', FREE_STUDENT_CASE_LIMIT),
             'upgrade_url': '/login?tab=register'
         }), 403
     
