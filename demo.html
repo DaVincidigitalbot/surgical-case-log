@@ -1040,7 +1040,10 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
             <div style="margin-top:15px;">
                 <a href="/register" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none; padding:15px; font-size:16px; font-weight:700; cursor:pointer;">Create Free Student Account</a>
             </div>
-            <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">Log 10 cases, then keep view/export access.</p>
+            <p style="color:#666; font-size:12px; text-align:center; margin-top:10px;">Log 10 cases free. Subscribe for unlimited logging.</p>
+            <div style="margin-top:12px;">
+                <a href="#" onclick="startSubscription(); return false;" class="btn btn-gold" style="display:block; text-align:center; text-decoration:none; padding:12px; font-size:14px; font-weight:700; cursor:pointer;">Need more than 10? Subscribe — $49.99/year</a>
+            </div>
         </div>
 
         <div style="color:#666; font-size:13px; margin-top:20px;">
@@ -1128,8 +1131,9 @@ input:focus, select:focus, textarea:focus, .search-input:focus {
         <p id="trialExpiredMessage" style="color:#e0e0e0; font-size:16px; line-height:1.6; margin-bottom:24px;">
             Your free student account has reached its 10-case limit.
         </p>
-        <p style="color:#888; font-size:14px; margin-bottom:24px;">Your existing cases are safe. You can still view and export what you logged.</p>
-        <button onclick="document.getElementById('trialExpiredOverlay').style.display='none'" style="background:linear-gradient(135deg, #D4A843, #B8902E); color:#fff; border:none; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:700; cursor:pointer; width:100%;">Back to Case Log</button>
+        <p style="color:#888; font-size:14px; margin-bottom:24px;">Your existing cases are safe. Subscribe to continue logging beyond 10 cases.</p>
+        <button onclick="startSubscription()" style="background:linear-gradient(135deg, #D4A843, #B8902E); color:#fff; border:none; padding:16px 32px; border-radius:8px; font-size:18px; font-weight:700; cursor:pointer; width:100%; margin-bottom:12px;">Subscribe — $49.99/year</button>
+        <button onclick="document.getElementById('trialExpiredOverlay').style.display='none'" style="background:transparent; color:#e0e0e0; border:1px solid #2a3a5c; padding:14px 32px; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; width:100%;">Back to Case Log</button>
     </div>
 </div>
 
@@ -2971,7 +2975,7 @@ async function checkTrialStatus() {
             // Customize message based on reason
             const msgEl = document.getElementById('trialExpiredMessage');
             if (trialInfo.reason === 'case_limit') {
-                msgEl.textContent = `Your free student account has reached its ${caseLimit}-case limit. You can still view and export existing cases.`;
+                msgEl.textContent = `Your free student account has reached its ${caseLimit}-case limit. Subscribe to continue logging more cases.`;
             } else {
                 msgEl.textContent = 'Your free student account cannot log more cases right now.';
             }

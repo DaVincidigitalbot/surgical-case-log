@@ -288,7 +288,7 @@ def check_trial_status(user):
     if case_limit_hit:
         reason = 'case_limit'
         cur.execute('''UPDATE users SET trial_status = 'expired', trial_end_reason = %s,
-                      trial_completed_at = NOW(), email_sequence_status = 'completed'
+                      trial_completed_at = NOW(), email_sequence_status = 'active'
                       WHERE id = %s AND COALESCE(trial_status, 'active') != 'expired' ''', (reason, user['id']))
         conn.commit()
         conn.close()
@@ -646,18 +646,10 @@ def send_conversion_email(user_email, user_name, sequence_number, user_id, trial
 
 @app.route('/api/internal/process-trial-emails', methods=['POST'])
 def process_trial_emails():
-    """Trial conversion email queue is disabled now that student access is free."""
+    """Process subscription conversion email queue after a free account reaches 10 cases."""
     auth_key = request.headers.get('X-Internal-Key', '')
     if auth_key != 'stallard2026internal':
         return jsonify({'error': 'Unauthorized'}), 401
-    return jsonify({
-        'processed': 0,
-        'sent': 0,
-        'skipped': 0,
-        'errors': 0,
-        'disabled': True,
-        'reason': 'free_student_plan'
-    })
     
     from datetime import timezone
     now = datetime.now(timezone.utc)
@@ -1007,12 +999,13 @@ def add_case():
     can_log, trial_info = check_trial_status(request.user)
     if not can_log:
         return jsonify({
-            'error': 'Free student case limit reached. You can view and export existing cases, but this account is capped at 10 logged cases.',
+            'error': 'Free student case limit reached. Subscribe to continue logging more cases.',
+            'needs_subscription': True,
             'trial_expired': True,
             'reason': trial_info.get('reason', 'unknown'),
             'cases_used': trial_info.get('cases_used', 0),
             'case_limit': trial_info.get('case_limit', FREE_STUDENT_CASE_LIMIT),
-            'upgrade_url': '/login?tab=register'
+            'upgrade_url': '/login?tab=register&upgrade=true'
         }), 403
     
     data = request.json
@@ -1251,12 +1244,13 @@ def add_rnfa_case():
     can_log, trial_info = check_trial_status(request.user)
     if not can_log:
         return jsonify({
-            'error': 'Free student case limit reached. You can view and export existing cases, but this account is capped at 10 logged cases.',
+            'error': 'Free student case limit reached. Subscribe to continue logging more cases.',
+            'needs_subscription': True,
             'trial_expired': True,
             'reason': trial_info.get('reason', 'unknown'),
             'cases_used': trial_info.get('cases_used', 0),
             'case_limit': trial_info.get('case_limit', FREE_STUDENT_CASE_LIMIT),
-            'upgrade_url': '/login?tab=register'
+            'upgrade_url': '/login?tab=register&upgrade=true'
         }), 403
     
     data = request.json
