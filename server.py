@@ -474,9 +474,9 @@ support@clinicalcaselog.com"""
     return send_via_resend(email, "Clinical Case Log — Password Reset Code", body)
 
 
-# ============ TRIAL CONVERSION EMAIL SYSTEM ============
+# ============ FREE CAP CONVERSION EMAIL SYSTEM ============
 
-# Dual-track email templates: case_limit vs time_limit
+# Triggered only when a free account reaches the 25-case limit.
 TRIAL_EMAILS_CASE_LIMIT = [
     {
         'number': 1, 'delay_hours': 0,
@@ -485,9 +485,9 @@ TRIAL_EMAILS_CASE_LIMIT = [
 
 You logged {cases_used} cases in Clinical Case Log Pro. That's {cases_used} procedures documented with CPT codes, attendings, and details — organized and exportable.
 
-Your trial has reached its case limit, but everything you built is saved and waiting.
+Your free account has reached its 25-case limit, but everything you built is saved and waiting.
 
-Upgrade to continue logging: {upgrade_url}
+Subscribe to continue logging: {upgrade_url}
 
 $49.99/year. Unlimited cases. Pick up exactly where you left off.
 
@@ -542,78 +542,17 @@ clinicalcaselog.com"""
     }
 ]
 
-TRIAL_EMAILS_TIME_LIMIT = [
-    {
-        'number': 1, 'delay_hours': 0,
-        'subject': 'Your 7-day trial ended — your cases are saved',
-        'body': """Hi {name},
-
-Your free trial of Clinical Case Log Pro has ended. Any cases you logged during the trial are saved and waiting for you.
-
-Upgrade to continue logging cases and access your full case history: {upgrade_url}
-
-$49.99/year. Unlimited cases. ACGME tracking. Excel + PDF export.
-
---
-Clinical Case Log Pro
-clinicalcaselog.com"""
-    },
-    {
-        'number': 2, 'delay_hours': 24,
-        'subject': 'Continue building your surgical record',
-        'body': """Hi {name},
-
-During your trial you had access to 30-second case entry, CPT auto-fill, and ACGME milestone tracking. That efficiency is still one click away.
-
-Residents and students who document consistently perform better on evaluations and have stronger applications. The tool is ready when you are.
-
-Continue logging: {upgrade_url}
-
---
-Clinical Case Log Pro
-clinicalcaselog.com"""
-    },
-    {
-        'number': 3, 'delay_hours': 72,
-        'subject': 'Quick note about your account',
-        'body': """Hi {name},
-
-Just checking in. Your Clinical Case Log Pro account is still active — you can log in and view any cases you entered during your trial.
-
-To start logging new cases again, upgrade here: {upgrade_url}
-
---
-Clinical Case Log Pro
-clinicalcaselog.com"""
-    },
-    {
-        'number': 4, 'delay_hours': 168,
-        'subject': 'Your account is still here',
-        'body': """Hi {name},
-
-This is the last note from us. Your Clinical Case Log Pro account and any saved cases are still accessible.
-
-When you're ready to continue logging: {upgrade_url}
-
-No pressure. Your data will be here.
-
---
-Clinical Case Log Pro
-clinicalcaselog.com"""
-    }
-]
-
-
 def get_email_template(sequence_number, trial_end_reason):
-    """Get the correct email template based on why the trial ended."""
-    templates = TRIAL_EMAILS_CASE_LIMIT if trial_end_reason == 'case_limit' else TRIAL_EMAILS_TIME_LIMIT
-    if sequence_number < 1 or sequence_number > len(templates):
+    """Get the subscription prompt template for free accounts that hit the case cap."""
+    if trial_end_reason != 'case_limit':
         return None
-    return templates[sequence_number - 1]
+    if sequence_number < 1 or sequence_number > len(TRIAL_EMAILS_CASE_LIMIT):
+        return None
+    return TRIAL_EMAILS_CASE_LIMIT[sequence_number - 1]
 
 
 def send_conversion_email(user_email, user_name, sequence_number, user_id, trial_end_reason='case_limit', cases_used=25):
-    """Send a specific email from the trial conversion sequence, adapted to end reason."""
+    """Send a specific subscription prompt email after the free case cap is reached."""
     template = get_email_template(sequence_number, trial_end_reason)
     if not template:
         return False
