@@ -1812,7 +1812,7 @@ def track_visit():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/analytics')
-@admin_required
+@admin_key_or_admin_required
 def get_analytics():
     try:
         conn = get_db()
